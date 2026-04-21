@@ -180,6 +180,10 @@ When adding decimal validation, check these areas:
 | Fee calculations | Platform fees use correct decimals |
 | API responses | Human-readable amounts properly converted |
 
+## Token Decimals by Chain
+
+See `decimals-by-chain.md` for a reference guide of common tokens and their decimals across different EVM chains.
+
 ## Sources
 
 - ERC20 Token Standard: https://eips.ethereum.org/EIPS/eip-20

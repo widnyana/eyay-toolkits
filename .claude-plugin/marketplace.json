@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "eyay-toolkits",
-  "description": "My personal writing toolkit. Built for shipping systems, not essays. If it helps you, steal it.",
+  "description": "Personal Claude Code plugins. Built for shipping systems, not essays. If it helps you, steal it.",
   "owner": {
     "name": "widnyana",
     "email": "wid@widnyana.web.id"
@@ -20,6 +20,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/technical-writer"
+    },
+    {
+      "name": "evm-decimal-validation",
+      "description": "Validate and configure token decimals for EVM-compatible blockchain deployments to prevent amount calculation errors.",
+      "source": "./plugins/evm-decimal-validation",
+      "category": "blockchain",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/evm-decimal-validation"
     }
   ]
 }

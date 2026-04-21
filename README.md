@@ -1,6 +1,6 @@
 # eyay-toolkits
 
-My personal writing toolkit. Built for shipping systems, not essays. If it helps you, steal it.
+Personal Claude Code plugins. Built for shipping systems, not essays. If it helps you, steal it.
 
 ## Installation
 
@@ -37,6 +37,19 @@ Write technical documentation, articles, reviews, and postmortems in a storytell
 - Humble tone — Be direct but acknowledge limitations
 - Concrete specifics — Use real numbers, actual code, specific data
 - No ALL CAPS headers — Ever
+
+**Status:** Tested and production-ready
+
+### [evm-decimal-validation](./plugins/evm-decimal-validation)
+
+Validate and configure token decimals for EVM-compatible blockchain deployments. Prevents amount calculation errors when the same token uses different decimals across chains.
+
+**Use for:**
+- ERC20 token deployments across multiple chains
+- Token amount conversions (FromWei/ToWei)
+- Auditing hardcoded decimal assumptions
+- Validating on-chain decimals against configuration
+- Cross-chain bridge decimal handling
 
 **Status:** Tested and production-ready
 
