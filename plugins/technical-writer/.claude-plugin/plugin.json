@@ -1,0 +1,12 @@
+{
+  "name": "technical-writer",
+  "version": "1.0.0",
+  "description": "Write technical documentation, articles, reviews, and postmortems in a storytelling style that's direct, humble, and problem-first.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["writing", "documentation", "technical-writing", "blog"]
+}

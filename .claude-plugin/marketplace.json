@@ -33,37 +33,15 @@
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/evm-decimal-validation"
     },
     {
-      "name": "ts-db-perf",
-      "description": "Optimize TypeScript code that interacts with databases. Covers N+1 queries, caching, race conditions, transactions, and async patterns.",
-      "source": "./plugins/ts-db-perf",
+      "name": "ts-backend-dev",
+      "description": "TypeScript backend development: database performance optimization, code review, and Prisma schema design.",
+      "source": "./plugins/ts-backend-dev",
       "category": "development",
       "author": {
         "name": "widnyana",
         "email": "wid@widnyana.web.id"
       },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-db-perf"
-    },
-    {
-      "name": "ts-review",
-      "description": "Review TypeScript code for quality, security, and correctness with structured checklist.",
-      "source": "./plugins/ts-review",
-      "category": "development",
-      "author": {
-        "name": "widnyana",
-        "email": "wid@widnyana.web.id"
-      },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-review"
-    },
-    {
-      "name": "prisma-schema",
-      "description": "Create or modify Prisma schema for new entities with proper conventions, relations, and indexes.",
-      "source": "./plugins/prisma-schema",
-      "category": "development",
-      "author": {
-        "name": "widnyana",
-        "email": "wid@widnyana.web.id"
-      },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/prisma-schema"
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-backend-dev"
     },
     {
       "name": "worktree-new",

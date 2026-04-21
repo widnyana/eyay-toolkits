@@ -1,0 +1,12 @@
+{
+  "name": "ts-backend-dev",
+  "version": "1.0.0",
+  "description": "TypeScript backend development skills: database performance optimization, code review, and Prisma schema design.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["typescript", "backend", "database", "prisma", "performance", "review"]
+}

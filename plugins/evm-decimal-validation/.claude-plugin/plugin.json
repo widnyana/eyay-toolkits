@@ -1,0 +1,12 @@
+{
+  "name": "evm-decimal-validation",
+  "version": "1.0.0",
+  "description": "Validate and configure token decimals for EVM-compatible blockchain deployments to prevent amount calculation errors.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["blockchain", "evm", "token", "decimals", "validation"]
+}

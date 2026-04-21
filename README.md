@@ -20,7 +20,5 @@ Then install plugins:
 
 - **[technical-writer](./plugins/technical-writer)** — Write technical docs and articles in a storytelling style that's direct, easy to read, and problem-first.
 - **[evm-decimal-validation](./plugins/evm-decimal-validation)** — Validate token decimals across EVM chains to prevent amount calculation errors.
-- **[ts-db-perf](./plugins/ts-db-perf)** — Optimize TypeScript code that interacts with databases. N+1 queries, caching, transactions, race conditions, async patterns.
-- **[ts-review](./plugins/ts-review)** — Review TypeScript code for quality, security, and correctness with a structured checklist.
-- **[prisma-schema](./plugins/prisma-schema)** — Create or modify Prisma schema with proper conventions, relations, and indexes.
+- **[ts-backend-dev](./plugins/ts-backend-dev)** — TypeScript backend development: database performance optimization (`ts-db-perf`), code review (`ts-review`), and Prisma schema design (`prisma-schema`).
 - **[worktree-new](./plugins/worktree-new)** — Create git worktrees with isolated ports for parallel development.
