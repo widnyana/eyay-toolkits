@@ -1,5 +1,5 @@
 ---
-name: code-optimize
+name: ts-db-perf
 description: |
   Optimize TypeScript code that interacts with databases. Use this skill when the user wants to fix N+1 queries, add caching, improve transaction safety, prevent race conditions, simplify async flows, or generally speed up a TypeScript backend. Triggers on phrases like "optimize", "slow query", "N+1", "race condition", "caching", "performance", "bottleneck", or when the user points at TypeScript code that reads or writes to a database and asks for improvements.
 ---

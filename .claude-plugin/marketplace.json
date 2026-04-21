@@ -33,26 +33,26 @@
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/evm-decimal-validation"
     },
     {
-      "name": "code-optimize",
-      "description": "Optimize code for performance, readability, or maintainability covering N+1 queries, caching, race conditions, and async patterns.",
-      "source": "./plugins/code-optimize",
+      "name": "ts-db-perf",
+      "description": "Optimize TypeScript code that interacts with databases. Covers N+1 queries, caching, race conditions, transactions, and async patterns.",
+      "source": "./plugins/ts-db-perf",
       "category": "development",
       "author": {
         "name": "widnyana",
         "email": "wid@widnyana.web.id"
       },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/code-optimize"
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-db-perf"
     },
     {
-      "name": "code-review",
-      "description": "Review code for quality, security, and adherence to project patterns with structured checklist.",
-      "source": "./plugins/code-review",
+      "name": "ts-review",
+      "description": "Review TypeScript code for quality, security, and correctness with structured checklist.",
+      "source": "./plugins/ts-review",
       "category": "development",
       "author": {
         "name": "widnyana",
         "email": "wid@widnyana.web.id"
       },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/code-review"
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-review"
     },
     {
       "name": "prisma-schema",

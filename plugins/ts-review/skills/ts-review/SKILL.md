@@ -1,5 +1,5 @@
 ---
-name: code-review
+name: ts-review
 description: |
   Review TypeScript code for quality, security, and correctness. Use this skill when the user asks for a code review, wants feedback on a PR or diff, or says "review this". Covers architecture, security, error handling, database patterns, type safety, and code quality. Produces categorized findings: critical issues, improvements, suggestions, and positive notes. Also triggers on phrases like "check this code", "what do you think of this", or "any issues with".
 ---
