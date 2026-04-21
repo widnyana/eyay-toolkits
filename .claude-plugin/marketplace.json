@@ -1,0 +1,25 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "eyay-toolkits",
+  "description": "My personal writing toolkit. Built for shipping systems, not essays. If it helps you, steal it.",
+  "owner": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "metadata": {
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "technical-writer",
+      "description": "Write technical documentation, articles, reviews, and postmortems in a storytelling style that's direct, humble, and problem-first.",
+      "source": "./plugins/technical-writer",
+      "category": "writing",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/technical-writer"
+    }
+  ]
+}
