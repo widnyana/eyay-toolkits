@@ -31,6 +31,50 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/evm-decimal-validation"
+    },
+    {
+      "name": "code-optimize",
+      "description": "Optimize code for performance, readability, or maintainability covering N+1 queries, caching, race conditions, and async patterns.",
+      "source": "./plugins/code-optimize",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/code-optimize"
+    },
+    {
+      "name": "code-review",
+      "description": "Review code for quality, security, and adherence to project patterns with structured checklist.",
+      "source": "./plugins/code-review",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/code-review"
+    },
+    {
+      "name": "prisma-schema",
+      "description": "Create or modify Prisma schema for new entities with proper conventions, relations, and indexes.",
+      "source": "./plugins/prisma-schema",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/prisma-schema"
+    },
+    {
+      "name": "worktree-new",
+      "description": "Create git worktrees with isolated ports for parallel development.",
+      "source": "./plugins/worktree-new",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/worktree-new"
     }
   ]
 }

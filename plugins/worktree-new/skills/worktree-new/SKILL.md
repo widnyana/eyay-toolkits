@@ -1,6 +1,7 @@
 ---
-description: Create a new git worktree with isolated ports for parallel development
-model: sonnet
+name: worktree-new
+description: |
+  Create a new git worktree with isolated ports for parallel development. Use this skill when the user wants to spin up an isolated development environment with its own branch, port offsets, and environment config. Handles branch creation, port allocation, env copying, and dependency installation.
 ---
 
 # Create Git Worktree

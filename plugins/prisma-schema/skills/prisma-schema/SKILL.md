@@ -1,6 +1,7 @@
 ---
-description: Create or modify Prisma schema for a new entity
-model: opus
+name: prisma-schema
+description: |
+  Create or modify Prisma schema for a new entity. Use this skill when the user wants to define database models with proper field types, relations, indexes, and conventions including soft deletes, high-precision decimals, snake_case mapping, and UUID primary keys.
 ---
 
 # Prisma Schema

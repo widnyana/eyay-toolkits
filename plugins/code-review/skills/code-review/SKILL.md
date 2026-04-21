@@ -1,6 +1,7 @@
 ---
-description: Review code for quality, security, and adherence to project patterns
-model: sonnet
+name: code-review
+description: |
+  Review code for quality, security, and adherence to project patterns. Use this skill when the user wants a structured code review covering architecture, security, error handling, database patterns, code quality, and project-specific conventions. Produces categorized findings: critical issues, improvements, suggestions, and positive notes.
 ---
 
 # Code Review

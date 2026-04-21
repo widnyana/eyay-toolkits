@@ -1,6 +1,7 @@
 ---
-description: Optimize code for performance, readability, or maintainability
-model: sonnet
+name: code-optimize
+description: |
+  Optimize code for performance, readability, or maintainability. Use this skill when the user wants to improve database queries, add caching, fix race conditions, simplify logic, or parallelize async operations. Covers N+1 queries, caching strategies, transaction batching, early returns, distributed locks, and idempotency patterns.
 ---
 
 # Code Optimization
