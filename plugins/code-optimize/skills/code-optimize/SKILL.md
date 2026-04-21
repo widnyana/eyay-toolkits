@@ -1,200 +1,232 @@
 ---
 name: code-optimize
 description: |
-  Optimize code for performance, readability, or maintainability. Use this skill when the user wants to improve database queries, add caching, fix race conditions, simplify logic, or parallelize async operations. Covers N+1 queries, caching strategies, transaction batching, early returns, distributed locks, and idempotency patterns.
+  Optimize TypeScript code that interacts with databases. Use this skill when the user wants to fix N+1 queries, add caching, improve transaction safety, prevent race conditions, simplify async flows, or generally speed up a TypeScript backend. Triggers on phrases like "optimize", "slow query", "N+1", "race condition", "caching", "performance", "bottleneck", or when the user points at TypeScript code that reads or writes to a database and asks for improvements.
 ---
 
-# Code Optimization
+# TypeScript Database Optimization
 
 Optimize: $ARGUMENTS
 
-## Optimization Areas
+## 1. N+1 Query Elimination
 
-### 1. Database Query Optimization
-
-**N+1 Query Problem**
+The classic trap: fetching a list, then querying per item in a loop.
 
 ```typescript
-// Bad: N+1 queries
-const invoices = await this.repository.findMany();
-for (const invoice of invoices) {
-  invoice.account = await this.accountRepository.findOne(invoice.accountId);
+// N+1: one query for the list, one per item
+const orders = await db.order.findMany();
+for (const order of orders) {
+  order.customer = await db.customer.findUnique({ where: { id: order.customerId } });
 }
 
-// Good: Single query with include
-const invoices = await this.repository.findMany({
-  include: { account: true },
+// Resolved: single query with join/include
+const orders = await db.order.findMany({
+  include: { customer: true },
 });
 ```
 
-**Select Only Needed Fields**
+If the ORM doesn't support `include`, use a `WHERE id IN (...)` or a JOIN.
+
+## 2. Select Only What You Need
 
 ```typescript
-// Bad: Select all columns
-const accounts = await this.repository.findMany();
+// Over-fetching
+const users = await db.user.findMany();
 
-// Good: Select specific fields
-const accounts = await this.repository.findMany({
-  select: { id: true, email: true, status: true },
+// Tight select
+const users = await db.user.findMany({
+  select: { id: true, email: true },
 });
 ```
 
-**Use Pagination**
+Applies to raw SQL too -- avoid `SELECT *` when you only need a few columns.
+
+## 3. Pagination
+
+Always paginate list endpoints. Cursor-based for large/real-time datasets, offset-based for simple cases.
 
 ```typescript
-const { data, pagination } = await this.repository.findAndCount({
-  where: { status: "ACTIVE" },
-  page: 1,
-  limit: 50,
+// Offset-based
+const [data, total] = await Promise.all([
+  db.user.findMany({ skip: (page - 1) * limit, take: limit }),
+  db.user.count(),
+]);
+
+// Cursor-based (no count query, stable under writes)
+const items = await db.message.findMany({
+  take: limit,
+  cursor: cursor ? { id: cursor } : undefined,
+  orderBy: { createdAt: "desc" },
 });
 ```
 
-### 2. Caching Optimization
+## 4. Caching
 
-**Use Repository Cache**
+Cache where data is read-heavy and stale reads are tolerable.
 
 ```typescript
-const account = await this.accountRepository.findUniqueWithCache(
-  { where: { id } },
-  `account:${id}`,
-  300, // TTL in seconds
-  true, // enable cache
+async function getExchangeRate(from: string, to: string): Promise<number> {
+  const key = `rate:${from}:${to}`;
+  const cached = await cache.get(key);
+  if (cached !== null) return Number(cached);
+
+  const rate = await fetchRateFromAPI(from, to);
+  await cache.set(key, String(rate), { ttl: 60 }); // 60s TTL
+  return rate;
+}
+```
+
+For repository-level caching, wrap the lookup:
+
+```typescript
+async findById(id: string): Promise<User | null> {
+  const cached = await cache.get(`user:${id}`);
+  if (cached) return JSON.parse(cached);
+
+  const user = await db.user.findUnique({ where: { id } });
+  if (user) await cache.set(`user:${id}`, JSON.stringify(user), { ttl: 300 });
+  return user;
+}
+```
+
+Invalidate on writes. Prefer short TTLs over complex invalidation logic.
+
+## 5. Batch Writes in Transactions
+
+```typescript
+// Sequential writes outside a transaction -- slow and non-atomic
+for (const item of items) {
+  await db.item.update({ where: { id: item.id }, data: item });
+}
+
+// Batched in a transaction -- fast and atomic
+await db.$transaction(
+  items.map((item) =>
+    db.item.update({ where: { id: item.id }, data: item })
+  )
 );
 ```
 
-**Cache Expensive Computations**
+For large batches, chunk to avoid exceeding connection limits or statement size:
 
 ```typescript
-const cacheKey = `exchange-rate:${from}:${to}`;
-const cached = await this.redis.get(cacheKey);
-if (cached) return JSON.parse(cached);
-
-const rate = await this.calculateRate(from, to);
-await this.redis.set(cacheKey, JSON.stringify(rate), "EX", 60);
-return rate;
+const CHUNK = 100;
+for (let i = 0; i < items.length; i += CHUNK) {
+  await db.$transaction(
+    items.slice(i, i + CHUNK).map((item) =>
+      db.item.update({ where: { id: item.id }, data: item })
+    )
+  );
+}
 ```
 
-### 3. Transaction Optimization
+## 6. Race Condition Prevention
 
-**Batch Operations**
+Critical for balance updates, inventory, counters -- anything that reads-then-writes.
+
+**Optimistic locking** (version column):
 
 ```typescript
-// Bad: Individual updates
-for (const item of items) {
-  await this.repository.update({ where: { id: item.id }, data: item });
-}
+const result = await db.account.update({
+  where: { id: accountId, version: currentVersion },
+  data: { balance: newBalance, version: { increment: 1 } },
+});
+if (!result) throw new ConflictError("Concurrent modification");
+```
 
-// Good: Transaction batch
-await this.repository.executeTransactionWithRetry(async (tx) => {
-  await Promise.all(
-    items.map((item) =>
-      tx.entity.update({ where: { id: item.id }, data: item }),
-    ),
-  );
+**Atomic updates** (no read needed):
+
+```typescript
+await db.account.update({
+  where: { id: accountId },
+  data: { balance: { increment: amount } },
 });
 ```
 
-### 4. Code Structure Optimization
-
-**Early Returns**
+**Distributed lock** (Redis/Valkey, for cross-service coordination):
 
 ```typescript
-// Bad: Nested conditions
-async process(data) {
+const lock = await acquireLock(`balance:${accountId}`, 30_000);
+try {
+  await db.$transaction(async (tx) => {
+    await tx.$executeRaw`
+      UPDATE account SET balance = balance + ${amount} WHERE id = ${accountId}
+    `;
+  });
+} finally {
+  await releaseLock(`balance:${accountId}`, lock);
+}
+```
+
+**Idempotency** (webhooks, retries):
+
+```typescript
+const key = `processed:${eventId}`;
+if (await cache.get(key)) return { status: "already_processed" };
+await cache.set(key, "processing", { ttl: 3600 });
+// ... do work ...
+await cache.set(key, "done", { ttl: 86_400 });
+```
+
+## 7. Parallel Async
+
+Independent lookups should run concurrently.
+
+```typescript
+// Sequential -- 2 round-trips
+const user = await db.user.findUnique({ where: { id } });
+const settings = await db.settings.findUnique({ where: { userId: id } });
+
+// Parallel -- 1 round-trip wall time
+const [user, settings] = await Promise.all([
+  db.user.findUnique({ where: { id } }),
+  db.settings.findUnique({ where: { userId: id } }),
+]);
+```
+
+Use `Promise.allSettled` when partial failures are acceptable.
+
+## 8. Simplify Control Flow
+
+**Early returns** over nesting:
+
+```typescript
+// Nested
+async function process(data: Input | null) {
   if (data) {
-    if (data.isValid) {
-      // logic
+    if (data.valid) {
+      // actual logic
     }
   }
 }
 
-// Good: Early returns
-async process(data) {
-  if (!data) return;
-  if (!data.isValid) return;
-  // logic
+// Flat
+async function process(data: Input | null) {
+  if (!data || !data.valid) return;
+  // actual logic
 }
 ```
 
-**Extract Repeated Logic**
+**Extract helpers** for repeated patterns:
 
 ```typescript
-// Bad: Repeated validation
-if (!invoice) throw new NotFoundException('Invoice not found');
-if (!payout) throw new NotFoundException('Payout not found');
-
-// Good: Reusable helper
-private ensureFound<T>(entity: T | null, name: string): T {
-  if (!entity) throw new NotFoundException(`${name} not found`);
-  return entity;
+function ensureFound<T>(value: T | null | undefined, label: string): T {
+  if (value == null) throw new NotFoundError(`${label} not found`);
+  return value;
 }
-```
-
-### 5. Race Condition Prevention (Financial Services)
-
-**CRITICAL** for balance updates, payouts, invoices, trades, withdrawals.
-
-**Distributed Lock + Transaction**
-
-```typescript
-// Bad: No locking - race condition vulnerable
-const balance = await this.balanceRepo.findOne({ accountId });
-balance.amount += amount;
-await this.balanceRepo.update(balance);
-
-// Good: Redis lock + atomic transaction
-const lockKey = `balance:${accountId}`;
-const lock = await this.redis.acquireLock(lockKey, 30000);
-try {
-  await this.repository.executeTransactionWithRetry(
-    async (tx) => {
-      await tx.$executeRaw`
-      UPDATE "AccountBalance"
-      SET amount = amount + ${amount}
-      WHERE account_id = ${accountId}
-    `;
-    },
-    { isolationLevel: "Serializable" },
-  );
-} finally {
-  await this.redis.releaseLock(lockKey, lock);
-}
-```
-
-**Idempotency for Webhooks/External APIs**
-
-```typescript
-const idempotencyKey = `payout:${payoutId}`;
-if (await this.redis.get(idempotencyKey)) return; // Already processed
-await this.redis.set(idempotencyKey, "processing", "EX", 3600);
-// Process...
-await this.redis.set(idempotencyKey, "completed", "EX", 86400);
-```
-
-### 6. Async Optimization
-
-**Parallel Execution**
-
-```typescript
-// Bad: Sequential
-const account = await this.accountService.find(id);
-const wallet = await this.walletService.find(id);
-
-// Good: Parallel
-const [account, wallet] = await Promise.all([
-  this.accountService.find(id),
-  this.walletService.find(id),
-]);
 ```
 
 ## Checklist
 
-- [ ] Identify performance bottleneck
-- [ ] Check for N+1 queries
-- [ ] Review caching opportunities
-- [ ] Look for parallel execution opportunities
-- [ ] Simplify complex logic
-- [ ] Remove code duplication
-- [ ] Check for race conditions in financial operations (use locks + transactions)
-- [ ] Verify optimization doesn't break functionality
-- [ ] Measure improvement (if possible)
+- [ ] Identify the bottleneck (profile, don't guess)
+- [ ] Eliminate N+1 queries
+- [ ] Add pagination to list endpoints
+- [ ] Tighten selects to needed fields only
+- [ ] Cache read-heavy, staleness-tolerant data
+- [ ] Batch writes in transactions
+- [ ] Chunk large batches
+- [ ] Guard read-then-write with optimistic locking or atomic updates
+- [ ] Use distributed locks for cross-service coordination
+- [ ] Add idempotency keys for webhooks
+- [ ] Parallelize independent async work
+- [ ] Verify optimization doesn't change behavior
