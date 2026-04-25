@@ -2,7 +2,7 @@
 
 Personal Claude Code plugins. Built for shipping systems, not essays. If it helps you, steal it.
 
-## Installation
+## Setup
 
 Add this marketplace to Claude Code:
 
@@ -10,15 +10,44 @@ Add this marketplace to Claude Code:
 /plugin marketplace add widnyana/eyay-toolkits
 ```
 
-Then install plugins:
+---
+
+## Plugins
+
+### technical-writer
+
+Write technical docs and articles in a storytelling style that's direct, easy to read, and problem-first.
 
 ```bash
 /plugin install technical-writer@eyay-toolkits
 ```
 
-## Plugins
+---
 
-- **[technical-writer](./plugins/technical-writer)** — Write technical docs and articles in a storytelling style that's direct, easy to read, and problem-first.
-- **[evm-decimal-validation](./plugins/evm-decimal-validation)** — Validate token decimals across EVM chains to prevent amount calculation errors.
-- **[ts-backend-dev](./plugins/ts-backend-dev)** — TypeScript backend development: database performance optimization (`ts-db-perf`), code review (`ts-review`), and Prisma schema design (`prisma-schema`).
-- **[worktree-new](./plugins/worktree-new)** — Create git worktrees with isolated ports for parallel development.
+### evm-decimal-validation
+
+Validate token decimals across EVM chains to prevent amount calculation errors.
+
+```bash
+/plugin install evm-decimal-validation@eyay-toolkits
+```
+
+---
+
+### solana-onchain
+
+Solana blockchain integration: query accounts, analyze transactions, execute operations with mainnet safety safeguards.
+
+```bash
+/plugin install solana-onchain@eyay-toolkits
+```
+
+---
+
+### ts-backend-dev
+
+TypeScript backend development: database performance optimization (`ts-db-perf`), code review (`ts-review`), and Prisma schema design (`prisma-schema`).
+
+```bash
+/plugin install ts-backend-dev@eyay-toolkits
+```
