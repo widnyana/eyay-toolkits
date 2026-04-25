@@ -1,0 +1,20 @@
+# Local settings with sensitive configuration
+.claude/solana-onchain.local.md
+.claude/*.local.md
+
+# Keypair files (if accidentally placed here)
+*.json.key
+id.json
+
+# Editor files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Environment variables
+.env
+.env.local

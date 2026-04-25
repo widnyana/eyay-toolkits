@@ -1,0 +1,13 @@
+{
+  "name": "solana-onchain",
+  "version": "0.2.0",
+  "description": "Interact with the Solana blockchain through Claude Code. Query accounts, analyze transactions, and execute operations with built-in safety safeguards.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/solana-onchain",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "license": "MIT",
+  "keywords": ["solana", "blockchain", "web3", "dapp", "mcp"]
+}
