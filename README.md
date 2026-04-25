@@ -2,6 +2,15 @@
 
 Personal Claude Code plugins. Built for shipping systems, not essays. If it helps you, steal it.
 
+## Table of Contents
+
+- [Setup](#setup)
+- [Plugins](#plugins)
+  - [technical-writer](#technical-writer)
+  - [evm-decimal-validation](#evm-decimal-validation)
+  - [solana-onchain](#solana-onchain)
+  - [ts-backend-dev](#ts-backend-dev)
+
 ## Setup
 
 Add this marketplace to Claude Code:
