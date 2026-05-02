@@ -1,14 +1,14 @@
 ---
 name: cover-letter-builder
 description: >
-  Build a tailored cover letter by scanning the current repo for the person's background
-  (skills, experience, projects — from plain text, Markdown, LaTeX, or any prose file)
-  and matching it to a job posting (title, company, description). Adapts tone, length,
-  and structure to the application channel and company culture. Outputs a polished
-  Markdown file named YYYY-MM-DD-company-position.md. Use this skill whenever
-  the user asks to write a cover letter, apply for a job, draft an application letter,
-  or wants to generate a cover letter from a job posting — even if they just paste a
-  job description or say "write me a cover letter for this role".
+  Build a tailored cover letter from a CV or resume (PDF, plain text, Markdown, LaTeX,
+  or a file path) matched to a job posting. Proactively asks for the user's CV if not
+  provided, then scans the repo as a supplement. Adapts tone, length, and structure to
+  the application channel and company culture. Outputs a polished Markdown file named
+  YYYY-MM-DD-company-position.md. Use this skill whenever the user asks to write a cover
+  letter, apply for a job, draft an application letter, or wants to generate a cover
+  letter from a job posting — even if they just paste a job description, drop a PDF path,
+  or say "write me a cover letter for this role".
 ---
 
 # Cover Letter Builder
@@ -19,36 +19,79 @@ description: >
 |---|---|
 | Job title | User message or job posting |
 | Company name | User message or job posting |
-| Job description | User message or pasted text |
-| Application channel | Default: `standard`; options: `linkedin`, `async-video-note` |
+| Job description | Pasted text, or file path to a `.pdf` / `.txt` |
+| CV / resume | File path (`.pdf`, `.md`, `.tex`, `.txt`) or pasted text — asked in Step 0 if not provided |
+| Application channel | Default: `standard`; options: `linkedin` |
 | Repo path | Default: current working directory (`.`) |
 
 If any required field is missing and cannot be inferred, ask once — all at once.
 
 ---
 
-## Step 1: Scan the Repo
+## Step 0: Intake
 
-Recursively scan the repo for files containing personal/professional information.
+Run this **before scanning the repo**.
+
+```
+Has the user already provided a CV, resume, or background text?
+  YES → proceed to Step 1 with that as the primary source
+  NO  → ask the user (single message):
+```
+
+> "Do you have an existing CV or resume? If yes, provide the file path or paste the text
+> here. If not, I'll scan the current repo for your background."
+
+Also confirm the job description is complete. If the user only provided a job title and company name, ask for the full JD now.
+
+**If the user has no CV and the repo scan (Step 1) finds nothing useful:** switch to inline intake — ask these questions in one message:
+- Current role and company
+- 2-3 most relevant past roles (title, company, one key outcome each)
+- Top 5-6 skills most relevant to the target role
+- Education (brief)
+
+Use the answers as the profile source.
+
+---
+
+## Step 1: Scan Sources
+
+### If the user provided a CV file (Step 0)
+
+Use it as the **primary source**. Extract text based on format:
+
+**PDF:**
+```bash
+# Best layout preservation (poppler-utils)
+pdftotext -layout cv.pdf -
+```
+Fallback chain:
+1. `pdftotext -layout file.pdf -`
+2. `pdftotext file.pdf -`
+3. If `pdftotext` is unavailable: tell the user and ask them to paste the CV text
+
+**Markdown / plain text:** read directly — no transformation needed.
+
+**LaTeX:** strip commands, extract readable text:
+```bash
+sed 's/\\[a-zA-Z]*{[^}]*}//g; s/\\[a-zA-Z]*//g; s/[{}]//g'
+```
+Or `pandoc -t plain file.tex` if available.
+
+### Repo scan (supplementary — always runs)
+
+Recursively scan the repo for additional context not in the CV.
 
 **Priority targets:**
 - `*.md`, `*.txt`, `*.tex`, `*.rst` — prose, CVs, bios, READMEs
 - `resume.*`, `cv.*`, `about.*`, `bio.*`, `profile.*` (any extension)
 - `CLAUDE.md` or `claude.md` — may contain identity/context
-- LaTeX `.tex` files — extract text, ignore preamble/macros
+- `*.pdf` matching `cv*` or `resume*` naming — extract via `pdftotext`
 - Any file with keywords: experience, skills, education, projects, work, career, background
 
 **Skip:**
 - `node_modules/`, `.git/`, `vendor/`, `dist/`, `build/`, `*.lock`, `*.log`, binaries
 
-**LaTeX handling:**
-Strip LaTeX commands — extract readable text only:
-```bash
-sed 's/\\[a-zA-Z]*{[^}]*}//g; s/\\[a-zA-Z]*//g; s/[{}]//g'
-```
-Or use `pandoc` if available: `pandoc -t plain file.tex`
-
-**Extract:**
+**Extract from all sources:**
 - Name, contact info
 - Work history: company, title, dates, key responsibilities
 - Skills: technical, tools, languages, platforms
@@ -56,7 +99,7 @@ Or use `pandoc` if available: `pandoc -t plain file.tex`
 - Projects: name, description, tech used, outcomes
 - Achievements, metrics, certifications
 
-Synthesize into a single internal profile. Do not write this to disk.
+Merge all sources. Prefer the explicit CV as primary; use repo content to fill gaps or add project detail. Synthesize into a single internal profile. Do not write this to disk.
 
 ---
 
@@ -109,18 +152,14 @@ Build a relevance map:
 
 ### LinkedIn Easy Apply — short cover note
 
-- 100–150 words, single block of prose
+Use when applying through LinkedIn. LinkedIn cover notes are read on mobile, in a narrow column, and hiring managers skim them in seconds.
+
+- 100–150 words, single block of prose, no line breaks between sentences
 - Lead with your strongest match to the role
 - One company-specific sentence
 - End with availability and contact preference
 - No letterhead, no date, no signature block
-
-### Async video note — written script companion
-
-- 150–200 words, conversational register
-- Written as if spoken aloud — short sentences, no complex syntax
-- Structure: who you are → one concrete story → why this role → what you want to do next
-- Flag to the user that this is a script; they need to record it
+- No Markdown formatting — plain text only
 
 ---
 
@@ -284,12 +323,13 @@ After writing:
 
 | Situation | Handling |
 |---|---|
-| No relevant files found | Ask user to provide a summary of their background inline |
+| No relevant files found, no CV provided | Use inline intake (Step 0): ask current role, key experiences, top skills, education |
 | Only a README found | Extract what's there; note it's thin; produce best-effort letter |
-| Multiple CV/resume files | Merge; prefer the most recent by filename or date metadata |
+| User provides a PDF CV | Extract via `pdftotext`; ask user to paste text if tool unavailable |
+| User pastes CV text directly | Parse it directly; no file extraction needed |
+| Multiple CV/resume files | Merge; prefer the explicit CV from Step 0, then the most recent by filename |
 | LaTeX with complex macros | Use `pandoc` first; fall back to regex strip |
 | Job description is vague/short | Ask for one clarifying detail: what does "success" look like in year 1? |
 | Company name has spaces/symbols | Slugify: `Scale AI` → `scale-ai`, `Acme Corp.` → `acme-corp` |
 | No company handbook/public values found | Rely on tone signals from the job posting alone |
-| LinkedIn channel selected | Output a short cover note (100–150 words), not the full letter format |
-| Async video channel selected | Output a spoken script (150–200 words); remind user to record it |
+| LinkedIn channel selected | Output plain-text cover note (100–150 words), no Markdown, no letterhead |

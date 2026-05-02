@@ -21,7 +21,6 @@ description: >
 | Company name + HQ location | No | Drives regional format detection (Step 0) |
 | Output format | No | Auto-detected (see below); override with `markdown`, `latex`, or `both` |
 | Output path | No | Default: `cv-YYYY-MM-DD.md` or `cv-YYYY-MM-DD.tex` in repo root |
-| Application channel | No | `standard` (default), `linkedin`, `async-video` |
 
 If target role is not given, produce a general-purpose CV.
 
@@ -73,7 +72,7 @@ State the detected mode to the user before proceeding.
 - No DOB, marital status, nationality, religion
 - **Visa / work authorization** — include one line in the header if not obvious:
   `Work authorization: [Country] citizen / [Visa type, expiry if relevant] / open to sponsorship`
-- Timezone and async availability — include in header or Remote section
+- Timezone and async availability — note in header or summary if relevant to the role
 - Skills section appears **before** Experience for technical roles (ATS advantage)
 - Apply within 72 hours of posting going live — note this to the user
 
@@ -203,7 +202,7 @@ Include the work authorization line only when it is not obvious — e.g., applyi
 
 ### Skills (appears first in REMOTE-UNIVERSAL tech roles)
 
-Group meaningfully. Only list skills evidenced somewhere in the repo.
+Group meaningfully. Only list skills evidenced somewhere in the repo. Categories vary — use what fits the actual background.
 
 ```markdown
 **Languages:** Go, TypeScript, Python, Rust, SQL
@@ -212,8 +211,6 @@ Group meaningfully. Only list skills evidenced somewhere in the repo.
 **Cloud:** AWS (EKS, RDS, S3, EC2), GCP, Hetzner
 **Observability:** Prometheus, Grafana, Loki, OpenTelemetry
 ```
-
-Only list skills evidenced somewhere in the repo. Categories vary — use what fits the actual background.
 
 ### Experience entries (STAR+Q format)
 
