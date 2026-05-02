@@ -1,0 +1,12 @@
+{
+  "name": "career-tools",
+  "version": "1.0.0",
+  "description": "Build tailored cover letters and ATS-friendly CVs by scanning a repo for background info and matching to job postings.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["career", "cv", "resume", "cover-letter", "job-application"]
+}

@@ -44,15 +44,15 @@
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/ts-backend-dev"
     },
     {
-      "name": "worktree-new",
-      "description": "Create git worktrees with isolated ports for parallel development.",
-      "source": "./plugins/worktree-new",
-      "category": "development",
+      "name": "career-tools",
+      "description": "Build tailored cover letters and ATS-friendly CVs by scanning a repo for background info and matching to job postings.",
+      "source": "./plugins/career-tools",
+      "category": "writing",
       "author": {
         "name": "widnyana",
         "email": "wid@widnyana.web.id"
       },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/worktree-new"
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/career-tools"
     }
   ]
 }
