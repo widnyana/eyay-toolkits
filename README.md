@@ -6,9 +6,10 @@ Personal Claude Code plugins. Built for shipping systems, not essays. If it help
 
 - [Setup](#setup)
 - [Plugins](#plugins)
-  - [technical-writer](#technical-writer)
+  - [career-tools](#career-tools)
   - [evm-decimal-validation](#evm-decimal-validation)
   - [solana-onchain](#solana-onchain)
+  - [technical-writer](#technical-writer)
   - [ts-backend-dev](#ts-backend-dev)
 
 ## Setup
@@ -23,12 +24,12 @@ Add this marketplace to Claude Code:
 
 ## Plugins
 
-### technical-writer
+### career-tools
 
-Write technical docs and articles in a storytelling style that's direct, easy to read, and problem-first.
+Build career documents from repo content: cover letters (`cover-letter-builder`) and CVs (`cv-builder`) in Markdown or LaTeX.
 
 ```bash
-/plugin install technical-writer@eyay-toolkits
+/plugin install career-tools@eyay-toolkits
 ```
 
 ---
@@ -49,6 +50,16 @@ Solana blockchain integration: query accounts, analyze transactions, execute ope
 
 ```bash
 /plugin install solana-onchain@eyay-toolkits
+```
+
+---
+
+### technical-writer
+
+Write technical docs and articles in a storytelling style that's direct, easy to read, and problem-first.
+
+```bash
+/plugin install technical-writer@eyay-toolkits
 ```
 
 ---
