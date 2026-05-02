@@ -53,6 +53,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/career-tools"
+    },
+    {
+      "name": "solana-onchain",
+      "description": "Solana blockchain integration: query accounts, analyze transactions, execute operations with mainnet safety safeguards.",
+      "source": "./plugins/solana-onchain",
+      "category": "blockchain",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/solana-onchain"
     }
   ]
 }
