@@ -1,6 +1,6 @@
 ---
 name: sui-walrus
-description: Walrus — decentralized blob storage coordinated by Sui. Use when storing files/blobs/assets in a Sui app via the `@mysten/walrus` TypeScript SDK, publisher/aggregator HTTP API, or `walrus` CLI. Covers blob lifecycle (register → upload → certify), Quilts for small blobs, upload relay, crash-recoverable uploads, and the security model (public by default — encrypt with Seal if confidentiality matters).
+description: Walrus — decentralized blob storage and static site hosting coordinated by Sui. Use when storing files/blobs/assets in a Sui app via the `@mysten/walrus` TypeScript SDK, publisher/aggregator HTTP API, or `walrus` CLI. Also use when deploying a static website to Walrus Sites via `site-builder`, configuring `ws-resources.json`, running a local portal, or troubleshooting Walrus Sites deployment.
 ---
 
 # Walrus Skill
@@ -31,7 +31,7 @@ Blob identity and lifecycle:
 - Storage is **per epoch**. Testnet epoch = **1 day**; Mainnet epoch = **2 weeks**. Max 53 epochs per registration (~2 years on Mainnet).
 - A `Blob` object on Sui carries the `BlobId` plus ownership/deletability flags. Burn the object to reclaim a small SUI rebate; burning does **not** delete storage.
 - **Max blob size**: ~13.6 GiB. **Max per-file inside a Quilt**: ~4 GiB.
-- **Memory**: uploads need ~2–3× blob size in RAM; reads need ~1.5–2× (erasure-coding overhead).
+- **Memory**: uploads need ~2–3× blob size in RAM via SDK/relay; raw direct uploads need ~4.5×. Reads need ~1.5–2× (erasure-coding overhead).
 
 Two costs on every write: **SUI** (gas for up to 3 transactions) and **WAL** (storage + write fee). Use [costcalculator.wal.app](https://costcalculator.wal.app/) or `walrus info`.
 
@@ -464,7 +464,15 @@ To verify that a given blob's content matches expected bytes on-chain, use the c
 
 ---
 
-## 14. Routing: what else to load
+## 14. Walrus Sites (static website hosting)
+
+Walrus Sites host decentralized static websites on Sui + Walrus. Site files are stored as Quilts on Walrus; a Sui object holds the URL-path-to-blob routing. Use the `site-builder` CLI to deploy and update sites; use a portal to browse them.
+
+For the full site-builder CLI reference, portal deployment, local tunnel setup for sharing `localhost:3000` externally, `portal-config.yaml` schema, `ws-resources.json` field reference, restrictions, site-specific anti-patterns, and troubleshooting, load **`references/walrus-sites.md`**.
+
+---
+
+## 15. Routing: what else to load
 
 | Task | Also load |
 |---|---|
@@ -472,10 +480,11 @@ To verify that a given blob's content matches expected bytes on-chain, use the c
 | Building transactions that handle `Blob` objects | `sui-ts-sdk` |
 | React/browser upload UI (wallet popups, state) | `sui-frontend` + `sui-ts-sdk` |
 | A Move package that accepts Walrus `Blob` objects | `sui-move` skill |
+| Deploying a static website to Walrus Sites | See section 14, then `references/walrus-sites.md` |
 
 ---
 
-## 15. Anti-patterns to avoid
+## 16. Anti-patterns to avoid
 
 - ❌ Calling the SDK directly from a browser without an upload relay — ~2200 fanout requests will cause blocking or rate-limiting.
 - ❌ Doing both `register` and `certify` signing inside a single event handler in a browser — wallet popup blocked on the second.
@@ -490,3 +499,5 @@ To verify that a given blob's content matches expected bytes on-chain, use the c
 - ❌ Forgetting the WASM URL config in Vite or Next.js — produces a runtime error deep inside `encode`. Set `wasmUrl` up front.
 - ❌ Calling `writeFiles` with just one file when `writeBlob` would be cheaper — Quilt encoding overhead dominates for single small files.
 - ❌ Using Walrus for mutable state. Blobs are immutable; to update, write a new blob and update a pointer stored on Sui.
+
+Walrus Sites-specific anti-patterns are listed in **`references/walrus-sites.md`**.
