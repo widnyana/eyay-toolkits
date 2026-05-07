@@ -1,0 +1,13 @@
+{
+  "name": "sui-dev-tools",
+  "version": "0.1.0",
+  "description": "Sui blockchain development skills — Move smart contracts, TypeScript SDK, frontend dApp Kit, Seal secrets, and Walrus storage.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/sui-dev-tools",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "license": "Apache-2.0",
+  "keywords": ["sui", "blockchain", "move", "web3", "dapp", "walrus", "seal"]
+}

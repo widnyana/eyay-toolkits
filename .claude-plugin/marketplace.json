@@ -64,6 +64,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/solana-onchain"
+    },
+    {
+      "name": "sui-dev-tools",
+      "description": "Sui blockchain development: Move smart contracts, TypeScript SDK, frontend dApp Kit, Seal secrets, and Walrus storage.",
+      "source": "./plugins/sui-dev-tools",
+      "category": "blockchain",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/sui-dev-tools"
     }
   ]
 }
