@@ -25,8 +25,12 @@ Builds or updates a CV by scanning a repo for experience, skills, education, and
 LaTeX output uses the ATS-optimised template in `skills/cv-builder/references/latex-template.md`.
 Always run `pdftotext cv.pdf - | head -80` to verify extraction before submitting.
 
-## Installation
+## Install
 
-```
-/plugin career-tools
+```bash
+# Add the marketplace (one-time)
+/plugin marketplace add widnyana/eyay-toolkits
+
+# Install
+/plugin install career-tools@eyay-toolkits
 ```

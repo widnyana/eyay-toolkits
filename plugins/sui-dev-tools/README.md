@@ -18,13 +18,21 @@ Sui blockchain development skills for Claude Code. Covers Move smart contracts, 
 | `sui-seal` | Seal decentralized secrets management |
 | `sui-walrus` | Walrus decentralized blob storage |
 
-## Usage
+## Install
 
 ```bash
-claude --plugin-dir ./plugins/sui-dev-tools
+# Add the marketplace (one-time)
+/plugin marketplace add widnyana/eyay-toolkits
+
+# Install
+/plugin install sui-dev-tools@eyay-toolkits
 ```
 
-Then invoke a skill:
+Verify with `/plugin list` or `/skills`. Restart Claude Code or open a new session if nothing shows up.
+
+## Usage
+
+Invoke a skill directly:
 
 ```
 /sui-dev-tools:sui-move

@@ -2,14 +2,14 @@
 
 Solana blockchain integration for Claude Code. Query accounts, analyze transactions, execute operations — with safety safeguards for mainnet.
 
-## Installation
+## Install
 
 ```bash
-# Option 1: Point to plugin directory
-cc --plugin-dir /path/to/plugins/solana-onchain
+# Add the marketplace (one-time)
+/plugin marketplace add widnyana/eyay-toolkits
 
-# Option 2: Copy to plugins folder
-cp -r plugins/solana-onchain ~/.claude-plugins/solana-onchain
+# Install
+/plugin install solana-onchain@eyay-toolkits
 ```
 
 On first session start, the plugin checks if `solana-onchain-mcp` binary is on your PATH. If missing, you'll be prompted to run `/solana-setup`.
