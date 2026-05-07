@@ -468,7 +468,7 @@ To verify that a given blob's content matches expected bytes on-chain, use the c
 
 Walrus Sites host decentralized static websites on Sui + Walrus. Site files are stored as Quilts on Walrus; a Sui object holds the URL-path-to-blob routing. Use the `site-builder` CLI to deploy and update sites; use a portal to browse them.
 
-For the full site-builder CLI reference, portal deployment, local tunnel setup for sharing `localhost:3000` externally, `portal-config.yaml` schema, `ws-resources.json` field reference, restrictions, site-specific anti-patterns, and troubleshooting, load **`references/walrus-sites.md`**.
+For the full site-builder CLI reference, portal deployment, local tunnel setup for sharing `localhost:3000` externally, `portal-config.yaml` schema, `ws-resources.json` field reference (including `redirects`), restrictions, site-specific anti-patterns, and troubleshooting, load **`references/walrus-sites.md`**. For custom domain setup (DNS, HTTPS, reverse proxy), load **`references/walrus-sites-custom-domains.md`**. For CI/CD deployment (GitHub Actions, GitLab CI, CircleCI, Bitbucket), load **`references/walrus-sites-ci-cd.md`**.
 
 ---
 
@@ -481,6 +481,8 @@ For the full site-builder CLI reference, portal deployment, local tunnel setup f
 | React/browser upload UI (wallet popups, state) | `sui-frontend` + `sui-ts-sdk` |
 | A Move package that accepts Walrus `Blob` objects | `sui-move` skill |
 | Deploying a static website to Walrus Sites | See section 14, then `references/walrus-sites.md` |
+| Custom domain for a Walrus Site | `references/walrus-sites-custom-domains.md` |
+| CI/CD deployment (GitHub Actions, GitLab, etc.) | `references/walrus-sites-ci-cd.md` |
 
 ---
 

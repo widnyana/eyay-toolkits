@@ -308,6 +308,10 @@ Optional file in the site root. **Not uploaded to Walrus or served to visitors.*
     "project_url": "https://github.com/MystenLabs/walrus-sites/",
     "creator": "MystenLabs"
   },
+  "redirects": {
+    "/old-path": { "location": "/new-path", "status": 301 },
+    "/temp-move": { "location": "/somewhere", "status": 302 }
+  },
   "site_name": "My Walrus Site",
   "object_id": "0xe674c144119a37a0ed9cef26a962c3fdfbdbfd86a3b3db562ee81d5542a4eccf",
   "ignore": ["/private/*", "/secret.txt", "/images/tmp/*"]
@@ -320,6 +324,7 @@ Optional file in the site root. **Not uploaded to Walrus or served to visitors.*
 |---|---|---|
 | `headers` | object | Custom HTTP response headers per file path. Overrides portal defaults. |
 | `routes` | object | Client-side routing rules (rewrites, not redirects). Browser URL never changes. |
+| `redirects` | object | Server-side redirects with HTTP status codes (301, 302, 308). Performed by the portal. |
 | `metadata` | object | Human-readable info displayed in Sui explorers and wallets. |
 | `site_name` | string | Display name. Overridden by `--site-name` CLI flag. |
 | `object_id` | string | Sui object ID of the deployed site. Auto-populated after first deploy. |
@@ -359,6 +364,21 @@ All routing is a **rewrite** (not a redirect). The browser URL does not change. 
 ```
 
 Routes are stored on-chain and validated at deploy time.
+
+### Redirects (Server-Side)
+
+Unlike `routes` (rewrites), `redirects` perform actual HTTP redirects. The browser URL changes. Supported status codes: `301` (permanent), `302` (temporary), `308` (permanent, preserves method).
+
+```json
+{
+  "redirects": {
+    "/old-page": { "location": "/new-page", "status": 301 },
+    "/legacy/*": { "location": "/modern/", "status": 308 }
+  }
+}
+```
+
+Redirects are resolved by the portal, not the client. They count toward the portal's maximum redirect depth (3 on `wal.app`).
 
 ### Metadata
 
