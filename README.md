@@ -1,5 +1,7 @@
 # eyay-toolkits
 
+[![skills.sh](https://skills.sh/b/widnyana/eyay-toolkits)](https://skills.sh/widnyana/eyay-toolkits)
+
 Claude Code plugins for people who'd rather ship than configure.
 
 These started as things I kept re-teaching Claude in every session -- review patterns, decimal validation traps, how to write without sounding like a press release. Eventually I packed them into skills so I could stop repeating myself. If any of them save you time, good. Steal them.
@@ -14,6 +16,12 @@ These started as things I kept re-teaching Claude in every session -- review pat
 | **sui-dev-tools** | Move smart contracts, TypeScript SDK, dApp Kit, Seal secrets, Walrus storage. All the Sui things in one plugin. | [README](plugins/sui-dev-tools/README.md) |
 | **technical-writer** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Public and internal modes. | [README](plugins/technical-writer/README.md) |
 | **ts-backend-dev** | TypeScript backend skills: kill N+1 queries, review code for architecture and security issues, design Prisma schemas that won't paint you into a corner. | [README](plugins/ts-backend-dev/README.md) |
+
+## Install via skills.sh
+
+```bash
+npx skills add widnyana/eyay-toolkits
+```
 
 ## Contributing
 
