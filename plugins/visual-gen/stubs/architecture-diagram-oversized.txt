@@ -1,0 +1,21 @@
+Generate a large-scale enterprise microservices architecture diagram PNG. Do all steps in order without asking questions.
+
+Layout: 4 horizontal layers using group boxes. Canvas EXACTLY 2400x1800px. White background.
+
+Components:
+- Layer 1 "Clients" (top): Web Application, Mobile iOS, Mobile Android, CLI Tool, Partner API
+- Layer 2 "Gateway": API Gateway, Auth Middleware, Rate Limiter, CDN Edge
+- Layer 3 "Services": User Service, Order Service, Payment Service, Notification Service, Search Service, Analytics Service
+- Layer 4 "Data" (bottom): PostgreSQL Primary, PostgreSQL Replica, Redis Cluster, Elasticsearch, S3 Storage, Kafka Broker
+
+External: Payment Service -> Stripe API (outside layers, .external). Notification Service -> SendGrid (outside layers, .external).
+
+Arrows: clients -> gateway -> services -> data stores.
+
+Steps:
+1. Copy skills/architecture-diagram/examples/diagram-template.html as starting point. Adapt for 4 layers with 2400x1800 canvas.
+2. Save to tmp/diagram-enterprise-microservices.html
+3. Run: bash skills/architecture-diagram/scripts/screenshot.sh tmp/diagram-enterprise-microservices.html ./plugins/visual-gen/test-output/architecture-diagram-oversized/diagram-oversized.png 2400 1800
+4. Delete tmp/diagram-enterprise-microservices.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/architecture-diagram-oversized/diagram-oversized.png

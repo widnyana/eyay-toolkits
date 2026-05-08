@@ -1,0 +1,19 @@
+Generate a tall process infographic PNG for the full software release lifecycle. Do all steps in order without asking questions.
+
+Theme: dark slate (#0f172a), cyan accents (#06b6d4). Canvas EXACTLY 1200x2400px. Vertical timeline layout with phase grouping.
+
+12 steps in 4 phases:
+- Phase 1 "Planning": 1. Requirements Gathering (collect stakeholder input and define acceptance criteria), 2. Design Review (architectural decisions and tech spec approval), 3. Backlog Grooming (prioritize and estimate story points)
+- Phase 2 "Development": 4. Implementation (write code against accepted stories), 5. Code Review (peer review for quality and correctness), 6. Merge to Main (integrate feature branch after approval)
+- Phase 3 "QA": 7. Smoke Tests (verify critical user paths on integration environment), 8. Regression Suite (run full automated test coverage), 9. UAT Sign-off (product owner approves release candidate)
+- Phase 4 "Release": 10. Staging Deploy (deploy release candidate to staging), 11. Production Deploy (promote staging build to production), 12. Post-Mortem (review metrics and capture lessons learned)
+
+Each step: numbered circle, bold title, muted description. Phase labels are section headers. All 12 steps and all phase labels fully visible.
+
+Steps:
+1. Write complete self-contained HTML with inline CSS. Canvas exactly 1200x2400px, overflow hidden. Google Fonts via @import. No external images, no JS.
+2. Save to tmp/infographic-release-lifecycle.html
+3. Run: bash skills/process-infographic/scripts/screenshot.sh tmp/infographic-release-lifecycle.html ./plugins/visual-gen/test-output/process-infographic-tall/infographic-tall.png 1200 2400
+4. Delete tmp/infographic-release-lifecycle.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/process-infographic-tall/infographic-tall.png

@@ -16,12 +16,20 @@ These started as things I kept re-teaching Claude in every session -- review pat
 | **sui-dev-tools** | Move smart contracts, TypeScript SDK, dApp Kit, Seal secrets, Walrus storage. All the Sui things in one plugin. | [README](plugins/sui-dev-tools/README.md) |
 | **technical-writer** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Public and internal modes. | [README](plugins/technical-writer/README.md) |
 | **ts-backend-dev** | TypeScript backend skills: kill N+1 queries, review code for architecture and security issues, design Prisma schemas that won't paint you into a corner. | [README](plugins/ts-backend-dev/README.md) |
+| **visual-gen** | Blog cover images, architecture diagrams, and process infographics as PNG via HTML+CSS + Chrome headless. | [README](plugins/visual-gen/README.md) |
 
 ## Install via skills.sh
 
 ```bash
 npx skills add widnyana/eyay-toolkits
 ```
+
+## visual-gen samples
+
+| Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |
+|---|---|---|
+| ![Cover image](assets/cover-image-sample.png) | ![Wide diagram](assets/architecture-diagram-wide-sample.png) | ![Tall infographic](assets/process-infographic-tall-sample.png) |
+| ![Architecture diagram](assets/architecture-diagram-sample.png) | | ![Process infographic](assets/process-infographic-sample.png) |
 
 ## Contributing
 

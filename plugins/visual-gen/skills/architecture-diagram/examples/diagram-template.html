@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 900px;
+    overflow: hidden;
+    font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+    background: #FFFFFF;
+    color: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    padding: 40px 48px 32px;
+  }
+
+  .header { margin-bottom: 28px; }
+  .title { font-size: 24px; font-weight: 700; color: #1a1a2e; letter-spacing: -0.3px; }
+  .subtitle { font-size: 13px; color: #666; margin-top: 4px; }
+
+  .diagram {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .stage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .stage-number {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: #2d8659; color: #fff;
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .stage-title {
+    font-size: 13px; font-weight: 600; color: #2d8659;
+    text-align: center; margin-bottom: 16px;
+  }
+
+  /* Nodes */
+  .node {
+    border-radius: 8px;
+    padding: 12px 20px;
+    text-align: center;
+    min-width: 130px;
+    border: 2px solid transparent;
+    margin-bottom: 12px;
+  }
+  .node-label { font-size: 13px; font-weight: 600; color: #1a1a2e; }
+  .node-desc { font-size: 11px; color: #555; margin-top: 2px; }
+
+  .node.service  { background: #dbeafe; border-color: #93c5fd; }
+  .node.server   { background: #dcfce7; border-color: #86efac; }
+  .node.infra    { background: #fef3c7; border-color: #fcd34d; }
+  .node.storage  { background: #e0e7ff; border-color: #a5b4fc; }
+  .node.highlight { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+  /* Database */
+  .db {
+    background: #f0f4ff; border: 2px solid #a5b4fc;
+    border-radius: 8px; padding: 10px 18px 14px;
+    text-align: center; min-width: 120px;
+    position: relative; margin-bottom: 12px;
+  }
+  .db::before {
+    content: ""; position: absolute;
+    top: -1px; left: 50%; transform: translateX(-50%);
+    width: 70%; height: 8px;
+    background: #e0e7ff; border: 2px solid #a5b4fc; border-bottom: none;
+    border-radius: 50% 50% 0 0;
+  }
+  .db-label { font-size: 12px; font-weight: 600; color: #1a1a2e; margin-top: 6px; }
+  .db-desc  { font-size: 10px; color: #555; }
+
+  /* Group box */
+  .group {
+    border: 2px dashed #bbb; border-radius: 8px;
+    padding: 18px 14px 14px;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 10px; position: relative;
+  }
+  .group-label {
+    position: absolute; top: -10px; left: 14px;
+    background: #fff; padding: 0 8px;
+    font-size: 10px; font-weight: 600; color: #888;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+
+  /* Vertical arrow */
+  .arrow-down {
+    display: flex; flex-direction: column; align-items: center;
+    margin: 6px 0;
+  }
+  .arrow-down .shaft {
+    width: 2px; height: 20px; background: #555;
+  }
+  .arrow-down .head {
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 7px solid #555;
+  }
+
+  /* Horizontal connector */
+  .connector-h {
+    position: absolute; top: 45%; right: -16px;
+    display: flex; align-items: center;
+    color: #2d8659; font-size: 22px; font-weight: 700;
+  }
+
+  .badge {
+    position: absolute; bottom: 16px; right: 24px;
+    font-size: 10px; color: #aaa; font-weight: 500;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="title">System Architecture</div>
+    <div class="subtitle">Scaling from single server to distributed services</div>
+  </div>
+
+  <div class="diagram">
+
+    <!-- Stage 1 -->
+    <div class="stage">
+      <div class="stage-number">1</div>
+      <div class="stage-title">Single Server</div>
+      <div class="group">
+        <span class="group-label">Monolith</span>
+        <div class="node service">
+          <div class="node-label">Web + API</div>
+          <div class="node-desc">All-in-one</div>
+        </div>
+        <div class="arrow-down"><div class="shaft"></div><div class="head"></div></div>
+        <div class="db">
+          <div class="db-label">Database</div>
+          <div class="db-desc">Local</div>
+        </div>
+      </div>
+      <div class="connector-h">&rarr;</div>
+    </div>
+
+    <!-- Stage 2 -->
+    <div class="stage">
+      <div class="stage-number">2</div>
+      <div class="stage-title">Split Tiers</div>
+      <div class="node service">
+        <div class="node-label">App Server</div>
+        <div class="node-desc">Business logic</div>
+      </div>
+      <div class="arrow-down"><div class="shaft"></div><div class="head"></div></div>
+      <div class="db">
+        <div class="db-label">Database</div>
+        <div class="db-desc">Dedicated host</div>
+      </div>
+      <div class="connector-h">&rarr;</div>
+    </div>
+
+    <!-- Stage 3 -->
+    <div class="stage">
+      <div class="stage-number">3</div>
+      <div class="stage-title">Load Balanced</div>
+      <div class="node infra">
+        <div class="node-label">Load Balancer</div>
+        <div class="node-desc">Round robin</div>
+      </div>
+      <div class="arrow-down"><div class="shaft"></div><div class="head"></div></div>
+      <div class="group">
+        <span class="group-label">Cluster</span>
+        <div style="display: flex; gap: 10px;">
+          <div class="node server highlight"><div class="node-label">Server A</div></div>
+          <div class="node server highlight"><div class="node-label">Server B</div></div>
+        </div>
+      </div>
+      <div class="arrow-down"><div class="shaft"></div><div class="head"></div></div>
+      <div class="db">
+        <div class="db-label">Database</div>
+        <div class="db-desc">Primary + Replica</div>
+      </div>
+      <div class="connector-h">&rarr;</div>
+    </div>
+
+    <!-- Stage 4 -->
+    <div class="stage">
+      <div class="stage-number">4</div>
+      <div class="stage-title">Microservices</div>
+      <div class="node infra">
+        <div class="node-label">API Gateway</div>
+        <div class="node-desc">Auth &amp; routing</div>
+      </div>
+      <div class="arrow-down"><div class="shaft"></div><div class="head"></div></div>
+      <div class="group">
+        <span class="group-label">Services</span>
+        <div class="node service highlight"><div class="node-label">User Service</div></div>
+        <div class="node server"><div class="node-label">Inventory</div></div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <div class="node storage"><div class="node-label">Cache</div><div class="node-desc">Redis</div></div>
+        <div class="db"><div class="db-label">DB</div><div class="db-desc">Sharded</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="badge">diagram template</div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "visual-gen",
+  "version": "1.0.0",
+  "description": "Generate blog cover images, architecture diagrams, and process infographics as PNG files using HTML+CSS rendered via Chrome headless.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyasa/eyay-toolkits",
+  "keywords": ["media", "images", "diagrams", "visual", "html-css", "chrome-headless"]
+}

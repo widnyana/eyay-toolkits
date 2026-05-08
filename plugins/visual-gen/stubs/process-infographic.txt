@@ -1,0 +1,18 @@
+Generate a process infographic PNG for a CI/CD deployment pipeline. Do all steps in order without asking questions.
+
+Theme: dark slate background (#0f172a) with cyan accents (#06b6d4). Canvas 1200x900px minimum (tall enough for 9 steps). Vertical timeline layout with phase grouping.
+
+9 steps in 3 phases:
+- Phase 1 "Build": 1. Code Commit (developer pushes to feature branch), 2. Dependency Install (resolve and cache packages), 3. Compile & Bundle (build artifacts for target platforms)
+- Phase 2 "Test & Secure": 4. Unit Tests (run isolated test suites), 5. SAST Scan (static security analysis), 6. Integration Tests (validate service interactions)
+- Phase 3 "Deploy": 7. Stage Deploy (deploy to staging environment), 8. Smoke Tests (verify critical paths on staging), 9. Canary Release (roll out to 5% of production traffic)
+
+Each step: numbered circle, bold title, muted description. Phase labels are section headers.
+
+Steps:
+1. Write complete self-contained HTML with inline CSS. Canvas at least 1200x900px, overflow hidden. Google Fonts via @import. No external images, no JS.
+2. Save to tmp/infographic-cicd.html
+3. Run: bash skills/process-infographic/scripts/screenshot.sh tmp/infographic-cicd.html ./plugins/visual-gen/test-output/process-infographic/infographic.png
+4. Delete tmp/infographic-cicd.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/process-infographic/infographic.png

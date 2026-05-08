@@ -1,0 +1,19 @@
+Generate a wide system evolution diagram PNG showing 4 scaling stages. Do all steps in order without asking questions.
+
+Layout: multi-column left-to-right. Canvas EXACTLY 2400x630px. White background. Each stage is a vertical column.
+
+4 stages:
+- Stage 1 "v1 — Monolith": single app server, PostgreSQL database
+- Stage 2 "v2 — Scaled Out": load balancer, 2 app servers, Redis cache next to PostgreSQL
+- Stage 3 "v3 — Microservices": API gateway, 3 services (User Service, Order Service, Notification Service), each with own database, Kafka cluster connecting services
+- Stage 4 "v4 — Cloud Native": Kubernetes cluster with HPA, CDN for static assets, managed database (RDS), CloudWatch monitoring
+
+Horizontal arrows between stages. All components fully visible, nothing clipped.
+
+Steps:
+1. Copy skills/architecture-diagram/examples/diagram-template.html as starting point. Adapt for 4 stages with 2400x630 canvas.
+2. Save to tmp/diagram-evolution-wide.html
+3. Run: bash skills/architecture-diagram/scripts/screenshot.sh tmp/diagram-evolution-wide.html ./plugins/visual-gen/test-output/architecture-diagram-wide/diagram-wide.png 2400 630
+4. Delete tmp/diagram-evolution-wide.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/architecture-diagram-wide/diagram-wide.png

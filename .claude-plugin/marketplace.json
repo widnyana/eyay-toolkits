@@ -75,6 +75,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/sui-dev-tools"
+    },
+    {
+      "name": "visual-gen",
+      "description": "Generate blog cover images, architecture diagrams, and process infographics as PNG using HTML+CSS rendered via Chrome headless.",
+      "source": "./plugins/visual-gen",
+      "category": "media",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/visual-gen"
     }
   ]
 }

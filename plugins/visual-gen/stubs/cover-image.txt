@@ -1,0 +1,16 @@
+Generate a cover image PNG for a blog post. Do all steps in order without asking questions.
+
+Content:
+- Title: "Understanding Ownership in Rust"
+- Subtitle: "Borrowing, Lifetimes, and Move Semantics Explained"
+- Series label: "Rust for Solana Developers — Part 3" (uppercase, accent color, top of canvas)
+- Theme: light background (#ffffff), blue accents (#3b82f6)
+- Visual element: a styled inline code block showing `fn main() { let s = String::from("hello"); let t = s; }` as a decorative element
+
+Steps:
+1. Write a complete self-contained HTML file with inline CSS. Canvas exactly 1200x630px, overflow hidden, Google Fonts loaded via @import. No external images, no JS.
+2. Save the HTML to tmp/cover-ownership-rust.html
+3. Run: bash skills/cover-image/scripts/screenshot.sh tmp/cover-ownership-rust.html ./plugins/visual-gen/test-output/cover-image/cover.png
+4. Delete tmp/cover-ownership-rust.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/cover-image/cover.png

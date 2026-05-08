@@ -1,0 +1,19 @@
+Generate an architecture diagram PNG for an e-commerce platform. Do all steps in order without asking questions.
+
+Layout: 3 horizontal tiers using group boxes with dashed borders and labeled headers. White background. Canvas exactly 1200x630px.
+
+Components:
+- Presentation Layer: React SPA, React Native mobile app (use .service class)
+- Business Layer: API Gateway (.infra), Payment Service (.service .highlight — this is the focal component), Auth Service (.service), Inventory Service (.service)
+- Data Layer: PostgreSQL (.storage, show as cylinder), Redis cache (.storage, show as cylinder)
+- External Services (outside tiers, .external): Stripe API, SendGrid
+
+Arrows: clients -> API Gateway -> services -> data stores. Services also connect to external APIs.
+
+Steps:
+1. Copy skills/architecture-diagram/examples/diagram-template.html as starting point. Adapt it for the components above.
+2. Save to tmp/diagram-ecommerce.html
+3. Run: bash skills/architecture-diagram/scripts/screenshot.sh tmp/diagram-ecommerce.html ./plugins/visual-gen/test-output/architecture-diagram/diagram.png
+4. Delete tmp/diagram-ecommerce.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/architecture-diagram/diagram.png
