@@ -1,11 +1,11 @@
-# technical-writer
+# prose-engineers
 
 Write technical documentation, articles, reviews, and postmortems in a storytelling style that's direct, humble, and problem-first.
 
 ## Install
 
 ```bash
-/plugin install technical-writer@eyay-toolkits
+/plugin install prose-engineers@eyay-toolkits
 ```
 
 ## What It Does

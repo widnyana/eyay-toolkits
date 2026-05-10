@@ -11,15 +11,15 @@
   },
   "plugins": [
     {
-      "name": "technical-writer",
+      "name": "prose-engineers",
       "description": "Write technical documentation, articles, reviews, and postmortems in a storytelling style that's direct, humble, and problem-first.",
-      "source": "./plugins/technical-writer",
+      "source": "./plugins/prose-engineers",
       "category": "writing",
       "author": {
         "name": "widnyana",
         "email": "wid@widnyana.web.id"
       },
-      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/technical-writer"
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/prose-engineers"
     },
     {
       "name": "evm-decimal-validation",

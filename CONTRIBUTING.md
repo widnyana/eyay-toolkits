@@ -17,7 +17,7 @@ Create these files in your plugin directory:
 
 #### `SKILL.md` — The main plugin definition
 
-Your plugin's instructions. See `plugins/technical-writer/SKILL.md` for a template.
+Your plugin's instructions. See `plugins/prose-engineers/skills/technical-writer/SKILL.md` for a template.
 
 ```markdown
 ---
@@ -73,7 +73,7 @@ Create a `.claude-plugin/` directory and add `plugin.json`:
 
 #### `README.md` — User-facing documentation
 
-A quick reference guide. See `plugins/technical-writer/README.md` for a template.
+A quick reference guide. See `plugins/prose-engineers/README.md` for a template.
 
 ### Step 3: Update marketplace files
 
@@ -100,7 +100,7 @@ Update the root `package.json` `workspaces`:
 ```json
 {
   "workspaces": [
-    "plugins/technical-writer",
+    "plugins/prose-engineers",
     "plugins/my-plugin"
   ]
 }

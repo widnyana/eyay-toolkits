@@ -13,7 +13,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin install evm-decimal-validation@eyay-toolkits
 /plugin install solana-onchain@eyay-toolkits
 /plugin install sui-dev-tools@eyay-toolkits
-/plugin install technical-writer@eyay-toolkits
+/plugin install prose-engineers@eyay-toolkits
 /plugin install ts-backend-dev@eyay-toolkits
 /plugin install visual-gen@eyay-toolkits
 ```

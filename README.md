@@ -14,7 +14,7 @@ These started as things I kept re-teaching Claude in every session -- review pat
 | **evm-decimal-validation** | Audits hardcoded decimals, queries on-chain values, fixes FromWei/ToWei conversions. Catches the "18 decimals everywhere" mistake before it hits production. | [README](plugins/evm-decimal-validation/README.md) |
 | **solana-onchain** | Query accounts, analyze transactions, execute operations on Solana. Defaults to devnet because mainnet mistakes are permanent. | [README](plugins/solana-onchain/README.md) |
 | **sui-dev-tools** | Move smart contracts, TypeScript SDK, dApp Kit, Seal secrets, Walrus storage. All the Sui things in one plugin. | [README](plugins/sui-dev-tools/README.md) |
-| **technical-writer** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Public and internal modes. | [README](plugins/technical-writer/README.md) |
+| **prose-engineers** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Public and internal modes. | [README](plugins/prose-engineers/README.md) |
 | **ts-backend-dev** | TypeScript backend skills: kill N+1 queries, review code for architecture and security issues, design Prisma schemas that won't paint you into a corner. | [README](plugins/ts-backend-dev/README.md) |
 | **visual-gen** | Blog cover images, architecture diagrams, and process infographics as PNG via HTML+CSS + Chrome headless. | [README](plugins/visual-gen/README.md) |
 
