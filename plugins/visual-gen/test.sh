@@ -182,6 +182,7 @@ for skill in "${SKILLS[@]}"; do
 done
 
 assert_file "$PLUGIN_ROOT/skills/architecture-diagram/examples/diagram-template.html" "diagram-template.html"
+assert_file "$PLUGIN_ROOT/skills/architecture-diagram/resources/template.html" "architecture-diagram/resources/template.html"
 
 
 section "Prompt Stubs"
@@ -248,11 +249,14 @@ if [[ "$MODE" == "full" ]]; then
   section "E2E: architecture-diagram-oversized (2400x1800)"
   run_e2e "architecture-diagram-oversized" "diagram-oversized.png"
 
+  section "E2E: architecture-diagram-dark (dark theme)"
+  run_e2e "architecture-diagram-dark" "diagram-dark.png"
+
 else
   section "E2E Tests"
   echo "  Skipped. Run without --check to execute E2E tests."
   echo "  Warning: E2E tests invoke claude CLI and cost API tokens (~\$1.50 each)."
-  SKIPPED=$((SKIPPED + 6))
+  SKIPPED=$((SKIPPED + 7))
 fi
 
 

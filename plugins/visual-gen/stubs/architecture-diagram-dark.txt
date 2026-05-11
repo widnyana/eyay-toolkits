@@ -1,0 +1,19 @@
+Generate a dark-theme architecture diagram PNG for a two-tier web API. Do all steps in order without asking questions.
+
+Theme: dark (SVG-based, default). Canvas exactly 1200x630px.
+
+Components:
+- API Server (backend service, emerald #34d399)
+- PostgreSQL (database, violet #a78bfa)
+- Redis Cache (cache, violet #a78bfa)
+- Client (frontend, cyan #22d3ee)
+
+Flow: Client -> API Server -> PostgreSQL. API Server -> Redis Cache (read-through cache).
+
+Steps:
+1. Copy skills/architecture-diagram/resources/template.html as starting point. Adapt it for the components above using SVG <rect> + <text> pairs. Set body width 1200px and height 630px.
+2. Save to tmp/diagram-api-dark.html
+3. Run: bash skills/architecture-diagram/scripts/screenshot.sh tmp/diagram-api-dark.html ./plugins/visual-gen/test-output/architecture-diagram-dark/diagram-dark.png 1200 630
+4. Delete tmp/diagram-api-dark.html. Do not read or check the resulting image.
+
+Output: ./plugins/visual-gen/test-output/architecture-diagram-dark/diagram-dark.png
