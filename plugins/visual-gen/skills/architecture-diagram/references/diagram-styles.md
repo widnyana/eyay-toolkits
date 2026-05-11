@@ -1,4 +1,8 @@
-# Diagram Styles Reference
+# Light-Theme Diagram Styles Reference
+
+Alternative visual style for architecture diagrams: white background, div-based layout (no SVG), Chrome headless rendering via `scripts/screenshot.sh`.
+
+Use when the target medium requires a light background (print, slide decks, documentation with white pages, corporate templates).
 
 ## Color Coding Table
 
@@ -64,9 +68,9 @@ body { width: 1200px; height: 900px; overflow: hidden; }
 - Head: CSS border triangle, 4px sides, color `#555`
 
 ### Horizontal (Unicode)
-- `->` for single direction between stages
-- `<->` for bidirectional
-- `=>` for emphasis
+- `&rarr;` for single direction between stages
+- `&harr;` for bidirectional
+- `&rArr;` for emphasis
 
 ### Connector positioning
 For stage-to-stage connectors, position absolutely at vertical center, right edge:
