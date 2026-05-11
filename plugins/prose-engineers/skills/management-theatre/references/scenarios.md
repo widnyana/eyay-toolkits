@@ -181,3 +181,21 @@ Common organisational events and the specific absurdities they produce. Each ent
 - The strategy that emerges looking identical to last year's strategy with new fonts
 - The "parking lot" of issues that were parked in Q1 and have not moved
 - The moment the most important conversation happens in the bathroom between sessions
+
+---
+
+## The AI Oracle
+
+**Official purpose**: Speed up development, reduce boilerplate, unblock engineers.
+
+**What actually happens**:
+- A decision gets made; the reasoning gets replaced by "the agent said so"
+- Someone questions the output; someone else re-asks the same agent and gets the same answer, cited as confirmation
+- The original human judgment quietly exits the room
+- The PR gets merged; the comment says `// per recommendation`
+
+**Satirical angles**:
+- Outsourced reasoning as a social contract — if the tool is wrong, no one is wrong
+- The circular validation loop (ask → get answer → re-ask to confirm → cite confirmation)
+- Accountability that has no address
+- The team that ships confidently and can't explain a single decision in the codebase
