@@ -319,3 +319,30 @@ def find_story_file(story_dir: str, story_key: str) -> Optional[str]:
         if fname.startswith(story_key) and fname.endswith(".md"):
             return os.path.join(story_dir, fname)
     return None
+
+
+def reset_runner_state(state_path: str, sprint_status_path: str) -> RunnerState:
+    """Rebuild runner state from sprint-status.yaml truth.
+
+    Counts done stories, clears blocked list, resets in-flight fields.
+    The next action is resolved from sprint-status so the runner can
+    pick up where things actually are.
+    """
+    status = read_sprint_status(sprint_status_path)
+
+    # Find the next story the runner would work on (first non-done, non-blocked).
+    action, next_story = get_next_action(status)
+
+    now = datetime.now().isoformat()
+    state = RunnerState(
+        current_story=next_story or None,
+        retry_count=0,
+        checkpoint_hash=None,
+        started_at=now,
+        stories_completed=status.get_done_count(),
+        stories_blocked=[],
+        phase="",
+    )
+
+    write_runner_state(state_path, state)
+    return state

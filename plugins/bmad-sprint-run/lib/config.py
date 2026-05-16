@@ -21,6 +21,7 @@ class Config:
     claude_path: str = "claude"
     log_dir: str = "./sprint-logs"
     skip_code_review: bool = False
+    review_only: bool = False
     dry_run: bool = False
 
     target_story: str = ""
@@ -30,6 +31,7 @@ class Config:
     model: str = ""
     allowed_tools: list[str] = field(default_factory=list)
     debug: bool = False
+    reset: bool = False
     watch: bool = False
     run_id: str = field(default_factory=lambda: datetime.now().strftime("%Y%m%d-%H%M%S"))
 
@@ -149,6 +151,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
                         help="Max retry attempts per story (default: 3)")
     parser.add_argument("--skip-code-review", action="store_true", default=False,
                         help="Skip code review step")
+    parser.add_argument("--review", action="store_true", default=False,
+                        help="Review a completed story (--story required). Runs code review only when story status is done.")
     parser.add_argument("--claude-path", type=str, default=None,
                         help="Path to Claude CLI binary (default: claude)")
     parser.add_argument("--log-dir", type=str, default=None,
@@ -167,6 +171,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
                         help="Comma-separated list of allowed tools")
     parser.add_argument("--debug", action="store_true", default=False,
                         help="Show sprint-runner debug output on console")
+    parser.add_argument("--reset", action="store_true", default=False,
+                        help="Reset runner state to match sprint-status.yaml and exit")
     parser.add_argument("--watch", action="store_true", default=False,
                         help="Tail this project's Claude Code session logs and runner state (run in a second terminal)")
     parser.add_argument("--sprint-status-path", type=str, default=None,
@@ -195,6 +201,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
         cfg.retry_budget = args.retry_budget
     if args.skip_code_review:
         cfg.skip_code_review = True
+    if args.review:
+        cfg.review_only = True
     if args.claude_path is not None:
         cfg.claude_path = args.claude_path
     if args.log_dir is not None:
@@ -213,6 +221,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
         cfg.allowed_tools = [t.strip() for t in args.allowed_tools.split(",") if t.strip()]
     if args.debug:
         cfg.debug = True
+    if args.reset:
+        cfg.reset = True
     if args.watch:
         cfg.watch = True
     if args.sprint_status_path:

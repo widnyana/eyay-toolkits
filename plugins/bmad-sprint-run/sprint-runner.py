@@ -39,6 +39,7 @@ from lib.git_ops import (
 from lib.logger import get_step_logger, log_summary, setup_logging
 from lib.models import ClaudeResult, RunnerState, SprintStatus
 from lib.state import (
+    _filter_candidates,
     append_digest_entry,
     find_story_file,
     get_next_action,
@@ -46,6 +47,7 @@ from lib.state import (
     read_digest,
     read_runner_state,
     read_sprint_status,
+    reset_runner_state,
     update_story_status,
     write_runner_state,
 )
@@ -176,6 +178,48 @@ class SprintRunner:
         print(f"Story:  {story_key or '(sprint complete)'}")
         return 0
 
+    def review_only(self) -> int:
+        """Run code review for a single completed story."""
+        story_key = self.config.target_story
+        if not story_key:
+            print("Error: --review requires --story <key>", file=sys.stderr)
+            return 1
+
+        # Normalize story key: "4-1" -> match first story starting with "4-1-"
+        status = read_sprint_status(self.sprint_status_path)
+        matched_key = story_key
+        if story_key not in status.stories:
+            prefix = story_key if "-" in story_key else f"{story_key}-"
+            candidates = [k for k in status.stories if k.startswith(prefix)]
+            if len(candidates) == 1:
+                matched_key = candidates[0]
+            elif len(candidates) > 1:
+                print(f"Error: '{story_key}' matches multiple stories: {candidates}", file=sys.stderr)
+                return 1
+            else:
+                print(f"Error: story '{story_key}' not found in sprint-status.yaml", file=sys.stderr)
+                return 1
+
+        story_status = status.stories[matched_key]
+        if story_status not in ("done", "review", "in-progress"):
+            print(f"Error: story {matched_key} is '{story_status}', not done/review/in-progress. Nothing to review.", file=sys.stderr)
+            return 1
+
+        step = get_step_logger(self.logger, f"REVIEW-ONLY-{matched_key}")
+        step.info("Review-only mode for story %s (status: %s)", matched_key, story_status)
+
+        self._update_phase(matched_key, "code-review")
+        ok = self._run_code_review(matched_key, step)
+
+        if ok:
+            step.info("Code review passed for %s", matched_key)
+            print(f"Review passed: {matched_key}")
+        else:
+            step.error("Code review found issues for %s", matched_key)
+            print(f"Review found issues: {matched_key}")
+
+        return 0
+
     def _main_loop(self) -> int:
         """Core sprint loop. Returns 0 on success, 1 on failure."""
         max_iterations = 500
@@ -213,6 +257,7 @@ class SprintRunner:
             )
 
             if action == "sprint_complete":
+                self._auto_review_done_stories(status)
                 self.step_log.info("Sprint complete - all stories resolved")
                 log_summary(self.logger, "Sprint complete")
                 return 0
@@ -712,6 +757,42 @@ class SprintRunner:
         return result
 
     # ------------------------------------------------------------------
+    # Auto-review
+    # ------------------------------------------------------------------
+
+    def _auto_review_done_stories(self, status: SprintStatus) -> None:
+        """Review done stories that haven't been reviewed yet."""
+        candidates = _filter_candidates(
+            status.stories, self.config.target_story, self.config.target_epic,
+        )
+        done_stories = [k for k, v in candidates.items() if v == "done"]
+        if not done_stories:
+            return
+
+        to_review = []
+        for story_key in done_stories:
+            story_file = find_story_file(self.config.story_dir, story_key)
+            if story_file:
+                findings = parse_review_findings(story_file)
+                if findings.has_findings_section:
+                    continue
+            to_review.append(story_key)
+
+        if not to_review:
+            self.step_log.info("All %d done stories already reviewed", len(done_stories))
+            return
+
+        self.step_log.info("Auto-reviewing %d done stories: %s", len(to_review), to_review)
+        for story_key in to_review:
+            step = get_step_logger(self.logger, f"AUTO-REVIEW-{story_key}")
+            self._update_phase(story_key, "code-review")
+            ok = self._run_code_review(story_key, step)
+            if ok:
+                step.info("Auto-review passed for %s", story_key)
+            else:
+                step.warning("Auto-review found issues for %s", story_key)
+
+    # ------------------------------------------------------------------
     # Summary
     # ------------------------------------------------------------------
 
@@ -743,11 +824,20 @@ class SprintRunner:
 
         summary = "\n".join(lines)
         self.logger.info(summary)
-        print(summary)
 
 
 def main() -> int:
     config = parse_args()
+
+    if config.reset:
+        try:
+            state = reset_runner_state(config.runner_state_path, config.sprint_status_path)
+        except Exception as exc:
+            print(f"Reset failed: {exc}", file=sys.stderr)
+            return 1
+        print(f"Runner state reset. {state.stories_completed} stories done, "
+              f"next: {state.current_story or '(sprint complete)'}")
+        return 0
 
     if config.watch:
         from lib.log_viewer import watch
@@ -755,6 +845,9 @@ def main() -> int:
         return 0
 
     runner = SprintRunner(config)
+
+    if config.review_only:
+        return runner.review_only()
 
     # Convert SIGTERM into KeyboardInterrupt so the same cleanup path in run()
     # handles it — and so invoke_claude's except BaseException terminates the
