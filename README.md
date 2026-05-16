@@ -10,6 +10,7 @@ These started as things I kept re-teaching Claude in every session -- review pat
 
 | Plugin | What it does | Details |
 |--------|-------------|---------|
+| **bmad-sprint-run** | Drives Claude Code through an entire BMad sprint autonomously — creates stories, implements them, runs quality gates, handles retries, and commits results. Two modes: skill (`/bmad-sprint-run`) and Python companion (`sprint-runner.py`). | [README](plugins/bmad-sprint-run/README.md) |
 | **career-tools** | Cover letters and CVs from repo contents. Markdown or ATS-friendly LaTeX. | [README](plugins/career-tools/README.md) |
 | **evm-decimal-validation** | Audits hardcoded decimals, queries on-chain values, fixes FromWei/ToWei conversions. Catches the "18 decimals everywhere" mistake before it hits production. | [README](plugins/evm-decimal-validation/README.md) |
 | **solana-onchain** | Query accounts, analyze transactions, execute operations on Solana. Defaults to devnet because mainnet mistakes are permanent. | [README](plugins/solana-onchain/README.md) |

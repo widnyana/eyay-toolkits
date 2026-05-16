@@ -39,9 +39,6 @@ python3 /path/to/bmad-sprint-run/sprint-runner.py --dry-run
 # Run everything
 python3 /path/to/bmad-sprint-run/sprint-runner.py
 
-# Cap spend to avoid surprises
-python3 /path/to/bmad-sprint-run/sprint-runner.py --max-total-budget 50
-
 # Watch it live in a second terminal
 tail -f sprint-logs/sprint-summary.log
 ```
@@ -59,8 +56,6 @@ python3 sprint-runner.py [OPTIONS]
 | `--dry-run` | — | Resolves next action and prints it, no Claude invocations |
 | `--story STORY` | — | Run one story only (e.g. `4-1` or `4-1-fan-wallet-masking`) |
 | `--epic EPIC` | — | Run all stories in one epic (e.g. `4`) |
-| `--max-total-budget FLOAT` | 100.0 | Hard cap on total USD across the sprint |
-| `--max-budget-per-invocation FLOAT` | 5.0 | Hard cap per Claude Code call |
 | `--retry-budget INT` | 3 | Max dev+review cycles per story before blocking |
 | `--skip-code-review` | — | Skip the code review step entirely |
 | `--effort LEVEL` | high | Claude effort: `low`, `medium`, `high`, `xhigh`, `max` |
@@ -69,7 +64,7 @@ python3 sprint-runner.py [OPTIONS]
 | `--log-viewer` | — | Stream Claude Code session logs to stdout while running |
 | `--claude-path PATH` | claude | Path to the Claude CLI binary |
 | `--allowed-tools TOOLS` | — | Comma-separated list of allowed tools |
-| `--debug` | — | Enable debug output from Claude Code |
+| `--debug` | — | Show sprint-runner internal debug output on console |
 | `--sprint-status-path PATH` | `docs/_bmad_output/...` | Override sprint-status.yaml path |
 | `--story-dir PATH` | `docs/_bmad_output/...` | Override story files directory |
 | `--runner-state-path PATH` | `docs/_bmad_output/...` | Override runner state file path |
@@ -81,8 +76,6 @@ CLI flags take precedence over env vars.
 
 | Variable | Flag |
 |----------|------|
-| `SPRINT_MAX_BUDGET_PER_INVOCATION` | `--max-budget-per-invocation` |
-| `SPRINT_MAX_TOTAL_BUDGET` | `--max-total-budget` |
 | `SPRINT_RETRY_BUDGET` | `--retry-budget` |
 | `SPRINT_CLAUDE_PATH` | `--claude-path` |
 | `SPRINT_LOG_DIR` | `--log-dir` |
@@ -207,8 +200,8 @@ docker compose up -d
 # 4. Dry run to verify
 python3 sprint-runner.py --dry-run
 
-# 5. Run (with a budget you're comfortable with)
-python3 sprint-runner.py --max-total-budget 50
+# 5. Run
+python3 sprint-runner.py
 
 # 6. Monitor in another terminal
 tail -f sprint-logs/sprint-summary.log
@@ -225,5 +218,5 @@ cat docs/_bmad_output/implementation-artifacts/.sprint-runner-state.yaml
 
 - **Stories run strictly sequentially.** There's no parallel story execution — the SKILL.md spec explicitly forbids it, and the state model doesn't support it.
 - **Workspace discovery is heuristic.** If your project has unusual structure, commands might not be detected correctly. Override via `CLAUDE.md` entries or explicit flags.
-- **Budget tracking is best-effort.** The `--max-total-budget` cap is enforced before each invocation based on costs reported by the previous one. A single over-budget invocation can exceed the cap by up to one invocation's worth.
+- **Cost tracking is informational only.** The session total shown in the summary and per-invocation log is whatever Claude Code reports in stream-json — $0.00 for subscription accounts. No budget enforcement exists; the runner runs until all stories are resolved or you stop it.
 - **Skill mode has no kernel lock.** Two people running `/bmad-sprint-run` simultaneously in different Claude Code sessions will corrupt state. Use the Python companion for anything unattended.

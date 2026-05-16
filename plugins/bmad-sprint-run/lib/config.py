@@ -17,9 +17,6 @@ class Config:
     retry_budget: int = 3
     digest_size: int = 5
 
-    max_budget_per_invocation: float = 5.0
-    max_total_budget: float = 100.0
-
     claude_path: str = "claude"
     log_dir: str = "./sprint-logs"
     skip_code_review: bool = False
@@ -46,10 +43,6 @@ def parse_args(argv: list[str] | None = None) -> Config:
         description="Autonomous Sprint Orchestrator for BMad-driven development pipelines.",
     )
 
-    parser.add_argument("--max-budget-per-invocation", type=float, default=None,
-                        help="Max USD per Claude Code invocation (default: 5.0)")
-    parser.add_argument("--max-total-budget", type=float, default=None,
-                        help="Max total USD for the sprint run (default: 100.0)")
     parser.add_argument("--retry-budget", type=int, default=None,
                         help="Max retry attempts per story (default: 3)")
     parser.add_argument("--skip-code-review", action="store_true", default=False,
@@ -71,7 +64,7 @@ def parse_args(argv: list[str] | None = None) -> Config:
     parser.add_argument("--allowed-tools", type=str, default="",
                         help="Comma-separated list of allowed tools")
     parser.add_argument("--debug", action="store_true", default=False,
-                        help="Enable debug output from Claude Code")
+                        help="Show sprint-runner debug output on console")
     parser.add_argument("--watch", action="store_true", default=False,
                         help="Watch ~/.claude/projects/ and tail session logs (run in a second terminal)")
     parser.add_argument("--sprint-status-path", type=str, default=None,
@@ -88,10 +81,6 @@ def parse_args(argv: list[str] | None = None) -> Config:
     cfg = Config()
 
     # Layer 2: environment variables
-    if v := os.environ.get("SPRINT_MAX_BUDGET_PER_INVOCATION"):
-        cfg.max_budget_per_invocation = float(v)
-    if v := os.environ.get("SPRINT_MAX_TOTAL_BUDGET"):
-        cfg.max_total_budget = float(v)
     if v := os.environ.get("SPRINT_RETRY_BUDGET"):
         cfg.retry_budget = int(v)
     if v := os.environ.get("SPRINT_CLAUDE_PATH"):
@@ -100,10 +89,6 @@ def parse_args(argv: list[str] | None = None) -> Config:
         cfg.log_dir = v
 
     # Layer 3: CLI arguments (override env vars)
-    if args.max_budget_per_invocation is not None:
-        cfg.max_budget_per_invocation = args.max_budget_per_invocation
-    if args.max_total_budget is not None:
-        cfg.max_total_budget = args.max_total_budget
     if args.retry_budget is not None:
         cfg.retry_budget = args.retry_budget
     if args.skip_code_review:

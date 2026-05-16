@@ -12,7 +12,7 @@ Each Claude Code invocation is a fresh `--no-session-persistence` session. The o
 | Phase tracking | Writes `phase: dev-story/quality-gate/code-review` before each long operation — visible to crash recovery |
 | Retry counting | In-memory dict, persisted to YAML after each failure, restored on restart |
 | Quality gates | Runs typecheck + tests as direct subprocesses, not via Claude |
-| Budget enforcement | Checks remaining budget before every invocation; refuses to start if exhausted |
+| Cost tracking | Accumulates `total_cost_usd` from stream-json for informational logging — no enforcement |
 | Git checkpoint/rollback | Records HEAD hash before dev-story; `git reset --hard` on retry budget exhaustion |
 | Process lock | `fcntl.flock` on `.sprint-runner.lock` — exclusive, released by kernel on any exit including SIGKILL |
 | Subprocess cleanup | `proc.terminate()` → `proc.wait()` on interrupt; `PR_SET_PDEATHSIG=SIGTERM` so Claude Code dies if the runner is killed |
@@ -61,13 +61,10 @@ claude -p "<prompt>" \
   --include-hook-events \
   --verbose \
   --dangerously-skip-permissions \
-  --no-session-persistence \
-  --max-budget-usd <amount> \
   --append-system-prompt "<context>" \
   [--effort <level>] \
   [--model <model>] \
-  [--allowedTools <tools>] \
-  [--debug]
+  [--allowedTools <tools>]
 ```
 
 `--dangerously-skip-permissions` is always set. The orchestrator is designed for unattended execution — permission prompts would block it.

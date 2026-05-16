@@ -9,6 +9,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin marketplace add widnyana/eyay-toolkits
 
 # Install what you need
+/plugin install bmad-sprint-run@eyay-toolkits
 /plugin install career-tools@eyay-toolkits
 /plugin install evm-decimal-validation@eyay-toolkits
 /plugin install solana-onchain@eyay-toolkits

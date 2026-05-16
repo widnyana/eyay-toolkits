@@ -29,7 +29,6 @@ def _child_preexec() -> None:
 def _build_cmd(
     prompt: str,
     config: Config,
-    budget: Optional[float] = None,
     system_append: str = "",
 ) -> list[str]:
     cmd = [
@@ -40,7 +39,6 @@ def _build_cmd(
         "--include-hook-events",
         "--verbose",
         "--dangerously-skip-permissions",
-        "--max-budget-usd", str(budget or config.max_budget_per_invocation),
     ]
 
     if system_append:
@@ -61,12 +59,11 @@ def _build_cmd(
 def invoke_claude(
     prompt: str,
     config: Config,
-    budget: Optional[float] = None,
     system_append: str = "",
     cwd: Optional[str] = None,
 ) -> ClaudeResult:
     """Invoke Claude Code CLI in non-interactive mode and parse stream-json output."""
-    cmd = _build_cmd(prompt, config, budget, system_append)
+    cmd = _build_cmd(prompt, config, system_append)
 
     start_ms = int(time.time() * 1000)
     text_parts: list[str] = []

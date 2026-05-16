@@ -168,16 +168,6 @@ class SprintRunner:
         while iteration < max_iterations:
             iteration += 1
 
-            # Check total budget
-            if self.total_cost >= self.config.max_total_budget:
-                self.step_log.error(
-                    "Total budget exceeded: %s >= %s",
-                    _fmt_cost(self.total_cost),
-                    _fmt_cost(self.config.max_total_budget),
-                )
-                log_summary(self.logger, f"Total budget exceeded: {_fmt_cost(self.total_cost)}")
-                return 1
-
             # Re-read state from disk every iteration
             try:
                 status = read_sprint_status(self.sprint_status_path)
@@ -561,17 +551,7 @@ class SprintRunner:
         story_key: str,
         step: logging.LoggerAdapter,
     ) -> bool:
-        """Handle a Claude invocation failure (budget exceeded, CLI error, etc.)."""
-        if result.is_budget_exceeded:
-            step.error(
-                "Budget exceeded for invocation. Total spent: %s / %s",
-                _fmt_cost(self.total_cost),
-                _fmt_cost(self.config.max_total_budget),
-            )
-            if self.total_cost >= self.config.max_total_budget * 0.9:
-                step.error("Total budget nearly exhausted. Stopping sprint.")
-                return False
-
+        """Handle a Claude invocation failure (CLI error, session error, etc.)."""
         step.error("Claude invocation error: %s", result.error_messages)
         return True
 
@@ -687,27 +667,11 @@ class SprintRunner:
         step: logging.LoggerAdapter,
         system_append: str = "",
     ) -> ClaudeResult:
-        """Invoke Claude Code, track cost, and return result."""
-        remaining_budget = self.config.max_total_budget - self.total_cost
-        per_invocation = min(
-            self.config.max_budget_per_invocation,
-            remaining_budget,
-        )
-
-        if per_invocation <= 0:
-            return ClaudeResult(
-                success=False,
-                is_error=True,
-                is_budget_exceeded=True,
-                error_messages=["Total budget exhausted"],
-                stop_reason="budget_exhausted",
-            )
-
+        """Invoke Claude Code and return result. Cost is tracked for informational logging only."""
         print(f"\n{'─' * 60}", flush=True)
         result = invoke_claude(
             prompt,
             self.config,
-            budget=per_invocation,
             system_append=system_append,
             cwd=self.config.project_root,
         )
@@ -715,12 +679,11 @@ class SprintRunner:
 
         self.total_cost += result.total_cost_usd
         step.info(
-            "Claude invocation: cost=%s, duration=%s, turns=%d, total_spend=%s/%s",
+            "Claude invocation: cost=%s, duration=%s, turns=%d, session_total=%s",
             _fmt_cost(result.total_cost_usd),
             _fmt_duration(result.duration_ms),
             result.num_turns,
             _fmt_cost(self.total_cost),
-            _fmt_cost(self.config.max_total_budget),
         )
 
         return result
@@ -743,7 +706,7 @@ class SprintRunner:
             "=" * 60,
             "SPRINT RUN SUMMARY",
             "=" * 60,
-            f"Total cost:   {_fmt_cost(self.total_cost)} / {_fmt_cost(self.config.max_total_budget)}",
+            f"Total cost:   {_fmt_cost(self.total_cost)} (informational)",
             f"Stories done: {status.get_done_count() if status else '?'}",
             f"Stories blocked: {status.get_blocked_count() if status else '?'}",
         ]
