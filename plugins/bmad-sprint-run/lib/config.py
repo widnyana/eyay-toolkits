@@ -168,7 +168,7 @@ def parse_args(argv: list[str] | None = None) -> Config:
     parser.add_argument("--debug", action="store_true", default=False,
                         help="Show sprint-runner debug output on console")
     parser.add_argument("--watch", action="store_true", default=False,
-                        help="Watch ~/.claude/projects/ and tail session logs (run in a second terminal)")
+                        help="Tail this project's Claude Code session logs and runner state (run in a second terminal)")
     parser.add_argument("--sprint-status-path", type=str, default=None,
                         help="Path to sprint-status.yaml")
     parser.add_argument("--story-dir", type=str, default=None,

@@ -61,7 +61,7 @@ python3 sprint-runner.py [OPTIONS]
 | `--effort LEVEL` | high | Claude effort: `low`, `medium`, `high`, `xhigh`, `max` |
 | `--model MODEL` | — | Override model (e.g. `sonnet`, `opus`) |
 | `--log-dir PATH` | ./sprint-logs | Where to write log files |
-| `--log-viewer` | — | Stream Claude Code session logs to stdout while running |
+| `--watch` | — | Tail this project's session logs and runner state (run in a second terminal) |
 | `--claude-path PATH` | claude | Path to the Claude CLI binary |
 | `--allowed-tools TOOLS` | — | Comma-separated list of allowed tools |
 | `--debug` | — | Show sprint-runner internal debug output on console |
@@ -176,7 +176,7 @@ Three outputs, always written:
 - `sprint-logs/sprint-summary.log` — one line per lifecycle event across all runs
 - Console — INFO level, colored
 
-The `--log-viewer` flag adds a fourth: it tails the Claude Code session JSONL file in real time and streams formatted output (assistant text, tool names, turn duration, cost) to stdout while each invocation runs. Useful when you want to watch what Claude is actually doing.
+The `--watch` flag adds a fourth: it tails the Claude Code session JSONL file in real time and streams formatted output (assistant text, tool names, turn duration, cost) to stdout while each invocation runs. Useful when you want to watch what Claude is actually doing.
 
 ---
 
