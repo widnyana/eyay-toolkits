@@ -35,15 +35,15 @@ class _StepAdapter(logging.LoggerAdapter):
         return msg, kwargs
 
 
-def setup_logging(log_dir: str, run_id: str) -> logging.Logger:
+def setup_logging(log_dir: str, run_id: str, debug: bool = False) -> logging.Logger:
     logger = logging.getLogger("sprint-runner")
     logger.setLevel(logging.DEBUG)
 
     logger.handlers.clear()
 
-    # Console handler: INFO, colored
+    # Console handler: DEBUG when --debug is set, INFO otherwise.
     console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
+    console.setLevel(logging.DEBUG if debug else logging.INFO)
     console.setFormatter(_ColorFormatter(_FORMAT, _DATE_FORMAT))
     logger.addHandler(console)
 

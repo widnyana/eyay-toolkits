@@ -67,7 +67,7 @@ def _fmt_duration(ms: int) -> str:
 class SprintRunner:
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.logger = setup_logging(config.log_dir, config.run_id)
+        self.logger = setup_logging(config.log_dir, config.run_id, debug=config.debug)
         self.step_log = get_step_logger(self.logger, "INIT")
 
         self.sprint_status_path = config.sprint_status_path

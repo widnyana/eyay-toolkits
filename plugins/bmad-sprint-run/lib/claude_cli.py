@@ -55,9 +55,6 @@ def _build_cmd(
     if config.allowed_tools:
         cmd.extend(["--allowedTools", *config.allowed_tools])
 
-    if config.debug:
-        cmd.append("--debug")
-
     return cmd
 
 
@@ -89,7 +86,7 @@ def invoke_claude(
             cmd,
             cwd=cwd,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
             text=True,
             bufsize=1,
             preexec_fn=_child_preexec,
