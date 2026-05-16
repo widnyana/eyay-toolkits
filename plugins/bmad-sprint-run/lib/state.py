@@ -4,7 +4,6 @@ import os
 import re
 import tempfile
 from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from .models import ReviewFindings, RunnerState, SprintStatus

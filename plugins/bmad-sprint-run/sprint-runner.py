@@ -34,8 +34,6 @@ from lib.git_ops import (
     get_current_branch,
     get_current_hash,
     get_diff_files,
-    has_uncommitted_changes,
-    rollback_to_checkpoint,
     validate_branch,
 )
 from lib.logger import get_step_logger, log_summary, setup_logging
@@ -80,9 +78,27 @@ class SprintRunner:
 
         self.ws_map = discover_workspaces(config.project_root)
 
+    def _log_paths(self) -> None:
+        """Print every path the runner resolved, so a run is reproducible
+        across machines and surprises (wrong cwd, stale state) are visible."""
+        lines = [
+            "Resolved paths:",
+            f"  script dir:        {_SCRIPT_DIR}",
+            f"  working directory: {self.config.project_root}",
+            f"  sprint status:     {self.config.sprint_status_path}",
+            f"  story directory:   {self.config.story_dir}",
+            f"  runner state:      {self.config.runner_state_path}",
+            f"  context digest:    {self.config.digest_path}",
+            f"  log directory:     {self.config.log_dir}",
+            f"  claude binary:     {self.config.claude_path}",
+        ]
+        for line in lines:
+            self.step_log.info("%s", line)
+
     def run(self) -> int:
         """Main orchestrator loop. Returns exit code."""
         self.step_log.info("Sprint Runner starting")
+        self._log_paths()
         self.step_log.info("Branch: %s", get_current_branch(cwd=self.config.project_root))
         self.step_log.info("Workspaces discovered: %s", list(self.ws_map.workspaces.keys()))
 
@@ -268,7 +284,8 @@ class SprintRunner:
         # Transition to in-progress
         self._transition_status(story_key, "in-progress", step)
 
-        # Record current HEAD as checkpoint for rollback (no commit created)
+        # Record current HEAD so the quality gate can scope its diff to this
+        # story's changes. Not a rollback point — retries fix forward.
         checkpoint_hash = self._snapshot_head(story_key)
         if not checkpoint_hash:
             step.error("Failed to get current HEAD hash")
@@ -294,7 +311,7 @@ class SprintRunner:
         ok = self._run_dev_story(story_key, retry_count, failure, step)
 
         if not ok:
-            return self._handle_dev_failure(story_key, checkpoint_hash, step)
+            return self._handle_dev_failure(story_key, step)
 
         # Check that story is now in review state
         fresh_status = read_sprint_status(self.sprint_status_path)
@@ -310,7 +327,7 @@ class SprintRunner:
         self._update_phase(story_key, "quality-gate")
         ok = self._run_quality_gate(story_key, checkpoint_hash, step)
         if not ok:
-            return self._handle_dev_failure(story_key, checkpoint_hash, step)
+            return self._handle_dev_failure(story_key, step)
 
         # Code review (unless skipped)
         if not self.config.skip_code_review:
@@ -321,7 +338,7 @@ class SprintRunner:
                 fresh_status = read_sprint_status(self.sprint_status_path)
                 if fresh_status.stories.get(story_key) == "blocked":
                     return True
-                return self._handle_dev_failure(story_key, checkpoint_hash, step)
+                return self._handle_dev_failure(story_key, step)
 
         # Story passed all gates
         self._complete_story(story_key, runner_state, step)
@@ -502,10 +519,16 @@ class SprintRunner:
     def _handle_dev_failure(
         self,
         story_key: str,
-        checkpoint_hash: str,
         step: logging.LoggerAdapter,
     ) -> bool:
-        """Handle a development failure. Retry or block."""
+        """Handle a development failure. Retry (fixing forward) or block.
+
+        Retries never roll back. Any commits the dev cycle produced are kept,
+        so the next attempt fixes the existing implementation instead of
+        rebuilding it from scratch — the failure detail is fed into the retry
+        prompt. A destructive ``git reset --hard`` here previously discarded
+        completed, committed work whenever a quality gate false-failed.
+        """
         self.retry_counts[story_key] = self.retry_counts.get(story_key, 0) + 1
         retry_count = self.retry_counts[story_key]
 
@@ -528,16 +551,7 @@ class SprintRunner:
             self._block_story(story_key, step, f"Failed after {retry_count} attempts")
             return True  # Continue sprint with other stories
 
-        # Rollback to checkpoint for retry
-        step.info("Rolling back to checkpoint %s", checkpoint_hash[:8])
-        try:
-            rollback_to_checkpoint(checkpoint_hash, cwd=self.config.project_root)
-        except Exception as exc:
-            step.error("Rollback failed: %s", exc)
-            self._block_story(story_key, step, f"Rollback failed: {exc}")
-            return True
-
-        # Reset story status to in-progress for retry
+        # Retry: keep all commits, just reset status so the loop re-enters dev.
         self._transition_status(story_key, "in-progress", step)
         log_summary(
             self.logger,
@@ -650,7 +664,11 @@ class SprintRunner:
     # ------------------------------------------------------------------
 
     def _snapshot_head(self, story_key: str) -> Optional[str]:
-        """Record current HEAD hash as rollback point. No commit created."""
+        """Record current HEAD hash as the diff base for the quality gate.
+
+        Used only to scope `git diff` to this story's changes. The runner never
+        resets to it — failed stories retry by fixing forward.
+        """
         try:
             return get_current_hash(cwd=self.config.project_root)
         except Exception as exc:
@@ -668,6 +686,11 @@ class SprintRunner:
         system_append: str = "",
     ) -> ClaudeResult:
         """Invoke Claude Code and return result. Cost is tracked for informational logging only."""
+        step.info("Prompt:\n%s", prompt)
+        if system_append:
+            step.info("Injected system prompt (--append-system-prompt):\n%s", system_append)
+        else:
+            step.info("No system prompt injected for this invocation")
         print(f"\n{'─' * 60}", flush=True)
         result = invoke_claude(
             prompt,

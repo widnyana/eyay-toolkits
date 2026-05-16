@@ -17,28 +17,19 @@ Detailed error handling procedures for the sprint runner orchestration loop.
 
 ## Git Operations Fail
 
-### Checkpoint commit fails
+### HEAD snapshot fails
 
-Stage all changes explicitly and retry:
-
-```bash
-git add -A
-git commit -m "checkpoint: pre-story [STORY_ID]" --allow-empty
-```
-
-Do NOT use `git stash` -- it removes untracked bmad artifacts from the working tree.
-
-### Rollback fails
-
-Print the error and stop. Manual intervention required.
-
-### Verification
-
-Always verify checkpoint commit succeeded before proceeding:
+The checkpoint is a HEAD-hash snapshot, not a commit:
 
 ```bash
 git rev-parse --verify HEAD
 ```
+
+If this fails, the repository has no commits or is in a detached/broken state. Print the error and stop — manual intervention is required. Do NOT use `git stash` (it removes untracked bmad artifacts) and never run `git reset`, `git checkout`, `git restore`, or `git clean`.
+
+### Forbidden recovery actions
+
+There is no rollback. The orchestrator never runs `git reset --hard`, `git checkout -- `, `git restore`, `git clean`, or `rm`. A failed story retries by fixing forward on top of its existing commits; an exhausted story is blocked with its commits intact. If git is in a broken state the runner cannot recover from read-only inspection, stop and hand off to a human — never destroy work to "get unstuck".
 
 ## sprint-status.yaml is Corrupted
 
@@ -49,12 +40,13 @@ Print the error and stop. Tell the user to run `/bmad-sprint-planning` to regene
 1. Print the error.
 2. Treat as a retry (go to STEP 6).
 
-## Retry Budget Exhausted - Post-Rollback State Recovery
+## Retry Budget Exhausted
 
-After `git reset --hard [checkpoint_hash]`, all files on disk revert to the checkpoint state. This includes `RUNNER_STATE_PATH` and `SPRINT_STATUS_PATH`. The orchestrator MUST explicitly rewrite these files with correct post-rollback values:
+When a story exhausts its retry budget, mark it `blocked` and move on. Nothing is rolled back or deleted — the story's commits stay on the branch for a human to inspect or salvage.
+
+Update `RUNNER_STATE_PATH`:
 
 ```yaml
-# RUNNER_STATE_PATH after rollback
 current_story: null
 retry_count: 0
 checkpoint_hash: null
@@ -63,7 +55,7 @@ stories_completed: [keep existing value]
 stories_blocked: [append {story_id, reason, retry_count}]
 ```
 
-Also override the story status to `blocked` in `SPRINT_STATUS_PATH` since the rollback restored its previous status.
+Set the story status to `blocked` in `SPRINT_STATUS_PATH`. Both files are edited in place — no file revert occurs, because there is no rollback.
 
 ## Quick-Dev Composition Notes
 

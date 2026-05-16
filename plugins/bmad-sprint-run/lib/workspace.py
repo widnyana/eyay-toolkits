@@ -82,11 +82,11 @@ def _discover_from_claude_md(root: str, ws_map: WorkspaceMap) -> None:
                 ) and not is_tc
 
                 if is_tc and not typecheck_cmd:
-                    typecheck_cmd = line
+                    typecheck_cmd = _normalize_command(line)
                 elif is_test and not test_cmd:
                     # Prefer the simplest test command (no flags)
                     if not test_cmd or len(line) < len(test_cmd):
-                        test_cmd = line
+                        test_cmd = _normalize_command(line)
 
         if path:
             ws_name = os.path.basename(path)
@@ -188,13 +188,11 @@ def _infer_typecheck_cmd(root: str, rel_path: str) -> Optional[str]:
         scripts = pkg.get("scripts", {})
         for key in ("typecheck", "type-check", "check"):
             if key in scripts:
-                prefix = f"cd {rel_path} && " if rel_path != "." else ""
-                return f"{prefix}{_pkg_run(key)}"
+                return _pkg_run(key, abs_path, root)
 
     cargo_toml = os.path.join(abs_path, "Cargo.toml")
     if os.path.isfile(cargo_toml):
-        prefix = f"cd {rel_path} && " if rel_path != "." else ""
-        return f"{prefix}cargo check"
+        return "cargo check"
 
     return None
 
@@ -214,23 +212,61 @@ def _infer_test_cmd(root: str, rel_path: str) -> Optional[str]:
         scripts = pkg.get("scripts", {})
         for key in ("test", "test:ci"):
             if key in scripts:
-                prefix = f"cd {rel_path} && " if rel_path != "." else ""
-                return f"{prefix}{_pkg_run(key)}"
+                return _pkg_run(key, abs_path, root)
 
     cargo_toml = os.path.join(abs_path, "Cargo.toml")
     if os.path.isfile(cargo_toml):
-        prefix = f"cd {rel_path} && " if rel_path != "." else ""
-        return f"{prefix}cargo test"
+        return "cargo test"
 
     return None
 
 
-def _pkg_run(script_key: str) -> str:
-    """Return the package manager run command for a script key."""
-    # Detect bun vs npm based on lockfile; default to bun for this project
-    if os.path.isfile("bun.lockb") or os.path.isfile("bun.lock"):
-        return f"bun run {script_key}"
+def _normalize_command(cmd: str) -> str:
+    """Rewrite `bun test` to `bun run test`.
+
+    `bun test` invokes Bun's built-in test runner, which ignores the
+    package.json `test` script. The runner must execute the project's own
+    configured test script, so any scraped `bun test` is corrected here.
+    """
+    return re.sub(r"\bbun test\b", "bun run test", cmd)
+
+
+def _pkg_run(script_key: str, *search_dirs: str) -> str:
+    """Return the package manager run command for a script key.
+
+    Looks for a bun lockfile in each given directory (workspace dir, repo
+    root) rather than the process cwd, so detection holds wherever the
+    runner is invoked from.
+    """
+    for d in search_dirs:
+        if os.path.isfile(os.path.join(d, "bun.lockb")) or os.path.isfile(
+            os.path.join(d, "bun.lock")
+        ):
+            return f"bun run {script_key}"
     return f"npm run {script_key}"
+
+
+# Quality-gate commands are discovered (scraped from CLAUDE.md, inferred from
+# manifests) and executed verbatim with shell=True. Any command that could
+# delete files or rewrite the working tree / branch history is refused before
+# execution — the runner runs typecheck and tests, nothing destructive.
+_CMD_START = r"(?:^|[\n;&|]|&&|\|\|)\s*"
+_FORBIDDEN_PATTERNS: list[tuple[re.Pattern[str], str]] = [
+    (re.compile(_CMD_START + r"rm\b"), "rm"),
+    (re.compile(_CMD_START + r"rmdir\b"), "rmdir"),
+    (re.compile(r"\bgit\s+reset\b"), "git reset"),
+    (re.compile(r"\bgit\s+clean\b"), "git clean"),
+    (re.compile(r"\bgit\s+restore\b"), "git restore"),
+    (re.compile(r"\bgit\s+checkout\s+--"), "git checkout --"),
+]
+
+
+def _forbidden_operation(cmd: str) -> Optional[str]:
+    """Return the label of the first forbidden destructive token found, or None."""
+    for pattern, label in _FORBIDDEN_PATTERNS:
+        if pattern.search(cmd):
+            return label
+    return None
 
 
 def run_command(
@@ -241,8 +277,17 @@ def run_command(
     """Run a shell command and return (success, combined_output).
 
     stdout and stderr are captured and combined. A non-zero exit code or
-    a timeout results in failure.
+    a timeout results in failure. A command containing a forbidden
+    destructive operation is refused without being executed.
     """
+    forbidden = _forbidden_operation(cmd)
+    if forbidden:
+        return False, (
+            f"Refused: command contains forbidden destructive operation "
+            f"'{forbidden}'. The sprint runner only runs typecheck/tests. "
+            f"Command: {cmd}"
+        )
+
     try:
         result = subprocess.run(
             cmd,
@@ -265,6 +310,20 @@ def run_command(
         return False, f"Execution error: {exc}"
 
 
+def _workspace_dir(workspace: WorkspaceInfo, project_root: str) -> str:
+    """Absolute directory a workspace's commands must run in.
+
+    Quality-gate commands (`bun run check`, `npm test`, `cargo test`, ...) are
+    relative to the workspace's own manifest, not the repo root. Running them
+    from project_root makes the package manager resolve the wrong package.json
+    and report bogus "Script not found" failures.
+    """
+    path = workspace.path or "."
+    if os.path.isabs(path):
+        return path
+    return os.path.normpath(os.path.join(project_root, path))
+
+
 def run_typecheck(
     workspace: WorkspaceInfo,
     project_root: str,
@@ -272,7 +331,9 @@ def run_typecheck(
     """Run typecheck for a workspace. Returns (success, output)."""
     if not workspace.typecheck_cmd:
         return True, "No typecheck command configured, skipping."
-    return run_command(workspace.typecheck_cmd, cwd=project_root)
+    return run_command(
+        workspace.typecheck_cmd, cwd=_workspace_dir(workspace, project_root)
+    )
 
 
 def run_tests(
@@ -282,7 +343,9 @@ def run_tests(
     """Run tests for a workspace. Returns (success, output)."""
     if not workspace.test_cmd:
         return True, "No test command configured, skipping."
-    return run_command(workspace.test_cmd, cwd=project_root)
+    return run_command(
+        workspace.test_cmd, cwd=_workspace_dir(workspace, project_root)
+    )
 
 
 def run_quality_gate(
