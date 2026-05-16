@@ -233,7 +233,7 @@ def build_create_story_system_prompt(story_key: str) -> str:
         "Sprint Orchestrator Context:",
         f"- Task: Create story file for {story_key}",
         f"- Story key: {story_key}",
-        "- Commit your work periodically with git as you complete each logical chunk. Do not wait until the end.",
+        "- Commit your work in small, frequent increments — one commit per logical chunk as you complete it. Do not wait until the end or batch many changes into one large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.",
     ])
 
 
@@ -261,7 +261,7 @@ def build_dev_story_system_prompt(
         parts.append(f"- Retry attempt: {retry_count}/{retry_budget}")
     if failure_details:
         parts.append(f"- Previous failures: {failure_details}")
-    parts.append("- Commit your work periodically with git as you complete each logical chunk. Do not wait until the end.")
+    parts.append("- Commit your work in small, frequent increments — one commit per logical chunk as you complete it. Do not wait until the end or batch many changes into one large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.")
     return "\n".join(parts)
 
 
@@ -276,7 +276,7 @@ def build_code_review_system_prompt(story_key: str) -> str:
         "Sprint Orchestrator Context:",
         f"- Task: Review code changes for story {story_key}",
         f"- Story key: {story_key}",
-        "- Commit your work periodically with git as you complete each logical chunk. Do not wait until the end.",
+        "- Commit your work in small, frequent increments — one commit per logical chunk as you complete it. Do not wait until the end or batch many changes into one large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.",
     ])
 
 
