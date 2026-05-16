@@ -1,0 +1,33 @@
+name: Upgrade Program (Program Metadata IDL)
+on:
+  workflow_dispatch:
+    inputs:
+      buffer:
+        description: 'Program buffer address'
+        required: true
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Write metadata buffer first (for non-Anchor programs)
+      - uses: solana-developers/github-actions/write-metadata-buffer@pmp-upload
+        id: metadata-buffer
+        with:
+          idl-path: ./target/idl/my_program.json
+          rpc-url: ${{ secrets.RPC_URL }}
+          keypair: ${{ secrets.DEPLOYER_KEYPAIR }}
+          buffer-authority: ${{ secrets.SQUADS_VAULT }}
+
+      - uses: Woody4618/squads-program-action@v0.4.0
+        with:
+          rpc: ${{ secrets.RPC_URL }}
+          program: <YOUR_PROGRAM_ID>
+          buffer: ${{ inputs.buffer }}
+          metadata-buffer: ${{ steps.metadata-buffer.outputs.buffer }}
+          multisig: ${{ secrets.MULTISIG }}
+          keypair: ${{ secrets.KEYPAIR }}
+          priority-fee: 200000
+          vault-index: 0

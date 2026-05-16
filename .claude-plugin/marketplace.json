@@ -86,6 +86,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/visual-gen"
+    },
+    {
+      "name": "bmad-sprint-run",
+      "description": "Autonomous sprint orchestration for BMad-driven development pipelines. Drives Claude Code through create-story, dev-story, quality gates, and code-review without human intervention.",
+      "source": "./plugins/bmad-sprint-run",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/bmad-sprint-run"
     }
   ]
 }

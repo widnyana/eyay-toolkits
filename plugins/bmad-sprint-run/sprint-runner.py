@@ -1,0 +1,785 @@
+#!/usr/bin/env python3
+"""Autonomous Sprint Orchestrator for BMad-driven development pipelines.
+
+Manages Claude Code as a subprocess, owning state machine transitions,
+quality gates, retry logic, and budget tracking. Claude Code (via bmad
+skills) handles all git commits. This script does NOT create commits.
+"""
+from __future__ import annotations
+
+import logging
+import os
+import signal
+import sys
+from typing import Optional
+
+# Ensure the script's own directory is on sys.path so `lib/` imports
+# resolve regardless of the caller's working directory.
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+
+from lib.claude_cli import (
+    build_code_review_prompt,
+    build_code_review_system_prompt,
+    build_create_story_prompt,
+    build_create_story_system_prompt,
+    build_dev_story_prompt,
+    build_dev_story_system_prompt,
+    invoke_claude,
+)
+from lib.config import Config, parse_args
+from lib.lock import sprint_lock
+from lib.git_ops import (
+    get_current_branch,
+    get_current_hash,
+    get_diff_files,
+    has_uncommitted_changes,
+    rollback_to_checkpoint,
+    validate_branch,
+)
+from lib.logger import get_step_logger, log_summary, setup_logging
+from lib.models import ClaudeResult, RunnerState, SprintStatus
+from lib.state import (
+    append_digest_entry,
+    find_story_file,
+    get_next_action,
+    parse_review_findings,
+    read_digest,
+    read_runner_state,
+    read_sprint_status,
+    update_story_status,
+    write_runner_state,
+)
+from lib.workspace import discover_workspaces, run_quality_gate
+
+
+def _fmt_cost(usd: float) -> str:
+    return f"${usd:.4f}"
+
+
+def _fmt_duration(ms: int) -> str:
+    if ms < 1000:
+        return f"{ms}ms"
+    return f"{ms / 1000:.1f}s"
+
+
+class SprintRunner:
+    def __init__(self, config: Config) -> None:
+        self.config = config
+        self.logger = setup_logging(config.log_dir, config.run_id)
+        self.step_log = get_step_logger(self.logger, "INIT")
+
+        self.sprint_status_path = config.sprint_status_path
+        self.runner_state_path = config.runner_state_path
+        self.digest_path = config.digest_path
+
+        self.total_cost = 0.0
+        self.retry_counts: dict[str, int] = {}  # story_key -> retry count, in-memory
+        self.failure_details: dict[str, str] = {}  # story_key -> failure summary
+
+        self.ws_map = discover_workspaces(config.project_root)
+
+    def run(self) -> int:
+        """Main orchestrator loop. Returns exit code."""
+        self.step_log.info("Sprint Runner starting")
+        self.step_log.info("Branch: %s", get_current_branch(cwd=self.config.project_root))
+        self.step_log.info("Workspaces discovered: %s", list(self.ws_map.workspaces.keys()))
+
+        if not self._validate_prerequisites():
+            return 1
+
+        if self.config.dry_run:
+            return self._dry_run()
+
+        log_summary(self.logger, f"Sprint run started (run_id={self.config.run_id})")
+
+        try:
+            with sprint_lock(self.config.project_root):
+                exit_code = self._run_locked()
+        except RuntimeError as lock_err:
+            self.step_log.error("%s", lock_err)
+            return 1
+
+        return exit_code
+
+    def _run_locked(self) -> int:
+        """Sprint body, called while the process lock is held."""
+        exit_code = 0
+        try:
+            exit_code = self._main_loop()
+        except KeyboardInterrupt:
+            self.step_log.info("Interrupted by user")
+            log_summary(self.logger, "Sprint run interrupted by user")
+            exit_code = 130
+        except Exception as exc:
+            self.step_log.error("Unhandled error: %s", exc, exc_info=True)
+            log_summary(self.logger, f"Sprint run failed with error: {exc}")
+            exit_code = 1
+
+        self._print_final_summary()
+        return exit_code
+
+    def _validate_prerequisites(self) -> bool:
+        """Check all prerequisites before starting the loop."""
+        if not validate_branch(cwd=self.config.project_root):
+            self.step_log.error(
+                "Cannot run on main/master branch. Create a feature branch first."
+            )
+            return False
+
+        try:
+            status = read_sprint_status(self.sprint_status_path)
+            active = status.get_active_stories()
+            self.step_log.info(
+                "Sprint loaded: %d stories, %d active, %d done, %d blocked",
+                status.get_total_count(),
+                len(active),
+                status.get_done_count(),
+                status.get_blocked_count(),
+            )
+        except FileNotFoundError:
+            self.step_log.error("sprint-status.yaml not found: %s", self.sprint_status_path)
+            return False
+        except Exception as exc:
+            self.step_log.error("Failed to read sprint-status.yaml: %s", exc)
+            return False
+
+        return True
+
+    def _dry_run(self) -> int:
+        """Resolve and display next action without invoking Claude Code."""
+        status = read_sprint_status(self.sprint_status_path)
+        action, story_key = get_next_action(
+            status,
+            target_story=self.config.target_story,
+            target_epic=self.config.target_epic,
+        )
+        self.step_log.info("[DRY RUN] Next action: %s, story: %s", action, story_key or "(none)")
+        print(f"Action: {action}")
+        print(f"Story:  {story_key or '(sprint complete)'}")
+        return 0
+
+    def _main_loop(self) -> int:
+        """Core sprint loop. Returns 0 on success, 1 on failure."""
+        max_iterations = 500
+        iteration = 0
+
+        while iteration < max_iterations:
+            iteration += 1
+
+            # Check total budget
+            if self.total_cost >= self.config.max_total_budget:
+                self.step_log.error(
+                    "Total budget exceeded: %s >= %s",
+                    _fmt_cost(self.total_cost),
+                    _fmt_cost(self.config.max_total_budget),
+                )
+                log_summary(self.logger, f"Total budget exceeded: {_fmt_cost(self.total_cost)}")
+                return 1
+
+            # Re-read state from disk every iteration
+            try:
+                status = read_sprint_status(self.sprint_status_path)
+                runner_state = read_runner_state(self.runner_state_path)
+            except Exception as exc:
+                self.step_log.error("Failed to read state: %s", exc)
+                return 1
+
+            # Fix 1: restore persisted retry count for the current story so the
+            # retry budget survives process restarts.
+            if runner_state.current_story:
+                self.retry_counts.setdefault(
+                    runner_state.current_story, runner_state.retry_count
+                )
+
+            action, story_key = get_next_action(
+                status,
+                target_story=self.config.target_story,
+                target_epic=self.config.target_epic,
+            )
+
+            self.step_log.info(
+                "Iteration %d: action=%s, story=%s",
+                iteration,
+                action,
+                story_key or "(none)",
+            )
+
+            if action == "sprint_complete":
+                self.step_log.info("Sprint complete - all stories resolved")
+                log_summary(self.logger, "Sprint complete")
+                return 0
+
+            if action == "create_story":
+                ok = self._handle_create_story(status, runner_state, story_key)
+                if not ok:
+                    return 1
+
+            elif action == "preflight":
+                ok = self._handle_dev_story(status, runner_state, story_key)
+                if not ok:
+                    return 1
+
+            elif action == "quality_gate":
+                ok = self._handle_review(status, runner_state, story_key)
+                if not ok:
+                    return 1
+
+            else:
+                self.step_log.error("Unknown action: %s", action)
+                return 1
+
+        self.step_log.error("Max iterations (%d) reached. Aborting.", max_iterations)
+        return 1
+
+    # ------------------------------------------------------------------
+    # Story creation
+    # ------------------------------------------------------------------
+
+    def _handle_create_story(
+        self,
+        status: SprintStatus,
+        runner_state: RunnerState,
+        story_key: str,
+    ) -> bool:
+        """Invoke Claude Code to create the story file."""
+        step = get_step_logger(self.logger, f"CREATE-{story_key}")
+        step.info("Creating story %s", story_key)
+
+        self._update_phase(story_key, "create-story")
+        prompt = build_create_story_prompt(story_key)
+        system = build_create_story_system_prompt(story_key)
+        result = self._invoke_claude(prompt, step, system_append=system)
+
+        if not result.success:
+            step.error("Story creation failed: %s", result.error_messages)
+            return self._handle_invocation_failure(result, story_key, step)
+
+        # Mark story as ready-for-dev after creation
+        self._transition_status(story_key, "ready-for-dev", step)
+        log_summary(self.logger, f"Story {story_key} created and marked ready-for-dev")
+        return True
+
+    # ------------------------------------------------------------------
+    # Development (preflight -> implement -> quality gate)
+    # ------------------------------------------------------------------
+
+    def _handle_dev_story(
+        self,
+        status: SprintStatus,
+        runner_state: RunnerState,
+        story_key: str,
+    ) -> bool:
+        """Full development cycle: snapshot -> implement -> quality gate."""
+        step = get_step_logger(self.logger, f"DEV-{story_key}")
+        step.info("Starting development cycle for story %s", story_key)
+
+        # Transition to in-progress
+        self._transition_status(story_key, "in-progress", step)
+
+        # Record current HEAD as checkpoint for rollback (no commit created)
+        checkpoint_hash = self._snapshot_head(story_key)
+        if not checkpoint_hash:
+            step.error("Failed to get current HEAD hash")
+            return False
+
+        # Update runner state — sync retry_count so the YAML reflects reality
+        retry_count = self.retry_counts.get(story_key, 0)
+        runner_state.current_story = story_key
+        runner_state.checkpoint_hash = checkpoint_hash
+        runner_state.retry_count = retry_count
+        write_runner_state(self.runner_state_path, runner_state)
+
+        failure = self.failure_details.get(story_key, "")
+
+        if retry_count > 0:
+            step.info(
+                "Retry attempt %d/%d for story %s",
+                retry_count,
+                self.config.retry_budget,
+                story_key,
+            )
+        self._update_phase(story_key, "dev-story")
+        ok = self._run_dev_story(story_key, retry_count, failure, step)
+
+        if not ok:
+            return self._handle_dev_failure(story_key, checkpoint_hash, step)
+
+        # Check that story is now in review state
+        fresh_status = read_sprint_status(self.sprint_status_path)
+        story_status = fresh_status.stories.get(story_key, "")
+        if story_status != "review":
+            step.warning(
+                "Story is '%s' after implementation (expected 'review'). "
+                "Running quality gate anyway.",
+                story_status,
+            )
+
+        # Run quality gate (typecheck + tests) directly
+        self._update_phase(story_key, "quality-gate")
+        ok = self._run_quality_gate(story_key, checkpoint_hash, step)
+        if not ok:
+            return self._handle_dev_failure(story_key, checkpoint_hash, step)
+
+        # Code review (unless skipped)
+        if not self.config.skip_code_review:
+            self._update_phase(story_key, "code-review")
+            ok = self._run_code_review(story_key, step)
+            if not ok:
+                # Check if blocked for decision_needed (not retriable)
+                fresh_status = read_sprint_status(self.sprint_status_path)
+                if fresh_status.stories.get(story_key) == "blocked":
+                    return True
+                return self._handle_dev_failure(story_key, checkpoint_hash, step)
+
+        # Story passed all gates
+        self._complete_story(story_key, runner_state, step)
+        return True
+
+    def _run_dev_story(
+        self,
+        story_key: str,
+        retry_count: int,
+        failure: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Invoke Claude Code with /bmad-dev-story."""
+        step.info("Invoking /bmad-dev-story for %s", story_key)
+
+        digest = read_digest(self.digest_path)
+        prompt = build_dev_story_prompt(story_key, digest)
+        system_prompt = build_dev_story_system_prompt(
+            story_key, digest, retry_count, self.config.retry_budget, failure,
+        )
+
+        result = self._invoke_claude(prompt, step, system_append=system_prompt)
+
+        if not result.success:
+            step.error("Dev story failed: %s", result.error_messages)
+            return False
+
+        step.info(
+            "Dev story completed in %s, cost %s",
+            _fmt_duration(result.duration_ms),
+            _fmt_cost(result.total_cost_usd),
+        )
+        return True
+
+    def _run_quality_gate(
+        self,
+        story_key: str,
+        checkpoint_hash: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Run typecheck and tests for affected workspaces."""
+        step.info("Running quality gate for story %s", story_key)
+
+        changed_files = get_diff_files(checkpoint_hash, cwd=self.config.project_root)
+        step.info("Changed files: %s", changed_files)
+
+        affected = self.ws_map.get_workspaces_for_files(changed_files)
+        if not affected:
+            affected = list(self.ws_map.workspaces.keys())
+            step.info("No specific workspace match, running all workspaces defensively")
+        else:
+            step.info("Affected workspaces: %s", affected)
+
+        passed, failures = run_quality_gate(
+            self.ws_map, affected, self.config.project_root,
+        )
+
+        if not passed:
+            for f in failures:
+                step.error("Quality gate failure: %s", f[:500])
+            self.failure_details[story_key] = "\n".join(failures)
+            log_summary(
+                self.logger,
+                f"Story {story_key} quality gate FAILED",
+            )
+            return False
+
+        step.info("Quality gate passed")
+        return True
+
+    def _run_code_review(
+        self,
+        story_key: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Invoke Claude Code with /bmad-code-review and parse findings."""
+        step.info("Running code review for story %s", story_key)
+
+        prompt = build_code_review_prompt(story_key)
+        system = build_code_review_system_prompt(story_key)
+        result = self._invoke_claude(prompt, step, system_append=system)
+
+        if not result.success:
+            step.error("Code review invocation failed: %s", result.error_messages)
+            return True
+
+        # Parse review findings from the story file
+        story_file = find_story_file(self.config.story_dir, story_key)
+        if not story_file:
+            step.warning("Story file not found for review parsing, assuming pass")
+            return True
+
+        findings = parse_review_findings(story_file)
+
+        if not findings.has_findings_section:
+            step.info("No review findings section found, assuming pass")
+            return True
+
+        step.info(
+            "Review findings: critical=%d, major=%d, minor=%d, decision_needed=%d",
+            findings.critical_count, findings.major_count, findings.minor_count, findings.decision_needed_count,
+        )
+
+        if findings.critical_count > 0:
+            step.error("Critical findings detected, marking for retry")
+            self.failure_details[story_key] = (
+                f"Code review found {findings.critical_count} critical, {findings.major_count} major issues. "
+                f"Review output:\n{result.output_text[-2000:]}"
+            )
+            return False
+
+        if findings.decision_needed_count > 0:
+            step.warning(
+                "Decision needed on %d items. Blocking story for human review.",
+                findings.decision_needed_count,
+            )
+            self._transition_status(story_key, "blocked", step)
+            log_summary(
+                self.logger,
+                f"Story {story_key} BLOCKED - needs human decision",
+            )
+            return False
+
+        step.info("Code review passed (%d minor findings noted)", findings.minor_count)
+        return True
+
+    # ------------------------------------------------------------------
+    # Review handling (story already in review state)
+    # ------------------------------------------------------------------
+
+    def _handle_review(
+        self,
+        status: SprintStatus,
+        runner_state: RunnerState,
+        story_key: str,
+    ) -> bool:
+        """Handle a story that's already in review state (e.g., after restart)."""
+        step = get_step_logger(self.logger, f"REVIEW-{story_key}")
+        step.info("Story %s is in review state, running quality gate + code review", story_key)
+
+        checkpoint_hash = self._snapshot_head(story_key)
+        if not checkpoint_hash:
+            step.error("Failed to get current HEAD hash")
+            return False
+
+        # Run quality gate
+        ok = self._run_quality_gate(story_key, checkpoint_hash, step)
+        if not ok:
+            self.retry_counts[story_key] = self.retry_counts.get(story_key, 0) + 1
+            if self.retry_counts[story_key] >= self.config.retry_budget:
+                self._block_story(story_key, step, "Quality gate failed after max retries")
+                return True
+            self._transition_status(story_key, "in-progress", step)
+            return True
+
+        # Code review
+        if not self.config.skip_code_review:
+            ok = self._run_code_review(story_key, step)
+            if not ok:
+                # Check if blocked for decision_needed (not retriable)
+                fresh = read_sprint_status(self.sprint_status_path)
+                if fresh.stories.get(story_key) == "blocked":
+                    return True
+                self.retry_counts[story_key] = self.retry_counts.get(story_key, 0) + 1
+                if self.retry_counts[story_key] >= self.config.retry_budget:
+                    self._block_story(story_key, step, "Code review failed after max retries")
+                    return True
+                self._transition_status(story_key, "in-progress", step)
+                return True
+
+        self._complete_story(story_key, runner_state, step)
+        return True
+
+    # ------------------------------------------------------------------
+    # Failure handling
+    # ------------------------------------------------------------------
+
+    def _handle_dev_failure(
+        self,
+        story_key: str,
+        checkpoint_hash: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Handle a development failure. Retry or block."""
+        self.retry_counts[story_key] = self.retry_counts.get(story_key, 0) + 1
+        retry_count = self.retry_counts[story_key]
+
+        # Persist the updated retry count immediately so restarts honour the budget.
+        try:
+            rs = read_runner_state(self.runner_state_path)
+            rs.retry_count = retry_count
+            write_runner_state(self.runner_state_path, rs)
+        except Exception as exc:
+            step.warning("Could not persist retry_count: %s", exc)
+
+        step.warning(
+            "Story %s failed (attempt %d/%d)",
+            story_key,
+            retry_count,
+            self.config.retry_budget,
+        )
+
+        if retry_count >= self.config.retry_budget:
+            self._block_story(story_key, step, f"Failed after {retry_count} attempts")
+            return True  # Continue sprint with other stories
+
+        # Rollback to checkpoint for retry
+        step.info("Rolling back to checkpoint %s", checkpoint_hash[:8])
+        try:
+            rollback_to_checkpoint(checkpoint_hash, cwd=self.config.project_root)
+        except Exception as exc:
+            step.error("Rollback failed: %s", exc)
+            self._block_story(story_key, step, f"Rollback failed: {exc}")
+            return True
+
+        # Reset story status to in-progress for retry
+        self._transition_status(story_key, "in-progress", step)
+        log_summary(
+            self.logger,
+            f"Story {story_key} failed, retrying ({retry_count}/{self.config.retry_budget})",
+        )
+        return True
+
+    def _handle_invocation_failure(
+        self,
+        result: ClaudeResult,
+        story_key: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Handle a Claude invocation failure (budget exceeded, CLI error, etc.)."""
+        if result.is_budget_exceeded:
+            step.error(
+                "Budget exceeded for invocation. Total spent: %s / %s",
+                _fmt_cost(self.total_cost),
+                _fmt_cost(self.config.max_total_budget),
+            )
+            if self.total_cost >= self.config.max_total_budget * 0.9:
+                step.error("Total budget nearly exhausted. Stopping sprint.")
+                return False
+
+        step.error("Claude invocation error: %s", result.error_messages)
+        return True
+
+    # ------------------------------------------------------------------
+    # State transitions
+    # ------------------------------------------------------------------
+
+    def _transition_status(
+        self,
+        story_key: str,
+        new_status: str,
+        step: logging.LoggerAdapter,
+    ) -> None:
+        """Transition a story to a new status in sprint-status.yaml."""
+        try:
+            update_story_status(self.sprint_status_path, story_key, new_status)
+            step.info("Story %s -> %s", story_key, new_status)
+        except Exception as exc:
+            step.error("Failed to update story status: %s", exc)
+
+    def _complete_story(
+        self,
+        story_key: str,
+        runner_state: RunnerState,
+        step: logging.LoggerAdapter,
+    ) -> None:
+        """Mark a story as done and update digest."""
+        self._transition_status(story_key, "done", step)
+
+        # Fresh read so we don't overwrite any fields that _update_phase or
+        # _handle_dev_failure may have written since runner_state was loaded.
+        fresh = read_runner_state(self.runner_state_path)
+        fresh.stories_completed += 1
+        fresh.current_story = None
+        fresh.checkpoint_hash = None
+        fresh.retry_count = 0
+        fresh.phase = ""
+        write_runner_state(self.runner_state_path, fresh)
+
+        # Append to digest
+        digest_entry = (
+            f"## Story {story_key} - done\n\n"
+            f"Completed successfully. Retry count: {self.retry_counts.get(story_key, 0)}.\n"
+        )
+        append_digest_entry(self.digest_path, digest_entry, self.config.digest_size)
+
+        log_summary(self.logger, f"Story {story_key} DONE")
+
+        # Clear retry state for this story
+        self.retry_counts.pop(story_key, None)
+        self.failure_details.pop(story_key, None)
+
+    def _block_story(
+        self,
+        story_key: str,
+        step: logging.LoggerAdapter,
+        reason: str,
+    ) -> None:
+        """Block a story that can't proceed."""
+        self._transition_status(story_key, "blocked", step)
+        log_summary(self.logger, f"Story {story_key} BLOCKED: {reason}")
+
+        runner_state = read_runner_state(self.runner_state_path)
+        runner_state.stories_blocked.append({
+            "story": story_key,
+            "reason": reason,
+        })
+        runner_state.phase = ""
+        write_runner_state(self.runner_state_path, runner_state)
+
+        # Clear retry state
+        self.retry_counts.pop(story_key, None)
+        self.failure_details.pop(story_key, None)
+
+    # ------------------------------------------------------------------
+    # Phase tracking
+    # ------------------------------------------------------------------
+
+    def _update_phase(self, story_key: str, phase: str) -> None:
+        """Write current phase to runner-state for crash-recovery inspection.
+
+        Called before every long-running Claude invocation so the file always
+        reflects what is happening right now. Non-fatal: a write failure never
+        aborts the sprint.
+        """
+        try:
+            state = read_runner_state(self.runner_state_path)
+            state.current_story = story_key
+            state.phase = phase
+            write_runner_state(self.runner_state_path, state)
+        except Exception as exc:
+            self.step_log.warning("Could not write phase '%s': %s", phase, exc)
+
+    # ------------------------------------------------------------------
+    # Git helpers
+    # ------------------------------------------------------------------
+
+    def _snapshot_head(self, story_key: str) -> Optional[str]:
+        """Record current HEAD hash as rollback point. No commit created."""
+        try:
+            return get_current_hash(cwd=self.config.project_root)
+        except Exception as exc:
+            self.step_log.error("Failed to get HEAD hash: %s", exc)
+            return None
+
+    # ------------------------------------------------------------------
+    # Claude invocation wrapper
+    # ------------------------------------------------------------------
+
+    def _invoke_claude(
+        self,
+        prompt: str,
+        step: logging.LoggerAdapter,
+        system_append: str = "",
+    ) -> ClaudeResult:
+        """Invoke Claude Code, track cost, and return result."""
+        remaining_budget = self.config.max_total_budget - self.total_cost
+        per_invocation = min(
+            self.config.max_budget_per_invocation,
+            remaining_budget,
+        )
+
+        if per_invocation <= 0:
+            return ClaudeResult(
+                success=False,
+                is_error=True,
+                is_budget_exceeded=True,
+                error_messages=["Total budget exhausted"],
+                stop_reason="budget_exhausted",
+            )
+
+        print(f"\n{'─' * 60}", flush=True)
+        result = invoke_claude(
+            prompt,
+            self.config,
+            budget=per_invocation,
+            system_append=system_append,
+            cwd=self.config.project_root,
+        )
+        print(f"{'─' * 60}\n", flush=True)
+
+        self.total_cost += result.total_cost_usd
+        step.info(
+            "Claude invocation: cost=%s, duration=%s, turns=%d, total_spend=%s/%s",
+            _fmt_cost(result.total_cost_usd),
+            _fmt_duration(result.duration_ms),
+            result.num_turns,
+            _fmt_cost(self.total_cost),
+            _fmt_cost(self.config.max_total_budget),
+        )
+
+        return result
+
+    # ------------------------------------------------------------------
+    # Summary
+    # ------------------------------------------------------------------
+
+    def _print_final_summary(self) -> None:
+        """Print final summary to console and log."""
+        try:
+            status = read_sprint_status(self.sprint_status_path)
+            runner_state = read_runner_state(self.runner_state_path)
+        except Exception:
+            status = None
+            runner_state = None
+
+        lines = [
+            "",
+            "=" * 60,
+            "SPRINT RUN SUMMARY",
+            "=" * 60,
+            f"Total cost:   {_fmt_cost(self.total_cost)} / {_fmt_cost(self.config.max_total_budget)}",
+            f"Stories done: {status.get_done_count() if status else '?'}",
+            f"Stories blocked: {status.get_blocked_count() if status else '?'}",
+        ]
+
+        if runner_state and runner_state.stories_blocked:
+            lines.append("Blocked stories:")
+            for entry in runner_state.stories_blocked:
+                lines.append(f"  - {entry.get('story', '?')}: {entry.get('reason', '?')}")
+
+        lines.append("=" * 60)
+
+        summary = "\n".join(lines)
+        self.logger.info(summary)
+        print(summary)
+
+
+def main() -> int:
+    config = parse_args()
+
+    if config.watch:
+        from lib.log_viewer import watch
+        watch(config.project_root, state_path=config.runner_state_path)
+        return 0
+
+    runner = SprintRunner(config)
+
+    # Convert SIGTERM into KeyboardInterrupt so the same cleanup path in run()
+    # handles it — and so invoke_claude's except BaseException terminates the
+    # Claude Code subprocess before the process exits.
+    def _sigterm(_sig: int, _frame: object) -> None:
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGTERM, _sigterm)
+
+    return runner.run()
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,27 @@
+name: Upgrade Program (Anchor IDL)
+on:
+  workflow_dispatch:
+    inputs:
+      buffer:
+        description: 'Program buffer address'
+        required: true
+      idl-buffer:
+        description: 'IDL buffer address'
+        required: true
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: Woody4618/squads-program-action@v0.4.0
+        with:
+          rpc: ${{ secrets.RPC_URL }}
+          program: <YOUR_PROGRAM_ID>
+          buffer: ${{ inputs.buffer }}
+          idl-buffer: ${{ inputs.idl-buffer }}
+          multisig: ${{ secrets.MULTISIG }}
+          keypair: ${{ secrets.KEYPAIR }}
+          priority-fee: 200000
+          vault-index: 0

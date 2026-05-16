@@ -1,0 +1,12 @@
+{
+  "name": "bmad-sprint-run",
+  "version": "1.0.0",
+  "description": "Autonomous sprint orchestration for BMad-driven development pipelines. Drives Claude Code through all stories without human intervention until completion or blocking condition.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["bmad", "sprint", "automation", "orchestration", "tdd", "code-review"]
+}
