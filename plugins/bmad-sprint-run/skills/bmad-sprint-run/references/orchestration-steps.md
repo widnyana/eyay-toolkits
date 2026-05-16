@@ -104,15 +104,13 @@ If any check fails: print the failure and what needs to be started. Transition t
 
 ## STEP 4: Snapshot and Dispatch
 
-### 4a: Checkpoint commit
+### 4a: Snapshot HEAD
 
 ```bash
-git add -A
-git commit -m "checkpoint: pre-story [STORY_ID]" --allow-empty
 git rev-parse --verify HEAD
 ```
 
-Record the commit hash in `RUNNER_STATE_PATH` as `checkpoint_hash`.
+Record the hash in `RUNNER_STATE_PATH` as `checkpoint_hash`. No commit is created — this marker only scopes the STEP 5a quality-gate diff. Claude Code (via the bmad skills) creates all commits; the orchestrator never commits, resets, or otherwise mutates git.
 
 ### 4b: Inject context
 
@@ -148,11 +146,11 @@ Map changed files to workspaces using the workspace map. If any changed file mat
 
 ### 5b: Run typecheck
 
-For each affected workspace, execute its typecheck command. On failure: print error output, reset story status to `ready-for-dev`, transition to STEP 6.
+For each affected workspace, execute its typecheck command. On failure: print error output, reset story status to `in-progress`, transition to STEP 6.
 
 ### 5c: Run test suite
 
-For each affected workspace, execute its test command. On failure: print failing test output, reset story status to `ready-for-dev`, transition to STEP 6.
+For each affected workspace, execute its test command. On failure: print failing test output, reset story status to `in-progress`, transition to STEP 6.
 
 ### 5d: Invoke code-review
 
@@ -176,9 +174,9 @@ Categorize findings:
 Routing:
 - Any `critical` findings -> print "REVIEW GATE FAILED: [N] critical findings", transition to STEP 6
 - Any `decision_needed` but zero `critical` -> mark story `blocked`, transition to STEP 0
-- Zero `critical` and zero `decision_needed` -> story passes, transition to 5f
+- Zero `critical` and zero `decision_needed` -> story passes, transition to 5e
 
-### 5f: Write digest entry
+### 5e: Write digest entry
 
 Append to `DIGEST_PATH`:
 
@@ -192,7 +190,7 @@ Review: [X critical, Y major, Z minor or "clean pass"]
 
 Prune entries beyond `DIGEST_SIZE` (oldest first).
 
-### 5g: Epic boundary check
+### 5f: Epic boundary check
 
 Extract epic number from story key (prefix before first dash). Check if ALL stories with that epic prefix are `done`. If so:
 
@@ -200,10 +198,15 @@ Extract epic number from story key (prefix before first dash). Check if ALL stor
 2. On failure: print "EPIC BOUNDARY GATE FAILED", mark epic as `blocked`.
 3. On pass: print "Epic [N] complete. Full suite green.", mark epic as `done`.
 
-### 5h: Advance sprint
+### 5g: Advance sprint
 
 1. Update `RUNNER_STATE_PATH`: `current_story: null`, `retry_count: 0`, increment `stories_completed`.
-2. Commit: `git add -A && git commit -m "story [ID]: completed"`
+2. Stage and commit. Never use `git add -A` or `git add .` — enumerate changed files and stage each by explicit path:
+   ```bash
+   git status --porcelain        # list changed/untracked files
+   git add <path>                # repeat once per file
+   git commit -m "story [ID]: completed"
+   ```
 3. Print: "Story [ID] completed. [N] stories done, [M] remaining."
 4. Transition to STEP 0.
 
@@ -217,8 +220,8 @@ Update `RUNNER_STATE_PATH` with incremented `retry_count`.
 
 If `retry_count >= RETRY_BUDGET` (default 3):
 1. Print "RETRY BUDGET EXHAUSTED for story [ID]"
-2. Rollback: `git reset --hard [checkpoint_hash]`
-3. Rewrite `RUNNER_STATE_PATH` with post-rollback values (the reset reverted all files):
+2. Mark the story `blocked` in `SPRINT_STATUS_PATH`. Do NOT roll back, reset, or delete anything — every commit the story produced stays on the branch so a human can inspect or salvage the work.
+3. Update `RUNNER_STATE_PATH`:
    ```yaml
    current_story: null
    retry_count: 0
@@ -227,14 +230,13 @@ If `retry_count >= RETRY_BUDGET` (default 3):
    stories_completed: <keep existing>
    stories_blocked: <append {story: ID, reason: "retry budget exhausted", attempts: N}>
    ```
-4. Override story status to `blocked` in `SPRINT_STATUS_PATH`.
-5. Transition to STEP 0.
+4. Transition to STEP 0.
 
 ### 6c: Determine retry strategy
 
 | Attempt | Strategy |
 |---------|----------|
-| 1 | Re-invoke dev-story. Story status was reset to `ready-for-dev`. |
+| 1 | Re-invoke dev-story. Story status was reset to `in-progress`. |
 | 2 | Invoke `bmad-quick-dev` with failing tests/review findings as intent. Use `git diff --name-only [checkpoint_hash]` for workspace detection. |
 | 3 | Re-invoke dev-story with explicit context about what failed in previous attempts injected into the prompt. |
 
@@ -246,7 +248,7 @@ If `retry_count >= RETRY_BUDGET` (default 3):
 ## STEP 7: Finalize
 
 1. Print sprint summary: stories completed, blocked, epics done/incomplete, blocked reasons.
-2. Commit final state: `git add -A && git commit -m "sprint-run: [N] stories completed, [M] blocked"`
+2. Commit residual state only. Each story's work was already committed at its STEP 5g and `bmad-dev-story` committed per logical chunk, so this commit covers just leftover files (digest, runner state). Stage each by explicit path (`git status --porcelain` then `git add <path>` per file — never `git add -A` or `git add .`), then `git commit -m "sprint-run: [N] stories completed, [M] blocked"`. If a large set of uncommitted story changes is found here, that is a defect — earlier steps should have committed them in small increments.
 3. If blocked stories exist: list which need manual intervention.
 4. If all stories done: suggest running `/bmad-retrospective` for each epic.
 5. STOP. This is the only valid termination point.

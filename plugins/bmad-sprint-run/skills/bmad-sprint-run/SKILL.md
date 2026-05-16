@@ -2,6 +2,7 @@
 name: bmad-sprint-run
 description: |
   This skill should be used when the user says "run the sprint", "autonomous sprint", "run all stories", "execute sprint plan", "complete all epics", or asks to autonomously execute all stories in the current sprint. Drives Claude Code through create-story, dev-story, quality gates, and code-review in a continuous loop without human intervention until all stories are done or blocked.
+version: 1.0.0
 ---
 
 # BMad Sprint Runner
@@ -21,7 +22,7 @@ backlog --[create-story]--> ready-for-dev
 ready-for-dev --[checkpoint]--> in-progress
 in-progress --[dev-story]--> review
 review --[quality gate pass + review pass]--> done
-review --[quality gate fail]--> ready-for-dev (retry)
+review --[quality gate fail]--> in-progress (retry)
 review --[retry exhausted]--> blocked
 review --[decision_needed]--> blocked
 ANY --[infrastructure fail]--> STOP (not blocked, sprint halts)
@@ -41,7 +42,7 @@ Invalid transitions (MUST NOT occur):
 - FORBIDDEN: Skip the quality gate (typecheck + tests) after dev-story
 - FORBIDDEN: Skip code review after quality gate pass
 - FORBIDDEN: Proceed past a failing quality gate or failing code review
-- FORBIDDEN: Modify story content outside of skill invocations, EXCEPT status transitions to `blocked` or `ready-for-dev`
+- FORBIDDEN: Modify story content outside of skill invocations, EXCEPT status transitions to `blocked`, `ready-for-dev`, or `in-progress`
 - FORBIDDEN: Invent review findings. If the review section is absent from the story file, treat as failure
 - FORBIDDEN: Transition a story out of `done` or `blocked`
 
@@ -50,9 +51,11 @@ Invalid transitions (MUST NOT occur):
 - FORBIDDEN: Use `git stash` (removes untracked bmad artifacts)
 - FORBIDDEN: Push to remote (local state only)
 - FORBIDDEN: Run on branch `main` or `master`
-- FORBIDDEN: Skip checkpoint before dev-story invocation
-- FORBIDDEN: Fail to rewrite `RUNNER_STATE_PATH` after `git reset --hard` (rollback reverts all on-disk files)
-- FORBIDDEN: Use `git add .` with dot - use `git add -A`
+- FORBIDDEN: Skip recording the checkpoint hash before dev-story invocation
+- FORBIDDEN: Run `git reset --hard`, `git checkout -- `, `git restore`, or `git clean` — these destroy committed or working-tree work. A false-failing quality gate once used `git reset --hard` to wipe a completed story
+- FORBIDDEN: Run `rm` against the project to "clean up" — failed stories retry by fixing forward, never by deleting
+- FORBIDDEN: Use `git add -A`, `git add .`, or any bulk-staging form. Enumerate changed files with `git status --porcelain` and stage each one by explicit path (`git add path/to/file`)
+- FORBIDDEN: Defer work into one large commit. Commit in small, frequent increments — `bmad-dev-story` commits per logical chunk as it works, each story finalizes at its own STEP 5g, and STEP 7 only sweeps residual state files. Never batch multiple chunks or stories into a single large commit
 
 ### Execution Flow
 
@@ -88,12 +91,7 @@ Before entering the loop, verify:
 1. `SPRINT_STATUS_PATH` exists. If missing, instruct user to run `/bmad-sprint-planning` and stop.
 2. At least one story is not `done`. If all done, go to STEP 7.
 3. Current branch is not `main` or `master`. If on main, instruct user to create a feature branch and stop.
-4. No other sprint-runner instance is active. Check `.sprint-runner.lock` at project root:
-   - If absent: continue.
-   - If present: read its PID. Run `kill -0 <pid> 2>/dev/null` — exit code 0 means the process is alive.
-     - Alive → print "ERROR: sprint-runner PID <pid> is already running on this project." and STOP.
-     - Dead (stale lock from a crash) → remove the file with `rm -f .sprint-runner.lock` and continue.
-   - Note: this is an advisory check only. `sprint-runner.py` enforces the lock at the kernel level via `fcntl.flock`. The skill cannot hold a kernel lock across tool calls.
+4. No other sprint-runner instance is active. Perform the advisory `.sprint-runner.lock` check — exact procedure in `references/orchestration-steps.md` STEP 0. This is advisory only: `sprint-runner.py` enforces a kernel-level `fcntl.flock` that the skill cannot hold across tool calls.
 
 ## Orchestration Loop
 
@@ -110,76 +108,58 @@ STEP 1 (Resolve next action) ---sprint_complete---> STEP 7 (Finalize) --> STOP
 STEP 3 --infra_fail--> STEP 7
   |
   v
-STEP 4 (Checkpoint + invoke bmad-dev-story)
+STEP 4 (Snapshot HEAD + invoke bmad-dev-story)
   |
   v
 STEP 5 (Typecheck + Tests + bmad-code-review)
   |-- fail (quality)  --> STEP 6 (Retry handler)
   |-- fail (critical)  --> STEP 6
   |-- fail (decision)  --> mark blocked --> STEP 0
-  |-- pass            --> 5f (digest) --> 5g (epic boundary) --> 5h (commit) --> STEP 0
+  |-- pass            --> 5e (digest) --> 5f (epic boundary) --> 5g (commit) --> STEP 0
   |
 STEP 6 --budget_ok--> STEP 4 (retry)
        --exhausted--> mark blocked --> STEP 0
 ```
 
+Each step below is a summary. Full procedures — exact commands, sub-steps, error conditions — are in `references/orchestration-steps.md`.
+
 ### STEP 0: Initialize
 
-Re-read `SPRINT_STATUS_PATH`, `RUNNER_STATE_PATH`, and `DIGEST_PATH` from disk using the Read tool. Do not use cached values. Discover project workspaces by reading `CLAUDE.md` and scanning for build manifests. Print one-line status: "Sprint: [N] done, [M] remaining, [K] blocked. Next story."
+Re-read `SPRINT_STATUS_PATH`, `RUNNER_STATE_PATH`, and `DIGEST_PATH` from disk with the Read tool — never trust cached values. Create `RUNNER_STATE_PATH` and `DIGEST_PATH` if absent. Discover project workspaces (typecheck/test/infra commands) from `CLAUDE.md`, falling back to build-manifest scanning. Print one-line status: "Sprint: [N] done, [M] remaining, [K] blocked. Next story."
 
 ### STEP 1: Resolve Next Action
 
-Read `development_status` from `SPRINT_STATUS_PATH`. Priority order:
-
-1. `in-progress` -> preflight with this story
-2. `review` -> quality_gate (verify Dev Agent Record exists; if missing, reset to `ready-for-dev` and re-resolve)
-3. `ready-for-dev` -> preflight with this story
-4. `backlog` -> create_story
-5. All `done`/`blocked` -> sprint_complete -> STEP 7
-
-Sort within priority: lowest (epic, story) number first. Record chosen story as `current_story` in `RUNNER_STATE_PATH`.
+Read `development_status` from `SPRINT_STATUS_PATH` and pick the next story by priority `in-progress` -> `review` -> `ready-for-dev` -> `backlog`, lowest (epic, story) number first. Map to action: backlog -> create_story; ready-for-dev/in-progress -> preflight; review -> quality_gate; none left -> sprint_complete (STEP 7). For `review` stories, verify the Dev Agent Record exists — if missing, reset to `ready-for-dev` and re-resolve. Record the chosen story as `current_story` in `RUNNER_STATE_PATH`.
 
 ### STEP 2: Create Story
 
-Invoke `Skill(skill: "bmad-create-story")`. Verify story file appeared in `STORY_DIR` and status is `ready-for-dev`. Transition to STEP 3.
+Invoke `Skill(skill: "bmad-create-story")`. Verify a story file appeared in `STORY_DIR` and status is now `ready-for-dev`. Transition to STEP 3.
 
 ### STEP 3: Pre-Flight Check
 
-Check infrastructure for workspaces the story touches. On failure: print failure, transition to STEP 7 (infrastructure-blocked). On pass: transition to STEP 4.
+Check infrastructure (runtime deps, toolchains, local validators) for the workspaces the story touches. On failure: print what needs starting, transition to STEP 7 (infrastructure-blocked) — do not retry. On pass: transition to STEP 4.
 
 ### STEP 4: Snapshot and Dispatch
 
-Checkpoint: `git add -A && git commit -m "checkpoint: pre-story [ID]" --allow-empty`. Record hash in `RUNNER_STATE_PATH`. Read digest and story file, state context, then invoke `Skill(skill: "bmad-dev-story")`. Verify status is `review`. Transition to STEP 5.
+Record current HEAD (`git rev-parse --verify HEAD`) as `checkpoint_hash` in `RUNNER_STATE_PATH` — a diff marker only, not a commit; the bmad skills create all commits. Inject digest + story context, then invoke `Skill(skill: "bmad-dev-story")`. Verify status is `review`. Transition to STEP 5.
 
 ### STEP 5: Quality Gate
 
-5a: `git diff --name-only [checkpoint_hash]` -> map to workspaces. Unmatched files -> run ALL checks.
+Diff against `checkpoint_hash` to find affected workspaces (files matching no workspace -> run ALL checks). Run typecheck then tests per workspace; on failure reset the story to `in-progress` and transition to STEP 6. Invoke `Skill(skill: "bmad-code-review")` and verify a findings section exists (missing = failure -> STEP 6). Route on findings:
 
-5b: Run typecheck per workspace. On fail: reset to `ready-for-dev`, transition to STEP 6.
+- any `critical` -> STEP 6
+- any `decision_needed`, zero `critical` -> mark `blocked`, STEP 0
+- zero `critical` and zero `decision_needed` -> pass
 
-5c: Run tests per workspace. On fail: reset to `ready-for-dev`, transition to STEP 6.
-
-5d: Invoke `Skill(skill: "bmad-code-review")`. Verify findings section exists. Categorize: `critical`, `major`, `minor`, `decision_needed`.
-
-- Any `critical` -> transition to STEP 6
-- Any `decision_needed` but zero `critical` -> mark `blocked`, transition to STEP 0
-- Zero `critical` and zero `decision_needed` -> pass, continue to 5f
-
-5f: Write digest entry to `DIGEST_PATH`. Prune beyond `DIGEST_SIZE`.
-
-5g: Check if all stories in current epic (same prefix before first dash) are `done`. If so, run full quality gate across all workspaces. Mark epic `done` or `blocked`.
-
-5h: Update `RUNNER_STATE_PATH` (clear current_story, reset retry_count, increment stories_completed). Commit: `git add -A && git commit -m "story [ID]: completed"`. Transition to STEP 0.
+On pass: write a digest entry (prune beyond `DIGEST_SIZE`), run the full-suite epic-boundary gate if the epic is complete, update `RUNNER_STATE_PATH`, stage each changed file by explicit path (see Git Safety) and commit `story [ID]: completed`, transition to STEP 0.
 
 ### STEP 6: Retry Handler
 
-Increment retry count. If `retry_count >= RETRY_BUDGET`: rollback (`git reset --hard [checkpoint_hash]`), rewrite `RUNNER_STATE_PATH` with post-rollback values, mark story `blocked`, transition to STEP 0.
-
-If retries remain, choose strategy: attempt 1 = re-invoke dev-story (STEP 4), attempt 2 = invoke `bmad-quick-dev` with failure context (STEP 5), attempt 3 = dev-story with injected failure history (STEP 4).
+Increment `retry_count`. If `retry_count >= RETRY_BUDGET`: mark the story `blocked`, append the reason to `stories_blocked`, transition to STEP 0. Never roll back — every commit the story produced stays on the branch for a human to inspect or salvage. If retries remain, fix forward on top of existing commits with the prior failure injected into the prompt: attempt 1 = re-invoke dev-story (STEP 4), attempt 2 = `bmad-quick-dev` with failure context (STEP 5), attempt 3 = dev-story with injected failure history (STEP 4).
 
 ### STEP 7: Finalize
 
-Print sprint summary. Commit: `git add -A && git commit -m "sprint-run: [N] completed, [M] blocked"`. List blocked stories needing manual intervention. Suggest `/bmad-retrospective` per epic. STOP.
+Print the sprint summary. Each story's work was already committed at its own STEP 5g, so only residual files (digest, runner state) remain — stage those by explicit path and commit `sprint-run: [N] completed, [M] blocked`. List blocked stories needing manual intervention, and suggest `/bmad-retrospective` per epic. STOP — the only valid termination point.
 
 ## Additional Resources
 
@@ -189,6 +169,12 @@ For detailed step procedures with exact commands and error recovery:
 - **`references/orchestration-steps.md`** - Full STEP 0-7 procedures, exact bash commands, error conditions
 - **`references/error-handling.md`** - Recovery procedures for dev-story crashes, code-review failures, git errors, corrupted state
 - **`references/companion-mode.md`** - Python orchestrator integration, CLI flags, what changes in external mode
+
+### Example Files
+
+Annotated samples of the state files this skill reads and writes:
+- **`examples/sprint-status.yaml`** - `development_status` structure: story/epic/retrospective key shapes and valid status values
+- **`examples/sprint-runner-state.yaml`** - `RUNNER_STATE_PATH` schema: retry counter, checkpoint hash, blocked-story records, phase
 
 ### Skill Dependencies
 

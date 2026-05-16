@@ -1,0 +1,33 @@
+# Example .sprint-runner-state.yaml
+#
+# Lives at: docs/_bmad_output/implementation-artifacts/.sprint-runner-state.yaml
+# Owned by the sprint runner. Tracks retry budget and the quality-gate diff base
+# across loop iterations and process restarts. Re-read fresh at STEP 0.
+
+# Story currently being processed; null between stories (idle/complete).
+current_story: 2-1-api-gateway
+
+# Dev-story + code-review attempts spent on current_story. Reset to 0 when the
+# story reaches done or blocked. Compared against RETRY_BUDGET (3) in STEP 6.
+retry_count: 1
+
+# HEAD hash recorded in STEP 4, before invoking dev-story. Scopes the STEP 5a
+# `git diff` for workspace detection. Not a commit — just a marker. null when idle.
+checkpoint_hash: a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4
+
+# ISO timestamp from when the runner first started this sprint. Preserved across
+# story transitions and restarts.
+started_at: "2026-05-17T09:30:00"
+
+# Count of stories that reached `done` this run.
+stories_completed: 2
+
+# Stories that exhausted RETRY_BUDGET and were marked blocked. Appended, never cleared.
+stories_blocked:
+  - story: 1-3-legacy-import
+    reason: retry budget exhausted
+    attempts: 3
+
+# Active operation — primary crash-recovery signal (informational, not used for routing).
+# Values: create-story | dev-story | quality-gate | code-review | retry | "" (idle)
+phase: quality-gate

@@ -1,6 +1,6 @@
 # Companion Mode (Python Orchestrator)
 
-When `sprint-runner.py` drives the sprint, Claude Code is a subprocess. The orchestrator owns everything that a single Claude session can't reliably manage: state persistence across restarts, budget enforcement, retry counting, process cleanup, and mutual exclusion.
+When `sprint-runner.py` drives the sprint, Claude Code is a subprocess. The orchestrator owns everything that a single Claude session can't reliably manage: state persistence across restarts, retry counting, process cleanup, and mutual exclusion.
 
 Each Claude Code invocation is a fresh `--no-session-persistence` session. The orchestrator injects context via `--append-system-prompt` before each call.
 
@@ -13,7 +13,7 @@ Each Claude Code invocation is a fresh `--no-session-persistence` session. The o
 | Retry counting | In-memory dict, persisted to YAML after each failure, restored on restart |
 | Quality gates | Runs typecheck + tests as direct subprocesses, not via Claude |
 | Cost tracking | Accumulates `total_cost_usd` from stream-json for informational logging — no enforcement |
-| Git checkpoint/rollback | Records HEAD hash before dev-story; `git reset --hard` on retry budget exhaustion |
+| Git checkpoint | Records HEAD hash before dev-story as the quality-gate diff base. Read-only — never resets, reverts, commits, or rolls back |
 | Process lock | `fcntl.flock` on `.sprint-runner.lock` — exclusive, released by kernel on any exit including SIGKILL |
 | Subprocess cleanup | `proc.terminate()` → `proc.wait()` on interrupt; `PR_SET_PDEATHSIG=SIGTERM` so Claude Code dies if the runner is killed |
 
@@ -24,10 +24,11 @@ Execute the invoked skill (`/bmad-dev-story`, `/bmad-code-review`) and nothing e
 Specifically — do **not**:
 - Modify `sprint-status.yaml` or `.sprint-runner-state.yaml` (the orchestrator owns these)
 - Run typecheck or tests (the orchestrator runs quality gates directly)
-- Create git commits (the orchestrator manages the git lifecycle)
 - Loop to the next story (the orchestrator controls the loop)
 
-The only exception: `bmad-dev-story` writes the story file and updates story status to `review`. That's by design — it's the skill's own output.
+Git commits are Claude Code's responsibility: the bmad skills commit their own work, and the injected system prompt instructs periodic commits. The orchestrator never commits — its `git_ops.py` is read-only and cannot reset, revert, or stage anything.
+
+The only exception to the "do not modify state" rule: `bmad-dev-story` writes the story file and updates story status to `review`. That's by design — it's the skill's own output.
 
 ## Injected system prompt
 
@@ -48,8 +49,9 @@ Sprint Orchestrator Context:
 - Retry attempt: [N/budget]      ← only on retries
 - Previous failures: [details]   ← only on retries
 - Recent sprint context: [digest] ← when digest exists
-- Commit your work periodically with git as you complete each logical chunk.
-  Do not wait until the end.
+- Commit your work in small, frequent increments — one commit per logical chunk
+  as you complete it. Do not wait until the end or batch many changes into one
+  large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.
 ```
 
 ## CLI flags used
@@ -93,19 +95,13 @@ If the runner dies mid-invocation, the phase field tells you what was interrupte
 
 This means the retry budget survives process restarts. A story that failed twice before a crash has one retry left, not three.
 
-## Rollback safety
+## No rollback — retries fix forward
 
-After `git reset --hard [checkpoint_hash]`, all files on disk revert — including `sprint-status.yaml` and `.sprint-runner-state.yaml`. The orchestrator immediately rewrites both with the correct post-rollback state:
+The runner never rolls back. There is no `git reset --hard`, no `git checkout`, no `git restore`, no `git clean`, no `rm`. `git_ops.py` is read-only by construction.
 
-```yaml
-# .sprint-runner-state.yaml after rollback
-current_story: null
-retry_count: 0
-checkpoint_hash: null
-started_at: <keep existing>
-stories_completed: <keep existing>
-stories_blocked: <append {story, reason}>
-phase: ""
-```
+When a story fails a quality gate or code review:
 
-The story status in `sprint-status.yaml` is also overridden to `blocked` since the rollback restored its previous value.
+- **Retries remaining:** the story is set back to `in-progress` and re-run. All commits the dev cycle already produced are kept — the retry fixes the existing implementation forward, with the failure detail injected into the system prompt. It does not rebuild from scratch.
+- **Retry budget exhausted:** the story is marked `blocked` with its commits intact, and the runner moves to the next story.
+
+A false-failing quality gate previously triggered `git reset --hard` to a pre-story checkpoint, destroying completed and committed work. Removing the rollback eliminates that failure mode entirely: a misbehaving gate can now at worst block a story, never delete its code.
