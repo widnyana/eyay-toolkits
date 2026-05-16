@@ -5,6 +5,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 
 @dataclass
@@ -32,9 +33,110 @@ class Config:
     watch: bool = False
     run_id: str = field(default_factory=lambda: datetime.now().strftime("%Y%m%d-%H%M%S"))
 
-    @property
-    def project_root(self) -> str:
-        return os.getcwd()
+    # Frozen at construction. Captured once so a later os.chdir (ours or a
+    # library's) can never invalidate the paths resolved against it.
+    project_root: str = field(default_factory=os.getcwd)
+
+    def resolve_paths(self) -> None:
+        """Absolutize project_root and every path field anchored to it.
+
+        Called once after argument parsing. After this runs, every path the
+        runner touches is a full path, so the values stay valid regardless of
+        the working directory or which machine the plugin is installed on.
+        """
+        root = Path(self.project_root).expanduser().resolve()
+        self.project_root = str(root)
+
+        def _abs(value: str) -> str:
+            path = Path(value).expanduser()
+            if not path.is_absolute():
+                path = root / path
+            return str(path.resolve())
+
+        self.sprint_status_path = _abs(self.sprint_status_path)
+        self.story_dir = _abs(self.story_dir)
+        self.runner_state_path = _abs(self.runner_state_path)
+        self.digest_path = _abs(self.digest_path)
+        self.log_dir = _abs(self.log_dir)
+
+
+# ---------------------------------------------------------------------------
+# sprint-status.yaml discovery
+# ---------------------------------------------------------------------------
+
+# Conventional location relative to a project root, as written by
+# /bmad-sprint-planning.
+_CONVENTIONAL_REL = Path("docs/_bmad_output/implementation-artifacts/sprint-status.yaml")
+
+# Directories never worth descending into during the fallback tree search.
+_SKIP_DIRS = {
+    "node_modules", "venv", "__pycache__", "target", "dist",
+    "build", "vendor", "site-packages",
+}
+
+# Cap the fallback search so a deep monorepo cannot turn discovery into a
+# full filesystem walk.
+_MAX_SEARCH_DEPTH = 6
+
+
+def _walk_for_file(root: Path, filename: str) -> list[Path]:
+    """Return every `filename` under `root`, pruning noise and hidden dirs."""
+    found: list[Path] = []
+    root_depth = len(root.parts)
+    for dirpath, dirnames, filenames in os.walk(root):
+        depth = len(Path(dirpath).parts) - root_depth
+        if depth >= _MAX_SEARCH_DEPTH:
+            dirnames[:] = []
+        else:
+            dirnames[:] = [
+                d for d in dirnames
+                if d not in _SKIP_DIRS and not d.startswith(".")
+            ]
+        if filename in filenames:
+            found.append(Path(dirpath) / filename)
+    return found
+
+
+def discover_sprint_status(start: str) -> Optional[Path]:
+    """Locate sprint-status.yaml without relying on the caller's cwd.
+
+    The runner may be launched from anywhere inside (or above) a project.
+    Discovery proceeds in two stages:
+
+      1. Walk up from `start` to the filesystem root; at each ancestor test
+         the conventional docs/_bmad_output/implementation-artifacts path.
+      2. If that fails, search downward (bounded depth) from the nearest
+         enclosing project root for any sprint-status.yaml living under a
+         `_bmad_output` directory.
+
+    Returns the resolved path, or None when nothing is found.
+    """
+    start_path = Path(start).expanduser().resolve()
+    ancestors = [start_path, *start_path.parents]
+
+    # Stage 1: conventional path at each ancestor.
+    for base in ancestors:
+        candidate = base / _CONVENTIONAL_REL
+        if candidate.is_file():
+            return candidate.resolve()
+
+    # Stage 2: bounded downward search. Anchor at the highest ancestor that
+    # still looks like a project (has .git or docs/), else `start` itself.
+    search_root = start_path
+    for base in ancestors:
+        if (base / ".git").exists() or (base / "docs").is_dir():
+            search_root = base
+
+    matches = [
+        p for p in _walk_for_file(search_root, "sprint-status.yaml")
+        if "_bmad_output" in p.parts
+    ]
+    if not matches:
+        return None
+
+    # Shallowest path wins; sort by string for a deterministic tie-break.
+    matches.sort(key=lambda p: (len(p.parts), str(p)))
+    return matches[0].resolve()
 
 
 def parse_args(argv: list[str] | None = None) -> Config:
@@ -122,4 +224,20 @@ def parse_args(argv: list[str] | None = None) -> Config:
     if args.digest_path:
         cfg.digest_path = args.digest_path
 
+    # Layer 4: discovery. When the user did not pin --sprint-status-path,
+    # locate sprint-status.yaml so the runner works from any cwd. The sibling
+    # artifact paths follow the discovered directory unless pinned explicitly.
+    if not args.sprint_status_path:
+        discovered = discover_sprint_status(cfg.project_root)
+        if discovered is not None:
+            cfg.sprint_status_path = str(discovered)
+            artifacts_dir = discovered.parent
+            if not args.story_dir:
+                cfg.story_dir = str(artifacts_dir)
+            if not args.runner_state_path:
+                cfg.runner_state_path = str(artifacts_dir / ".sprint-runner-state.yaml")
+            if not args.digest_path:
+                cfg.digest_path = str(artifacts_dir / ".sprint-context-digest.md")
+
+    cfg.resolve_paths()
     return cfg

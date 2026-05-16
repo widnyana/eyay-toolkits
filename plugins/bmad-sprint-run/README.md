@@ -65,10 +65,23 @@ python3 sprint-runner.py [OPTIONS]
 | `--claude-path PATH` | claude | Path to the Claude CLI binary |
 | `--allowed-tools TOOLS` | — | Comma-separated list of allowed tools |
 | `--debug` | — | Show sprint-runner internal debug output on console |
-| `--sprint-status-path PATH` | `docs/_bmad_output/...` | Override sprint-status.yaml path |
-| `--story-dir PATH` | `docs/_bmad_output/...` | Override story files directory |
-| `--runner-state-path PATH` | `docs/_bmad_output/...` | Override runner state file path |
-| `--digest-path PATH` | `docs/_bmad_output/...` | Override context digest path |
+| `--sprint-status-path PATH` | auto-located | Override sprint-status.yaml path (otherwise auto-discovered) |
+| `--story-dir PATH` | auto-located | Override story files directory |
+| `--runner-state-path PATH` | auto-located | Override runner state file path |
+| `--digest-path PATH` | auto-located | Override context digest path |
+
+### Locating sprint-status.yaml
+
+The runner finds `sprint-status.yaml` on its own, so it can be launched from any
+subdirectory of the project. It walks up from the current directory looking for
+the conventional `docs/_bmad_output/implementation-artifacts/sprint-status.yaml`,
+then falls back to a bounded search for any `sprint-status.yaml` under a
+`_bmad_output` directory. The story-dir, runner-state, and digest paths default
+to the directory the discovered file lives in.
+
+Pass `--sprint-status-path` to point at a non-standard location explicitly —
+that disables discovery and the sibling paths fall back to their own defaults
+unless also overridden.
 
 ### Environment variables
 
@@ -121,11 +134,11 @@ The runner re-reads all three files from disk at the start of every loop iterati
 
 If the runner stops (Ctrl+C, crash, OOM), re-run the same command. It picks up at the right state:
 
-- Story was `in-progress`: retried from the current checkpoint
+- Story was `in-progress`: the dev cycle re-runs, keeping any commits already made
 - Story was `review`: quality gate and code review re-run
 - Retry count: restored from `.sprint-runner-state.yaml`
 
-One thing to know about `git reset --hard` rollbacks: after a rollback, `sprint-status.yaml` and `.sprint-runner-state.yaml` revert to the checkpoint state on disk. The runner rewrites both files immediately after any rollback.
+The runner never rolls back. It does not run `git reset --hard`, `git checkout`, `git restore`, `git clean`, or `rm` — `git_ops.py` is read-only by construction. A failed story retries by fixing forward on top of its own commits; the failure detail is fed into the retry prompt. A story that exhausts its retry budget is marked `blocked` with all its commits intact, so the work is always inspectable and salvageable.
 
 ---
 
