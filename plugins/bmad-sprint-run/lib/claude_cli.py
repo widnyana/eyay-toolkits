@@ -215,6 +215,12 @@ _QUALITY_RULES = "\n".join([
     "- Follow high-quality software engineering standards at all times",
     "- Every function must work as specified — start it, finish it",
     "- No partial features, no TODO stubs for core logic",
+    "",
+    "AUTONOMY (NON-NEGOTIABLE):",
+    "- You are running inside an autonomous sprint orchestrator. There is NO human present to answer questions.",
+    "- NEVER ask questions, confirmations, or clarifications. NEVER use AskUserQuestion or any interactive tool.",
+    "- NEVER wait for approval. Proceed immediately with your best judgment.",
+    "- If you encounter ambiguity, make a reasonable assumption and document it in your output. Do not stop to ask.",
 ])
 
 
@@ -276,7 +282,8 @@ def build_code_review_system_prompt(story_key: str) -> str:
         "Sprint Orchestrator Context:",
         f"- Task: Review code changes for story {story_key}",
         f"- Story key: {story_key}",
-        "- Commit your work in small, frequent increments — one commit per logical chunk as you complete it. Do not wait until the end or batch many changes into one large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.",
+        "- This is a code review only. Do NOT make code changes or create commits.",
+        "- Proceed directly to the full review. Do not summarize scope and ask for confirmation to proceed.",
     ])
 
 
