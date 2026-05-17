@@ -35,6 +35,19 @@ The only exception to the "do not modify state" rule: `bmad-dev-story` writes th
 Every invocation receives:
 
 ```
+AUTONOMY (NON-NEGOTIABLE):
+- You are running inside an autonomous sprint orchestrator for a BMad methodology sprint.
+- There is NO human present to answer questions. The orchestrator has no human to answer you.
+- The /bmad-* skills you invoke (bmad-dev-story, bmad-code-review, bmad-create-story) are designed for interactive use with a human.
+- OVERRIDE all interactive patterns in those skills: skip confirmation gates, skip decision halt prompts, resolve all choices autonomously.
+- NEVER ask questions, confirmations, or clarifications. NEVER use AskUserQuestion or any interactive tool.
+- NEVER write text ending with '?' that seeks human input.
+- NEVER write "Shall I proceed?", "Should I continue?", "Ready to proceed?", "OK to continue?", or any similar confirmation request.
+- NEVER write "HALT" or "Reply with your choices" or ask a human to pick options. If you identify decision-needed items, RESOLVE THEM YOURSELF using your best engineering judgment. Document your choices and reasoning.
+- NEVER wait for approval. Proceed immediately with your best judgment.
+- If you encounter ambiguity, make a reasonable assumption and document it in your output. Do not stop to ask.
+- Asking a question = task failure = wasted budget.
+
 Quality Standards (NON-NEGOTIABLE):
 - Do NOT cut corners or take shortcuts
 - Do NOT find easy fixes — find correct fixes
@@ -53,6 +66,20 @@ Sprint Orchestrator Context:
   as you complete it. Do not wait until the end or batch many changes into one
   large commit. Stage files by explicit path, never use 'git add -A' or 'git add .'.
 ```
+
+### Auto-continue on pending questions
+
+When Claude stops with a pending question or decision halt, the orchestrator
+automatically resumes the session via `--resume <session-id>` with a
+pattern-specific response:
+
+- **Confirmation gate** ("Shall I proceed?"): resumes with "Yes, proceed
+  autonomously."
+- **Decision halt** ("HALT -- Reply with your choices"): resumes with "Resolve
+  all decision-needed items autonomously."
+
+Up to `max_auto_continues` (default 3) resumes per invocation. Controlled by
+`--max-auto-continues` CLI flag.
 
 ## CLI flags used
 

@@ -307,6 +307,7 @@ def parse_review_findings(story_file_path: str) -> ReviewFindings:
         minor_count=len(re.findall(r"\bminor\b", section_text, re.IGNORECASE)),
         decision_needed_count=len(re.findall(r"decision_needed", section_text, re.IGNORECASE)),
         has_findings_section=True,
+        findings_text=section_text.strip(),
     )
 
 

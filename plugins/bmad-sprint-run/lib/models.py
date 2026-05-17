@@ -96,6 +96,8 @@ class ClaudeResult:
     error_messages: list[str] = field(default_factory=list)
     is_budget_exceeded: bool = False
     num_turns: int = 0
+    session_id: str = ""
+    auto_continues: int = 0
 
 
 @dataclass
@@ -106,6 +108,7 @@ class ReviewFindings:
     decision_needed_count: int = 0
     has_findings_section: bool = False
     summary: str = ""
+    findings_text: str = ""
 
     @property
     def is_clean_pass(self) -> bool:

@@ -20,6 +20,8 @@ if _SCRIPT_DIR not in sys.path:
     sys.path.insert(0, _SCRIPT_DIR)
 
 from lib.claude_cli import (
+    build_auto_fix_prompt,
+    build_auto_fix_system_prompt,
     build_code_review_prompt,
     build_code_review_system_prompt,
     build_create_story_prompt,
@@ -377,12 +379,26 @@ class SprintRunner:
         # Code review (unless skipped)
         if not self.config.skip_code_review:
             self._update_phase(story_key, "code-review")
-            ok = self._run_code_review(story_key, step)
-            if not ok:
-                # Check if blocked for decision_needed (not retriable)
-                fresh_status = read_sprint_status(self.sprint_status_path)
-                if fresh_status.stories.get(story_key) == "blocked":
-                    return True
+            review_ok, findings, review_output = self._run_code_review(story_key, step)
+            if not review_ok:
+                # Try auto-fix before retrying/blocking
+                fix_ok = self._run_auto_fix(story_key, findings, review_output, step)
+                if fix_ok:
+                    # Re-run quality gate after fixes
+                    step.info("Re-running quality gate after auto-fix")
+                    self._update_phase(story_key, "quality-gate")
+                    qg_ok = self._run_quality_gate(story_key, checkpoint_hash, step)
+                    if qg_ok:
+                        # Re-review to verify fixes resolved the findings
+                        self._update_phase(story_key, "code-review")
+                        review_ok2, _, _ = self._run_code_review(story_key, step)
+                        if review_ok2:
+                            step.info("Auto-fix resolved all review findings")
+                            self._complete_story(story_key, runner_state, step)
+                            return True
+                        step.warning("Auto-fix applied but review still finds issues")
+
+                # Auto-fix failed or issues remain — fall through to retry/block
                 return self._handle_dev_failure(story_key, step)
 
         # Story passed all gates
@@ -458,8 +474,11 @@ class SprintRunner:
         self,
         story_key: str,
         step: logging.LoggerAdapter,
-    ) -> bool:
-        """Invoke Claude Code with /bmad-code-review and parse findings."""
+    ) -> tuple[bool, ReviewFindings, str]:
+        """Invoke Claude Code with /bmad-code-review and parse findings.
+
+        Returns (passed, findings, review_output_text).
+        """
         step.info("Running code review for story %s", story_key)
 
         prompt = build_code_review_prompt(story_key)
@@ -468,46 +487,65 @@ class SprintRunner:
 
         if not result.success:
             step.error("Code review invocation failed: %s", result.error_messages)
-            return True
+            return True, ReviewFindings(), result.output_text
 
         # Parse review findings from the story file
         story_file = find_story_file(self.config.story_dir, story_key)
         if not story_file:
             step.warning("Story file not found for review parsing, assuming pass")
-            return True
+            return True, ReviewFindings(), result.output_text
 
         findings = parse_review_findings(story_file)
 
         if not findings.has_findings_section:
             step.info("No review findings section found, assuming pass")
-            return True
+            return True, ReviewFindings(), result.output_text
 
         step.info(
             "Review findings: critical=%d, major=%d, minor=%d, decision_needed=%d",
             findings.critical_count, findings.major_count, findings.minor_count, findings.decision_needed_count,
         )
 
-        if findings.critical_count > 0:
-            step.error("Critical findings detected, marking for retry")
-            self.failure_details[story_key] = (
-                f"Code review found {findings.critical_count} critical, {findings.major_count} major issues. "
-                f"Review output:\n{result.output_text[-2000:]}"
-            )
-            return False
-
-        if findings.decision_needed_count > 0:
-            step.warning(
-                "Decision needed on %d items. Blocking story for human review.",
-                findings.decision_needed_count,
-            )
-            self._transition_status(story_key, "blocked", step)
-            log_summary(
-                self.logger,
-                f"Story {story_key} BLOCKED - needs human decision",
-            )
-            return False
+        has_fixable = findings.critical_count > 0 or findings.major_count > 0 or findings.decision_needed_count > 0
+        if has_fixable:
+            step.info("Fixable findings detected — auto-fix will be attempted by caller")
+            return False, findings, result.output_text
 
         step.info("Code review passed (%d minor findings noted)", findings.minor_count)
+        return True, findings, result.output_text
+
+    # ------------------------------------------------------------------
+    # Auto-fix
+    # ------------------------------------------------------------------
+
+    def _run_auto_fix(
+        self,
+        story_key: str,
+        findings: ReviewFindings,
+        review_output: str,
+        step: logging.LoggerAdapter,
+    ) -> bool:
+        """Invoke Claude Code to fix review findings."""
+        step.info(
+            "Auto-fixing review findings for %s: critical=%d, major=%d, decision_needed=%d",
+            story_key, findings.critical_count, findings.major_count, findings.decision_needed_count,
+        )
+
+        prompt = build_auto_fix_prompt(
+            story_key, findings.findings_text, review_output,
+        )
+        system = build_auto_fix_system_prompt(story_key)
+        result = self._invoke_claude(prompt, step, system_append=system)
+
+        if not result.success:
+            step.error("Auto-fix invocation failed: %s", result.error_messages)
+            return False
+
+        step.info(
+            "Auto-fix completed in %s, cost %s",
+            _fmt_duration(result.duration_ms),
+            _fmt_cost(result.total_cost_usd),
+        )
         return True
 
     # ------------------------------------------------------------------
@@ -541,15 +579,25 @@ class SprintRunner:
 
         # Code review
         if not self.config.skip_code_review:
-            ok = self._run_code_review(story_key, step)
-            if not ok:
-                # Check if blocked for decision_needed (not retriable)
-                fresh = read_sprint_status(self.sprint_status_path)
-                if fresh.stories.get(story_key) == "blocked":
-                    return True
+            review_ok, findings, review_output = self._run_code_review(story_key, step)
+            if not review_ok:
+                # Try auto-fix before retrying/blocking
+                fix_ok = self._run_auto_fix(story_key, findings, review_output, step)
+                if fix_ok:
+                    step.info("Re-running quality gate after auto-fix")
+                    qg_ok = self._run_quality_gate(story_key, checkpoint_hash, step)
+                    if qg_ok:
+                        review_ok2, _, _ = self._run_code_review(story_key, step)
+                        if review_ok2:
+                            step.info("Auto-fix resolved all review findings")
+                            self._complete_story(story_key, runner_state, step)
+                            return True
+                        step.warning("Auto-fix applied but review still finds issues")
+
+                # Auto-fix failed or issues remain
                 self.retry_counts[story_key] = self.retry_counts.get(story_key, 0) + 1
                 if self.retry_counts[story_key] >= self.config.retry_budget:
-                    self._block_story(story_key, step, "Code review failed after max retries")
+                    self._block_story(story_key, step, "Code review failed after auto-fix + max retries")
                     return True
                 self._transition_status(story_key, "in-progress", step)
                 return True
@@ -786,11 +834,23 @@ class SprintRunner:
         for story_key in to_review:
             step = get_step_logger(self.logger, f"AUTO-REVIEW-{story_key}")
             self._update_phase(story_key, "code-review")
-            ok = self._run_code_review(story_key, step)
-            if ok:
+            review_ok, findings, review_output = self._run_code_review(story_key, step)
+            if review_ok:
                 step.info("Auto-review passed for %s", story_key)
             else:
-                step.warning("Auto-review found issues for %s", story_key)
+                step.warning("Auto-review found issues for %s — attempting auto-fix", story_key)
+                fix_ok = self._run_auto_fix(story_key, findings, review_output, step)
+                if fix_ok:
+                    checkpoint_hash = self._snapshot_head(story_key)
+                    if checkpoint_hash:
+                        step.info("Re-running quality gate after auto-fix")
+                        qg_ok = self._run_quality_gate(story_key, checkpoint_hash, step)
+                        if qg_ok:
+                            step.info("Auto-fix succeeded for %s — story remains done", story_key)
+                            continue
+                # Auto-fix failed or quality gate failed — block the story
+                step.warning("Auto-fix failed for %s — blocking story", story_key)
+                self._block_story(story_key, step, "Auto-review found issues that auto-fix could not resolve")
 
     # ------------------------------------------------------------------
     # Summary

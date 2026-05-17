@@ -27,9 +27,10 @@ class Config:
     target_story: str = ""
     target_epic: str = ""
 
-    effort: str = "high"
+    effort: str = "medium"
     model: str = ""
     allowed_tools: list[str] = field(default_factory=list)
+    max_auto_continues: int = 3
     debug: bool = False
     reset: bool = False
     watch: bool = False
@@ -169,6 +170,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
                         help="Model to use (e.g., sonnet, opus)")
     parser.add_argument("--allowed-tools", type=str, default="",
                         help="Comma-separated list of allowed tools")
+    parser.add_argument("--max-auto-continues", type=int, default=None,
+                        help="Max auto-continues when Claude asks questions (default: 3)")
     parser.add_argument("--debug", action="store_true", default=False,
                         help="Show sprint-runner debug output on console")
     parser.add_argument("--reset", action="store_true", default=False,
@@ -219,6 +222,8 @@ def parse_args(argv: list[str] | None = None) -> Config:
         cfg.model = args.model
     if args.allowed_tools:
         cfg.allowed_tools = [t.strip() for t in args.allowed_tools.split(",") if t.strip()]
+    if args.max_auto_continues is not None:
+        cfg.max_auto_continues = args.max_auto_continues
     if args.debug:
         cfg.debug = True
     if args.reset:
