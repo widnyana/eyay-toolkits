@@ -211,16 +211,23 @@ class SprintRunner:
         step.info("Review-only mode for story %s (status: %s)", matched_key, story_status)
 
         self._update_phase(matched_key, "code-review")
-        ok = self._run_code_review(matched_key, step)
+        review_ok, findings, review_output = self._run_code_review(matched_key, step)
 
-        if ok:
+        if review_ok:
             step.info("Code review passed for %s", matched_key)
             print(f"Review passed: {matched_key}")
         else:
-            step.error("Code review found issues for %s", matched_key)
+            step.warning("Code review found issues for %s — attempting auto-fix", matched_key)
+            fix_ok = self._run_auto_fix(matched_key, findings, review_output, step)
+            if fix_ok:
+                review_ok2, _, _ = self._run_code_review(matched_key, step)
+                if review_ok2:
+                    step.info("Auto-fix resolved all review findings for %s", matched_key)
+                    print(f"Review passed after auto-fix: {matched_key}")
+                    return 0
+                step.warning("Auto-fix applied but review still finds issues for %s", matched_key)
             print(f"Review found issues: {matched_key}")
-
-        return 0
+            return 1
 
     def _main_loop(self) -> int:
         """Core sprint loop. Returns 0 on success, 1 on failure."""
@@ -487,7 +494,7 @@ class SprintRunner:
 
         if not result.success:
             step.error("Code review invocation failed: %s", result.error_messages)
-            return True, ReviewFindings(), result.output_text
+            return False, ReviewFindings(), result.output_text
 
         # Parse review findings from the story file
         story_file = find_story_file(self.config.story_dir, story_key)
@@ -846,9 +853,14 @@ class SprintRunner:
                         step.info("Re-running quality gate after auto-fix")
                         qg_ok = self._run_quality_gate(story_key, checkpoint_hash, step)
                         if qg_ok:
-                            step.info("Auto-fix succeeded for %s — story remains done", story_key)
-                            continue
-                # Auto-fix failed or quality gate failed — block the story
+                            # Re-review to verify fixes resolved the findings
+                            self._update_phase(story_key, "code-review")
+                            review_ok2, _, _ = self._run_code_review(story_key, step)
+                            if review_ok2:
+                                step.info("Auto-fix resolved all findings for %s", story_key)
+                                continue
+                            step.warning("Auto-fix applied but review still finds issues for %s", story_key)
+                # Auto-fix failed or review still finds issues — block the story
                 step.warning("Auto-fix failed for %s — blocking story", story_key)
                 self._block_story(story_key, step, "Auto-review found issues that auto-fix could not resolve")
 
