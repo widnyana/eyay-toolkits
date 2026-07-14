@@ -17,6 +17,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin install prose-engineers@eyay-toolkits
 /plugin install ts-backend-dev@eyay-toolkits
 /plugin install visual-gen@eyay-toolkits
+/plugin install block-forbidden-git-add@eyay-toolkits
 ```
 
 Verify with `/plugin list` or `/skills`. Restart Claude Code or open a new session if nothing shows up.
