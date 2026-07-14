@@ -97,6 +97,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/bmad-sprint-run"
+    },
+    {
+      "name": "block-forbidden-git-add",
+      "description": "PreToolUse hook that denies git commands staging protected paths, whole-tree adds, or rewriting history.",
+      "source": "./plugins/block-forbidden-git-add",
+      "category": "safety",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/block-forbidden-git-add"
     }
   ]
 }

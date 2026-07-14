@@ -9,12 +9,13 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin marketplace add widnyana/eyay-toolkits
 
 # Install what you need
+/plugin install block-forbidden-git-add@eyay-toolkits
 /plugin install bmad-sprint-run@eyay-toolkits
 /plugin install career-tools@eyay-toolkits
 /plugin install evm-decimal-validation@eyay-toolkits
+/plugin install prose-engineers@eyay-toolkits
 /plugin install solana-onchain@eyay-toolkits
 /plugin install sui-dev-tools@eyay-toolkits
-/plugin install prose-engineers@eyay-toolkits
 /plugin install ts-backend-dev@eyay-toolkits
 /plugin install visual-gen@eyay-toolkits
 ```

@@ -1,0 +1,13 @@
+{
+  "name": "block-forbidden-git-add",
+  "version": "1.0.0",
+  "description": "Denies git commands that stage protected paths, whole-tree adds, or rewrite history.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/block-forbidden-git-add",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "license": "MIT",
+  "keywords": ["git", "hook", "safety", "guardrail"]
+}

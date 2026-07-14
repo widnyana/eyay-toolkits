@@ -1,4 +1,4 @@
-# block-forbidden-git-add.sh
+# block-forbidden-git-add
 
 A Claude Code **PreToolUse** hook for the `Bash` tool. It inspects every
 `git` command Claude is about to run and **denies** any that would stage a
@@ -6,36 +6,12 @@ protected path, stage the whole tree, or rewrite history. It is silent
 (exit 0, no JSON) on everything else — so non-git commands and safe git
 commands are never disturbed.
 
-## Install / register
+## Install
 
-The script does nothing on its own; it must be wired into a Claude Code
-settings file as a PreToolUse hook. Add this to `~/.claude/settings.json`
-(or a project `.claude/settings.json`):
-
-```jsonc
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "if": "Bash(git *)",
-            "command": "\"$HOME\"/.claude/hooks/block-forbidden-git-add.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-- `matcher: "Bash"` — only the Bash tool is inspected.
-- `"if": "Bash(git *)"` — the hook body only runs when the command starts with
-  `git`, keeping overhead off non-git commands.
-- Requires `jq` on `PATH` (used to read the payload and emit the verdict).
+Enable this plugin (`/plugin install block-forbidden-git-add` or via
+`npx skills add widnyana/eyay-toolkits`) and the hook registers itself
+automatically as a `PreToolUse` hook — no `settings.json` editing required.
+Requires `jq` on `PATH` (used to read the payload and emit the verdict).
 
 The hook reads the JSON payload Claude sends on stdin and emits a JSON verdict
 on stdout. `deny` = block the command and show the reason to the model;
@@ -52,7 +28,8 @@ silence = allow.
 | `FORBIDDEN_FLAGS` | `commit --amend`, `push --force`, `push -f` | Subcommand+flag pairs that rewrite history or force-push. |
 | `MONITORED` | `add commit push` + the forbidden subcommands | Subcommands the hook analyzes; others are ignored. |
 
-Edit these arrays in the script to change what is protected.
+Edit these arrays in `hooks/scripts/block-forbidden-git-add.sh` to change what
+is protected.
 
 ## What it blocks
 
@@ -141,7 +118,7 @@ JSON line with `permissionDecision:"deny"`; safe commands print nothing and
 exit 0.
 
 ```
-H=./block-forbidden-git-add.sh
+H=hooks/scripts/block-forbidden-git-add.sh
 
 # must DENY:
 printf '%s' '{"tool_input":{"command":"git add docs/x.md"}}'          | bash "$H"
