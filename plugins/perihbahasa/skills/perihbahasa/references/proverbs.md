@@ -6,6 +6,10 @@ list. For each entry, analyze the proverb's meter (syllable count) and ending
 rhyme, then subvert the second clause to build the remix. Format of each entry:
 **proverb** — meaning.
 
+Entries every Indonesian knows by heart are tagged **★ berat** — these are prime
+perihbahasa targets, because subverting a deeply familiar line lands hardest
+(`SKILL.md` → Anatomy #10).
+
 
 ## A
 
@@ -13,12 +17,13 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Ada asap ada api** — Tak dapat dipisahkan, munculnya suatu kejadian / masalah pasti ada penyebabnya.
 - **Ada gula ada semut** — Dimana banyak kesenangan disitulah banyak orang datang.
 - **Ada harga ada rupa** — Harga suatu barang tentu disesuaikan dengan keadaan barang tersebut.
-- **Ada udang di balik batu** — Ada suatu maksud yang tersembunyi.
+- ★ **Ada udang di balik batu** — Ada suatu maksud yang tersembunyi.
 - **Adat muda menanggung rindu, adat tua menahan ragam** — Orang muda harus bersabar, dalam meraih cita-cita.
-- **Air beriak tanda tak dalam** — Orang yang banyak bicara biasanya tidak banyak ilmunya.
+- ★ **Air beriak tanda tak dalam** — Orang yang banyak bicara biasanya tidak banyak ilmunya.
 - **Air diminum rasa duri, nasi dimakan rasa sekam** — Tidak enak makan dan minum (biasanya karena terlalu bersedih/duka).
-- **Air susu dibalas dengan air tuba** — Perbuatan baik dibalas dengan perbuatan jahat.
+- ★ **Air susu dibalas dengan air tuba** — Perbuatan baik dibalas dengan perbuatan jahat.
 - **Air tenang menghanyutkan** — Orang yang kelihatannya pendiam, namun ternyata banyak menyimpan ilmu pengetahuan dalam pikirannya.
+- ★ **Anak dipangku dilepaskan, beruk di rimba disusui** — Mengabaikan yang dekat (anak sendiri) lalu memelihara yang jauh (beruk di hutan).
 - **Angin tak dapat ditangkap, asap tak dapat digenggam** — Rahasia itu tidak selamanya dapat disembunyikan, suatu waktu akan terbuka pula.
 - **Abu saja tak hinggap** — Kiasan kepada sesuatu yang sangat licin dan mengkilap (atau suatu hal yang tak terjangkau).
 - **Acap melempar akan jatuh jua** — Karena rajin, lambat-laun berhasil juga.
@@ -46,7 +51,8 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Bagai ayam bertelur di padi** — Seseorang yang mencintai hidup mewah.
 - **Bagai ayam dibawa ke lampuk** — Seseorang yang terheran-heran.
 - **Bagai ayam lepas bertaji** — Serba berbahaya.
-- **Besar pasak daripada tiang** — Besar pengeluaran daripada pendapatan.
+- ★ **Berakit-rakit ke hulu, berenang-renang ke tepian; bersakit-sakit dahulu, bersenang-senang kemudian** — Berusaha keras dahulu agar bersenang-senang kemudian.
+- ★ **Besar pasak daripada tiang** — Besar pengeluaran daripada pendapatan.
 - **Bagai galah di tengah arus** — Selalu berkeluh kesah karena mendapatkan kemalangan (kesusahan).
 - **Bagai galah dijual** — Sudah habis binasa harta kekayaannya.
 - **Bagai garam jatuh ke laut** — Nasihat (saran) yang mudah diterima orang lain.
@@ -120,7 +126,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 - **Gajah di pelupuk mata tak tampak, semut di seberang lautan tampak** — Kesalahan/aib sendiri yang besar tidak tampak.
 - **Gigi dengan lidah ada kalanya bergigit juga** — Walau persahabatan sangat akrab ada kalanya berselisih juga.
-- **Guru kencing berdiri, murid kencing berlari** — Kelakuan orang bawahan selalu mencontoh kelakuan atasannya.
+- ★ **Guru kencing berdiri, murid kencing berlari** — Kelakuan orang bawahan selalu mencontoh kelakuan atasannya.
 - **Gajah mati meninggalkan gading, harimau mati meninggalkan belang** — Keberhasilan atau prestasi seseorang yang ditinggalkan setelah mereka tiada.
 - **Gantung harap di ujung tanduk** — Berharap pada sesuatu yang tidak pasti atau tidak bisa diandalkan.
 - **Gantung sejuta harapan di ujung jari** — Memiliki banyak harapan atau ekspektasi yang tinggi.
@@ -130,10 +136,11 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 ## H
 
-- **Habis manis sepah dibuang** — Sesudah tidak berguna lagi lalu dibuang / tidak dipedulikan lagi.
+- ★ **Habis gelap terbitlah terang** — Setelah masa suram, datanglah masa terang (motto Ibu Kartini).
+- ★ **Habis manis sepah dibuang** — Sesudah tidak berguna lagi lalu dibuang / tidak dipedulikan lagi.
 - **Hancur badan dikandung tanah, budi baik dikenang jua** — Budi pekerti, amal kebaikan, akan selalu dikenang meski seseorang sudah meninggal dunia.
 - **Harapkan guntur di langit, air di tempayan dicurahkan** — Mengharapkan sesuatu yang belum tentu, barang yang sudah ada dilepaskan.
-- **Hasrat hati memeluk gunung, apa daya tangan tak sampai** — Keinginan atau cita-cita yang mustahil dapat dicapai.
+- ★ **Hasrat hati memeluk gunung, apa daya tangan tak sampai** — Keinginan atau cita-cita yang mustahil dapat dicapai.
 - **Hemat pangkal kaya, rajin pangkal pandai** — Orang yang hidup hemat akan menjadi kaya, orang yang rajin belajar akan menjadi pandai.
 - **Hidup dikandung adat, mati dikandung tanah** — Selama hidup orang harus taat kepada adat kebiasaan dalam masyarakat.
 - **Hujan emas di negeri orang, hujan batu di negeri sendiri, baik juga di negeri sendiri** — Betapa senang dan bahagia di perantauan, tentu lebih senang dan bahagia di negeri sendiri.
@@ -164,7 +171,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 ## K
 
 - **Kalah jadi abu menang jadi arang** — Pertengkaran/permusuhan akan merugikan kedua belah pihak (sama-sama merugi).
-- **Karena nila setitik, rusak susu sebelanga** — Karena kejahatan atau kesalahan yang kecil, hilang kebaikan yang telah diperbuat.
+- ★ **Karena nila setitik, rusak susu sebelanga** — Karena kejahatan atau kesalahan yang kecil, hilang kebaikan yang telah diperbuat.
 - **Katak hendak jadi lembu** — Orang hina/miskin/rendah hendak menyamai orang besar/kaya; congkak; sombong.
 - **Kecil-kecil cabai rawit** — Kecil, tetapi cerdik/pemberani/membahayakan.
 - **Kepala sama berbulu, pendapat berlain-lainan** — Setiap orang berbeda pendapatnya.
@@ -172,12 +179,12 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 ## L
 
-- **Lain di bibir, lain di hati** — Yang dikatakan/diucapkan berbeda dengan isi hatinya.
+- ★ **Lain di bibir, lain di hati** — Yang dikatakan/diucapkan berbeda dengan isi hatinya.
 - **Lain dulang lain kaki, lain orang lain hati** — Setiap orang punya pendapat, kehendak dan perasaan yang berbeda.
 - **Lain ladang lain belalang, lain lubuk lain ikannya** — Tiap-tiap negeri atau bangsa berlainan adat kebiasaannya.
 - **Lancar kaji karena diulang, pasah jalan karena diturut** — Segala sesuatu harus dilakukan berulang ulang supaya paham.
 - **Lemak manis jangan ditelan, pahit jangan dimuntahkan** — Perundingan yang baik jangan disia-siakan, tetapi hendaknya dipikirkan secara dalam-dalam.
-- **Lempar batu sembunyi tangan** — Melakukan sesuatu, kemudian berdiam diri seolah-olah tidak tahu menahu.
+- ★ **Lempar batu sembunyi tangan** — Melakukan sesuatu, kemudian berdiam diri seolah-olah tidak tahu menahu.
 - **Lepas dari mulut harimau jatuh ke mulut buaya** — Lepas dari bahaya yang besar, jatuh ke dalam bahaya yang lebih besar lagi.
 - **Lidah tak bertulang** — Mudah saja mengatakan/menjanjikan sesuatu, yang berat adalah melaksanakannya.
 - **Lubuk akal tepian ilmu** — Seseorang yang dikenal memiliki banyak ilmu pengetahuan.
@@ -187,7 +194,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 ## M
 
 - **Makan hati berulam rasa** — Menderita karena perbuatan orang yang kita sayang.
-- **Malu bertanya sesat di jalan** — Kalau tidak mau berikhtiar tidak akan mendapat kemajuan.
+- ★ **Malu bertanya sesat di jalan** — Kalau tidak mau berikhtiar tidak akan mendapat kemajuan.
 - **Malang tak dapat ditolak, mujur tak dapat diraih** — Segala sesuatu dalam kehidupan bukan manusia yang menentukan.
 - **Membagi sama adil, memotong sama panjang** — Jika membagi maupun memutuskan sesuatu hendaknya harus adil dan tidak berat sebelah.
 - **Membelah dada melihat hati** — Ungkapan untuk menyatakan kesungguhan.
@@ -208,7 +215,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 ## N
 
-- **Nasi sudah menjadi bubur** — Sudah terlanjur, tidak dapat diperbaiki atau diubah lagi.
+- ★ **Nasi sudah menjadi bubur** — Sudah terlanjur, tidak dapat diperbaiki atau diubah lagi.
 - **Nasi tak dingin, pinggan tak retak** — Orang selalu mengerjakan sesuatu dengan hati-hati.
 - **Naik dari janjang, turun dari tangga** — Melakukan suatu pekerjaan menurut aturan.
 - **Nasi tersaji di lutut** — Keuntungan yang diperoleh dengan mudah.
@@ -223,7 +230,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 ## P
 
-- **Panas setahun hilang oleh hujan sehari** — Segala kebaikan terhapus oleh hanya sedikit keburukan atau kesalahan.
+- ★ **Panas setahun hilang oleh hujan sehari** — Segala kebaikan terhapus oleh hanya sedikit keburukan atau kesalahan.
 - **Pandai berminyak air** — Pandai menyusun kata-kata untuk mencapai maksudnya.
 - **Pangsa menunjukkan bangsa, umpama durian** — Kita bisa melihat perangai seseorang melalui tutur katanya.
 - **Putih kapas dapat dibuat, putih hati berkeadaan** — Kebaikan hati yang bisa dilihat dari tingkah lakunya.
@@ -234,6 +241,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Raja adil raja disembah, raja lalim raja disanggah** — Raja yang adil disayangi dan raja yang zalim dibenci.
 - **Rambut sama hitam, hati masing-masing** — Semua orang mempunyai pendapat (kemauan) masing-masing.
 - **Retak-retak mentimun** — Retak halus-halus hanya di luar saja.
+- ★ **Rumput tetangga selalu lebih hijau** — Kita selalu menganggap milik orang lain lebih baik daripada milik sendiri.
 
 ## S
 
@@ -243,7 +251,8 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Sehari selembar benar, setahun selembar kain** — Suatu pekerjaan yang dilakukan dengan keyakinan dan kesabaran akan membuahkan hasil yang baik.
 - **Sekali air pasang, sekali tepian beranjak, sekali air di dalam, sekali pasir berubah** — Setiap terjadi perubahan pimpinannya, berubah pula aturannya.
 - **Sekali jalan terkena, dua kali jalan tahu, tiga kali jalan jera** — Bagaimanapun bodohnya seseorang, jika sekali tertipu, tak akan mau tertipu lagi untuk kedua kalinya.
-- **Sekali merengkuh dayung, dua tiga pulau terlampaui** — Sekali melakukan pekerjaan, beberapa maksud tercapai.
+- ★ **Sekali merengkuh dayung, dua tiga pulau terlampaui** — Sekali melakukan pekerjaan, beberapa maksud tercapai.
+- ★ **Sedikit demi sedikit, lama-lama menjadi bukit** — Usaha kecil yang dilakukan terus-menerus lama-lama membuat hasil besar.
 - **Seludang menolak mayang** — Sebutan untuk orang sombong dan melupakan orang lain yang telah berjasa dalam hidupnya.
 - **Seorang makan cempedak, semua kena getahnya** — Seorang berbuat salah, semua dianggap salah juga.
 - **Sepandai-pandai tupai melompat, sekali waktu jatuh juga** — Sepandai-pandainya manusia, suatu saat pasti pernah melakukan kesalahan juga.
@@ -253,8 +262,9 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Serigala berbulu domba** — Orang yang kelihatannya bodoh dan penurut tetapi sebenarnya kejam, jahat, dan curang.
 - **Sesal dahulu pendapatan, sesal kemudian tidak berguna** — Pikir dahulu masak-masak sebelum berbuat sesuatu (pikirkan untung dan ruginya).
 - **Setali tiga uang** — Sama saja, tidak ada bedanya.
+- ★ **Sudah jatuh tertimpa tangga** — Menderita kesialan berganda; satu musibah datang menyusul musibah lain.
 - **Sambil menyelam minum air** — Melakukan dua hal sekaligus atau memanfaatkan kesempatan dengan baik.
-- **Sedia payung sebelum hujan** — Bersiap-siap atau berjaga-jaga sebelum terjadi masalah atau kesulitan.
+- ★ **Sedia payung sebelum hujan** — Bersiap-siap atau berjaga-jaga sebelum terjadi masalah atau kesulitan.
 - **Selama hayat masih dikandung badan** — Selama masih hidup, tidak boleh putus asa.
 - **Semudah membalik telapak tangan** — Terlalu mudah.
 - **Seperti anak ayam kehilangan induknya** — Orang yang mengalami kebingungan dan kebimbangan dalam hatinya.
@@ -277,7 +287,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 - **Tertangguk pada ikan sama menguntungkan, tertanggung pada rangsang sama mengiraikan** — Suka dan duka dijalani bersama. Keuntungan yang didapatkan dinikmati bersama-sama, kesusahan yang dialami diatasi bersama-sama juga.
 - **Tiada rotan akar pun jadi** — Kalau tidak ada yang baik, yang kurang baik pun boleh juga.
 - **Tolak tangan berayun kaki, peluk tubuh mengajar diri** — Belajar untuk mengendalikan diri dan meninggalkan kebiasaan bersenang-senang.
-- **Tong kosong nyaring bunyinya** — Orang yang bodoh biasanya banyak cakapnya/pembicaraannya.
+- ★ **Tong kosong nyaring bunyinya** — Orang yang bodoh biasanya banyak cakapnya/pembicaraannya.
 - **Tong penuh tidak berguncang, tong setengah yang berguncang** — Orang yang berilmu tidak akan banyak bicara, tetapi orang bodoh biasanya banyak bicara seolah-olah tahu banyak hal.
 - **Tua-tua keladi, makin tua makin menjadi** — Orang tua yang bersikap seperti anak muda, terutama dalam masalah percintaan.
 - **Tak ada gunung tinggi yang tidak bisa didaki** — Tidak ada tantangan yang terlalu besar jika kita memiliki tekad dan usaha yang kuat.

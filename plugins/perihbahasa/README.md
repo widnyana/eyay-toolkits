@@ -12,14 +12,16 @@ rhyme.
 
 ## What It Does
 
-Takes a well-known Indonesian *peribahasa* and rewrites its closing clause
-into a witty, absurd, or flirty punchline — while keeping the original
-meter and matching the end rhyme. Three escalation levels: sarcastic/
-relatable, romance/baper, and flirty/spicy (only on request).
+Takes a well-known Indonesian *peribahasa* and remixes it — via a single-word
+pun, a moral reversal, a domain transplant (tech, office, money, mudik…), a
+punchline continuation, or a parallel couplet — while keeping the original
+meter and rhyme. The swapped word carries the meaning; the punchline stands
+alone, no explanation. Default tone is relatable/baper; flirty-spicy only on
+request.
 
 ## When to Use
 
-- You want a punchy, rhyming one-liner riffing on a classic Indonesian idiom
+- You want a punchy one-liner that riffs on a classic Indonesian idiom by pun, reversal, or transplant
 - Writing captions, memes, or a WhatsApp group punchline
 - You want several riffs across different proverbs, not just one
 
