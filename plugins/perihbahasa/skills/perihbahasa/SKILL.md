@@ -1,11 +1,12 @@
 ---
 name: perihbahasa
 description: |
-  Generate "Perihbahasa" — humorous, absurd, and flirty remixes of traditional
-  Indonesian proverbs (peribahasa). Use when asked to make a peribahasa lucu,
-  plesetan peribahasa, peribahasa gombal/nyeleneh, or any request to twist a
-  classic Indonesian idiom into a modern punchline while preserving its rhyme
-  and rhythm.
+  This skill should be used when the user asks to make a "perihbahasa",
+  "plesetan peribahasa", "peribahasa lucu", "peribahasa gombal",
+  "perihbahasa flirty/spicy", "plesetin peribahasa", a rhyming twist on a
+  classic Indonesian idiom, or a witty/flirty caption riffing on a proverb.
+  Generates humorous, absurd, and flirty remixes that preserve the original
+  meter and rhyme.
 ---
 
 # Perihbahasa (Peribahasa Humor, Absurd & Flirty)
@@ -57,7 +58,7 @@ Formula: `[Klausa A (Peribahasa Asli/Modifikasi)] + [Klausa B (Subversi Humor/Fl
 | *Ada udang di balik batu.* | **Ada udang di balik batu, ada hickey merah di balik kerah baju.** | 3 | Perfect (*batu* / *baju*) |
 | *Malu bertanya, sesat di jalan.* | **Malu bertanya, sesat di dalam celana.** | 3 | Near (*bertanya* / *celana*) |
 | *Air tenang menghanyutkan.* | **Air tenang menghanyutkan, kamu terlentang bikin melayang.** | 3 | Assonance (*menghanyutkan* / *melayang*) |
-| *Lain di bibir, lain di hati.* | **Lain di bibir, lain di Secondary Account.** | 2 | — |
+| *Lain di mulut lain di hati.* | **Lain di mulut, lain di Secondary Account.** | 2 | — |
 | *Tak kenal maka tak sayang.* | **Tak kenal maka tak tun tuang.** | 1 | Near (*kenal* / *tun*) |
 
 ## Generation Workflow
