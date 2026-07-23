@@ -103,7 +103,7 @@ rhyme, then subvert the second clause to build the remix. Format of each entry:
 
 ## L
 
-- **Lain di mulut lain di hati** — Yang dikatakan/diucapkan berbeda dengan isi hatinya.
+- **Lain di bibir, lain di hati** — Yang dikatakan/diucapkan berbeda dengan isi hatinya.
 - **Lain dulang lain kaki, lain orang lain hati** — Setiap orang punya pendapat, kehendak dan perasaan yang berbeda.
 - **Lain ladang lain belalang, lain lubuk lain ikannya** — Tiap-tiap negeri atau bangsa berlainan adat kebiasaannya.
 - **Lancar kaji karena diulang, pasah jalan karena diturut** — Segala sesuatu harus dilakukan berulang ulang supaya paham.

@@ -58,7 +58,7 @@ Formula: `[Klausa A (Peribahasa Asli/Modifikasi)] + [Klausa B (Subversi Humor/Fl
 | *Ada udang di balik batu.* | **Ada udang di balik batu, ada hickey merah di balik kerah baju.** | 3 | Perfect (*batu* / *baju*) |
 | *Malu bertanya, sesat di jalan.* | **Malu bertanya, sesat di dalam celana.** | 3 | Near (*bertanya* / *celana*) |
 | *Air tenang menghanyutkan.* | **Air tenang menghanyutkan, kamu terlentang bikin melayang.** | 3 | Assonance (*menghanyutkan* / *melayang*) |
-| *Lain di mulut lain di hati.* | **Lain di mulut, lain di Secondary Account.** | 2 | — |
+| *Lain di bibir, lain di hati.* | **Lain di bibir, lain di Secondary Account.** | 2 | — |
 | *Tak kenal maka tak sayang.* | **Tak kenal maka tak tun tuang.** | 1 | Near (*kenal* / *tun*) |
 
 ## Generation Workflow
