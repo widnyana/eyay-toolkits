@@ -108,6 +108,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/block-forbidden-git-add"
+    },
+    {
+      "name": "perihbahasa",
+      "description": "Generate humorous, absurd, and flirty Indonesian proverb (peribahasa) remixes with precise rhyme and cadence.",
+      "source": "./plugins/perihbahasa",
+      "category": "humor",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/perihbahasa"
     }
   ]
 }

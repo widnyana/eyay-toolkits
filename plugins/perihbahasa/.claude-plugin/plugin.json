@@ -1,0 +1,12 @@
+{
+  "name": "perihbahasa",
+  "version": "1.0.0",
+  "description": "Generate humorous, absurd, and flirty Indonesian proverb (peribahasa) remixes with precise rhyme and cadence.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["indonesian", "humor", "peribahasa", "wordplay", "creative-writing"]
+}
