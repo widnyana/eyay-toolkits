@@ -63,9 +63,15 @@ Formula: `[Klausa A (Peribahasa Asli/Modifikasi)] + [Klausa B (Subversi Humor/Fl
 ## Generation Workflow
 
 1. **Identify Target Idiom** — pick a well-known Indonesian proverb, or use
-   the one the user names.
+   the one the user names. When no specific proverb is requested, draw
+   candidates from `references/proverbs.md` (a curated corpus of ~130
+   traditional peribahasa with their meanings). To match a desired rhyme
+   ending, grep the corpus: `grep -i '<ending>' references/proverbs.md`
+   (e.g. `grep -i 'ang'` surfaces *menghanyutkan* / *melayang* candidates).
 2. **Analyze Phonetics & Meter** — break down the rhythm (syllable counts)
-   and ending rhymes of the original.
+   and ending rhymes of the original. The `— meaning` column in the corpus
+   is context only; the rhyme target is the proverb's own clause-ending
+   word, not the makna.
 3. **Draft the Subversion** — replace the second clause with a modern,
    absurd, or flirty twist at the requested escalation level.
 4. **Test the Flow** — read it aloud (mentally) to verify the punchline
@@ -104,3 +110,9 @@ Before finalizing a perihbahasa:
 - Ensure rhymes are crisp and match standard Indonesian speech patterns.
 - Stay at Level 1–2 by default; only escalate to Level 3 on explicit
   request, and never target a real, named individual.
+
+## References
+
+- **`references/proverbs.md`** — traditional Indonesian proverbs with their
+  meanings (source corpus for picking target idioms and analyzing their
+  meter/rhyme before subversion).
