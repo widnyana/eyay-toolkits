@@ -2,9 +2,9 @@
 
 Source corpus of traditional Indonesian proverbs for the **perihbahasa** skill.
 When the user does not name a specific proverb, pick target idioms from this
-list. For each entry, analyze the proverb's meter (syllable count) and ending
-rhyme, then subvert the second clause to build the remix. Format of each entry:
-**proverb** — meaning.
+list. For each entry, find the swappable keyword or the reversible moral (see
+`SKILL.md` → Techniques), then build the remix on a near-homophone that keeps
+the original cadence. Format of each entry: **proverb** — meaning.
 
 Entries every Indonesian knows by heart are tagged **★ berat** — these are prime
 perihbahasa targets, because subverting a deeply familiar line lands hardest
