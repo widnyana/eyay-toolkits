@@ -31,7 +31,6 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - **Ada angin ada pohonnya** — Segalahal ada asal-usulnya.
 - **Ada bukit di balik pendakian** — Ada masalah baru di balik masalah yang sudah dipecahkan.
 - **Air cucuran atap jatuh ke pelimbahan juga** — Keuntungan yang kecil tetap berguna.
-- **Air susu dibalas air tuba** — Kebaikan yang dibalas dengan kejahatan.
 
 ## B
 
@@ -143,7 +142,6 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - ★ **Hasrat hati memeluk gunung, apa daya tangan tak sampai** — Keinginan atau cita-cita yang mustahil dapat dicapai.
 - **Hemat pangkal kaya, rajin pangkal pandai** — Orang yang hidup hemat akan menjadi kaya, orang yang rajin belajar akan menjadi pandai.
 - **Hidup dikandung adat, mati dikandung tanah** — Selama hidup orang harus taat kepada adat kebiasaan dalam masyarakat.
-- **Hujan emas di negeri orang, hujan batu di negeri sendiri, baik juga di negeri sendiri** — Betapa senang dan bahagia di perantauan, tentu lebih senang dan bahagia di negeri sendiri.
 - **Hangat-hangat tahi ayam** — Kemauan yang tidak tetap (mudah berubah).
 - **Harapkan cemas, tak akan dapat selemas** — Mengharapkan atau memikirkan sesuatu tidak akan memberikan hasil yang sebanyak atau sebaik tindakan nyata.
 - **Harapkan pagar, pagar makan padi** — Kepercayaan terhadap seseorang atau sesuatu yang dapat merugikan kita sendiri.
@@ -199,14 +197,12 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - **Membagi sama adil, memotong sama panjang** — Jika membagi maupun memutuskan sesuatu hendaknya harus adil dan tidak berat sebelah.
 - **Membelah dada melihat hati** — Ungkapan untuk menyatakan kesungguhan.
 - **Menambak gunung, menggarami air laut** — Memberi bantuan kepada orang yang sama sekali tidak perlu dibantu.
-- **Menang jadi arang, kalah jadi abu** — Kalah ataupun menang sama-sama menderita.
 - **Menanti-nanti bagaikan bersuamikan raja** — Menantikan bantuan dari orang yang tidak dapat memberikan bantuan.
 - **Menepuk air di dulang, tepecik muka sendiri** — Jika berbuat sesuatu yang jahat maka akan terkena kembali kepada diri sendiri.
 - **Menggantang asap** — Melakukan perbuatan yang sia-sia.
 - **Menghela lembu dengan tali, menghela manusia dengan kata** — Segala pekerjaan harus dilakukan menurut tata cara aturannya masing-masing.
 - **Menohok teman seiring dalam lipatan** — Mencelakakan teman sendiri.
 - **Murah di mulut, mahal di timbangan** — Mudah sekali berjanji tetapi tidak pernah menepati.
-- **Musang berbulu ayam** — Orang jahat bersikap seperti orang baik.
 - **Musuh dalam selimut** — Musuh dalam kalangan/lingkungan sendiri.
 - **Makan buah simalakama** — Berada dalam dilema atau situasi sulit di mana setiap pilihan memiliki konsekuensi yang sulit.
 - **Makan bubur panas-panas** — Terlalu berharap akan memperoleh rezeki, lalu bertindak tergesa-gesa sehingga kecewa.
