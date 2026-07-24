@@ -11,37 +11,75 @@ description: |
 
 # Perihbahasa (Peribahasa Remix — Pun, Reversal, Transplant)
 
-**Perihbahasa** bukan sekadar "ganti klausa kedua dengan kata modern." Kerja utamanya adalah
-**menukar satu kata kunci** (atau membalik moral, atau memindahkan ke domain lain) sehingga
-makna baru muncul dari permainan kata itu sendiri. Rima dan ritme asli dipertahankan lewat
-*near-homophone*; *punchline* berdiri sendiri **tanpa dijelaskan**.
+**Peribahasa** (peri + bahasa) adalah pepatah biasa. **Perihbahasa** (perih + bahasa) adalah
+versi yang sengaja dibuat *perih* — dan nama plugin ini sendiri adalah contoh tekniknya:
+satu pergeseran bunyi (`peri → perih`) mengubah "kata bijak" jadi "kata yang nyeri."
 
-**Target imitasi:** `references/exemplars.md` — 23 baris gold-standard. Baca dulu, tiru
-kalibernya. Kalau outputmu tidak sekuat contoh di sana, buang dan ulang.
+**Perih itu bukan luka fisik.** Ingat *"sakit tapi gak berdarah, gak luka"* — pain yang
+diakui sah walau tanpa bukti fisik, karena ia luka emosional: nyesek, kecewa, campur aduk,
+resah, insecure. **Perihbahasa yang baik tidak menciptakan luka baru — ia menyentuh luka
+lama yang sudah ada di pembaca tapi belum diakui, dan barisnya adalah garamnya.** Teknik
+(Pun-Swap, Moral-Reversal, dst.) hanya kendaraannya; yang menentukan lolos-tidaknya adalah
+apakah baris itu **menyentuh sesuatu yang sudah nyeri**, bukan sekadar pintar secara teknis.
+
+**Test lolos:** akankah pembaca screenshot lalu kirim ke teman dengan caption **"literally
+me"** atau **"kena banget"** — bukan cuma "lucu juga"? Kalau jawabnya cuma "clever," itu
+plesetan, bukan perihbahasa. Lihat Anatomy #1 dan #11 di bawah untuk detail.
+
+**Target imitasi:** `references/exemplars.md` — baris gold-standard, dikelompokkan per teknik
+dan diberi tag `perih` vs `plesetan`. Baca dulu, tiru kalibernya. Kalau outputmu tidak
+sekuat contoh di sana, buang dan ulang.
 
 ## Anatomy — kenapa sebuah perihbahasa nendang
 
-1. **Pun-nya adalah maknanya, bukan dekorasi.** Kata yang ditukar harus membawa argumen nyata.
+1. **Perih, bukan sekadar pintar.** Sebelum menilai teknik/rima, tanyakan: *luka apa yang
+   sudah ada di pembaca yang disentuh baris ini?* Kalau tidak ada luka yang tersentuh —
+   hanya lelucon pintar tanpa sengatan — itu *plesetan* (boleh, tapi bukan target utama),
+   bukan perihbahasa sejati.
+2. **Pun-nya adalah maknanya, bukan dekorasi.** Kata yang ditukar harus membawa argumen nyata.
    `nila → async` works karena async memang "hal kecil yang merusak sistem besar."
-2. **Mainkan moral aslinya — sering dengan membaliknya.** Pertahankan moral di domain baru,
+3. **Mainkan moral aslinya — sering dengan membaliknya.** Pertahankan moral di domain baru,
    atau balik untuk membongkar kebenaran yang ditutupi peribahasa aslinya.
-3. **Relatable = spesifik, bukan *vibe*.** Sebut satu momen betulan (`jadian seminggu, move-on
+4. **Relatable = spesifik, bukan *vibe*.** Sebut satu momen betulan (`jadian seminggu, move-on
    sedasawarsa`), bukan ringkasan generik ("sedih karena di-ghosting").
-4. **Asimetri emosional = mesin yang dipakai ulang.** Sebab kecil : akibat besar, atau
+5. **Asimetri emosional = mesin yang dipakai ulang.** Sebab kecil : akibat besar, atau
    investasi besar : hasil kecil — diselipkan ke kerangka `se-… se-…`.
-5. **Tukar kata bedah, bukan tulis ulang klausa.** Makin sedikit kata diganti, makin keras
+6. **Tukar kata bedah, bukan tulis ulang klausa.** Makin sedikit kata diganti, makin keras
    "aha"-nya. `terbitlah terang → terdengarlah erang`; `jatuh → jauh`; `payung → kamu`.
-6. **Jaga kerangka fonetik via *near-homophone*.** `jatuh→jauh`, `terang→erang`,
+7. **Jaga kerangka fonetik via *near-homophone*.** `jatuh→jauh`, `terang→erang`,
    `beriak→teriak`, `tangan→kenangan`. Suara bertahan walau makna berbalik.
-7. **Pilih bentuk yang pas untuk lawakannya** — lihat katalog Techniques; jangan paksa satu
+8. **Pilih bentuk yang pas untuk lawakannya** — lihat katalog Techniques; jangan paksa satu
    bentuk untuk semua idiom.
-8. **Nada itu kerajinan; menjelaskan membunuhnya.** ALL-CAPS untuk marah, satu baris untuk
-   nendang, kadens pantun untuk puitis (`Malam menyingsing rindu menyongsong`). **Jangan
-   pernah jelaskan lelucon.**
-9. **Domain = rasa sakit yang kamu aktifkan.** tech, office, romance, money, mudik, LDR —
-   pilih yang punya derita betulan, bukan tema kabur.
-10. **Bobot budaya menguatkan.** Plesetin baris yang dihafal semua orang Indonesia (`Habis
+9. **Nada itu kerajinan; menjelaskan membunuhnya.** Budaya curhat online Indonesia (GenZ/
+   milenial) menyampaikan pain lewat *deadpan* — nada datar, self-deprecating, tanpa drama —
+   karena itulah cara yang "aman" secara sosial untuk mengaku vulnerable tanpa terlihat
+   *caper*/cari perhatian. Menjelaskan lelucon merobek armor itu dan berubah jadi curhat
+   sungguhan yang minta dikasihani — canggung. ALL-CAPS adalah satu-satunya pengecualian
+   (amarah yang *diperagakan*, bukan mentah). **Jangan pernah jelaskan lelucon.**
+10. **Domain = rasa sakit yang kamu aktifkan.** Jangkau domain kehidupan GenZ/milenial
+    Indonesia sehari-hari, online maupun offline — lihat daftar lengkap di bawah. Pilih yang
+    punya derita betulan, bukan tema kabur.
+11. **Bobot budaya menguatkan.** Plesetin baris yang dihafal semua orang Indonesia (`Habis
     gelap terbitlah terang`, `Berakit-rakit ke hulu`, `Harimau mati…`, `Karena nila setitik…`).
+
+## Domain — konteks hidup GenZ/milenial Indonesia
+
+Pilih domain dari derita nyata sehari-hari, online maupun offline. Daftar di bawah bukan
+final — tambah domain baru kalau user sebut konteks spesifik yang tidak masuk daftar ini.
+
+- **romance / LDR / HTS** — putus, ghosting, hubungan tanpa status/kejelasan, rindu jarak jauh
+- **circle / pertemanan** — di-fake, di-php-in circle, left-on-read grup chat, ketinggalan
+  circle lewat story orang lain
+- **keluarga** — tekanan "kapan nikah/lulus/kerja," dibanding-bandingkan sama sepupu/anak
+  tetangga, ekspektasi ortu
+- **medsos / comparison culture** — flexing, FOMO, julid, gap antara feed dan kenyataan/DM
+- **karir / quarter-life** — SKS (sistem kebut semalam) yang kebawa ke kerjaan, precarity,
+  disuruh "bersyukur" atas gaji kecil, burnout
+- **office** — senioritas, micromanagement, kerjaan numpuk, WFH/WFO politics
+- **tech** — bug, deploy, code review, sistem yang rapuh gara-gara hal kecil
+- **money** — boncos, gajian numpang lewat, cari cuan di luar negeri
+- **mudik** — kerinduan kampung halaman vs kerjaan yang tak selesai
+- **flirty / absurd** — nakal ringan, atau murni lucu tanpa maksud menyakiti
 
 ## Techniques
 
@@ -100,7 +138,7 @@ teknik — bukan varian dari satu idiom, kecuali diminta menggali satu idiom.
 | *Sudah jatuh tertimpa tangga.* | **Sudah jauh tertimpa rindu.** | Pun-Swap | LDR |
 | *Anak dipangku dilepaskan, beruk di rimba disusui.* | **Pacar di bahu dilepaskan, selingkuhan di bahu orang lain disayangi.** | Parallel-Couplet | romance |
 | *Panas setahun hilang oleh hujan sehari.* | **Rindu setahun dihapus jumpa sehari.** | Numeric-Asymmetry | LDR |
-| *(bentuk pantun)* | **Malam menyingsing rindu menyonsong.** | Pantun-Lyrical | romance |
+| *(bentuk pantun)* | **Malam menyingsing rindu menyongsong.** | Pantun-Lyrical | romance |
 
 ## Tone & Safety
 
@@ -114,16 +152,20 @@ teknik — bukan varian dari satu idiom, kecuali diminta menggali satu idiom.
 
 Sebelum mengirim:
 
+- [ ] **Perih, bukan cuma pintar** — menyentuh luka emosional yang sudah ada di pembaca
+      (nyesek/kecewa/campur aduk), lolos test "literally me" / "kena banget"
 - [ ] Menggali proverb spesifik (idealnya berbobot) dan menyebut tekniknya
 - [ ] Pun / kata yang ditukar **membawa makna**, bukan dekorasi
 - [ ] Kadens + rima ujung asli terjaga (via *near-homophone*, bukan rima dipaksakan)
-- [ ] Menyebut satu **momen spesifik** yang relatable
-- [ ] **Tanpa penjelasan** — berdiri sendiri dalam 1–2 baris
+- [ ] Menyebut satu **momen spesifik** yang relatable, dari domain kehidupan GenZ/milenial
+      Indonesia (online atau offline)
+- [ ] **Tanpa penjelasan** — berdiri sendiri dalam 1–2 baris, nada deadpan (kecuali ALL-CAPS
+      untuk amarah)
 - [ ] Peribahasa asli disertakan untuk konteks
 
 ## References
 
-- **`references/exemplars.md`** — 23 gold-standard exemplars dikelompokkan per teknik. Target
-  imitasi utama; baca sebelum generate.
+- **`references/exemplars.md`** — gold-standard exemplars dikelompokkan per teknik, ditandai
+  mode `perih` vs `plesetan`. Target imitasi utama; baca sebelum generate.
 - **`references/proverbs.md`** — korpus ~240 peribahasa tradisional + makna; entri berbobot
   ditandai `★ berat` sebagai target utama.

@@ -22,7 +22,7 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - ★ **Air beriak tanda tak dalam** — Orang yang banyak bicara biasanya tidak banyak ilmunya.
 - **Air diminum rasa duri, nasi dimakan rasa sekam** — Tidak enak makan dan minum (biasanya karena terlalu bersedih/duka).
 - ★ **Air susu dibalas dengan air tuba** — Perbuatan baik dibalas dengan perbuatan jahat.
-- **Air tenang menghanyutkan** — Orang yang kelihatannya pendiam, namun ternyata banyak menyimpan ilmu pengetahuan dalam pikirannya.
+- ★ **Air tenang menghanyutkan** — Orang yang kelihatannya pendiam, namun ternyata banyak menyimpan ilmu pengetahuan dalam pikirannya.
 - ★ **Anak dipangku dilepaskan, beruk di rimba disusui** — Mengabaikan yang dekat (anak sendiri) lalu memelihara yang jauh (beruk di hutan).
 - **Angin tak dapat ditangkap, asap tak dapat digenggam** — Rahasia itu tidak selamanya dapat disembunyikan, suatu waktu akan terbuka pula.
 - **Abu saja tak hinggap** — Kiasan kepada sesuatu yang sangat licin dan mengkilap (atau suatu hal yang tak terjangkau).
@@ -127,7 +127,7 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - **Gajah di pelupuk mata tak tampak, semut di seberang lautan tampak** — Kesalahan/aib sendiri yang besar tidak tampak.
 - **Gigi dengan lidah ada kalanya bergigit juga** — Walau persahabatan sangat akrab ada kalanya berselisih juga.
 - ★ **Guru kencing berdiri, murid kencing berlari** — Kelakuan orang bawahan selalu mencontoh kelakuan atasannya.
-- **Gajah mati meninggalkan gading, harimau mati meninggalkan belang** — Keberhasilan atau prestasi seseorang yang ditinggalkan setelah mereka tiada.
+- ★ **Gajah mati meninggalkan gading, harimau mati meninggalkan belang** — Keberhasilan atau prestasi seseorang yang ditinggalkan setelah mereka tiada.
 - **Gantung harap di ujung tanduk** — Berharap pada sesuatu yang tidak pasti atau tidak bisa diandalkan.
 - **Gantung sejuta harapan di ujung jari** — Memiliki banyak harapan atau ekspektasi yang tinggi.
 - **Gantungkan cita-cita setinggi langit** — Menetapkan tujuan yang tinggi dan tidak terbatas.
@@ -255,7 +255,7 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - ★ **Sedikit demi sedikit, lama-lama menjadi bukit** — Usaha kecil yang dilakukan terus-menerus lama-lama membuat hasil besar.
 - **Seludang menolak mayang** — Sebutan untuk orang sombong dan melupakan orang lain yang telah berjasa dalam hidupnya.
 - **Seorang makan cempedak, semua kena getahnya** — Seorang berbuat salah, semua dianggap salah juga.
-- **Sepandai-pandai tupai melompat, sekali waktu jatuh juga** — Sepandai-pandainya manusia, suatu saat pasti pernah melakukan kesalahan juga.
+- ★ **Sepandai-pandai tupai melompat, sekali waktu jatuh juga** — Sepandai-pandainya manusia, suatu saat pasti pernah melakukan kesalahan juga.
 - **Seperti cacing kepanasan** — Tidak tenang, selalu gelisah.
 - **Seperti durian dengan mentimun** — Orang lemah/miskin/bodoh melawan orang kuat/kaya/pandai.
 - **Seperti lebah, mulut bawa madu, pantat bawa sengat** — Berwajah rupawan namun perilakunya jahat.
@@ -291,7 +291,7 @@ perihbahasa targets, because subverting a deeply familiar line lands hardest
 - **Tong penuh tidak berguncang, tong setengah yang berguncang** — Orang yang berilmu tidak akan banyak bicara, tetapi orang bodoh biasanya banyak bicara seolah-olah tahu banyak hal.
 - **Tua-tua keladi, makin tua makin menjadi** — Orang tua yang bersikap seperti anak muda, terutama dalam masalah percintaan.
 - **Tak ada gunung tinggi yang tidak bisa didaki** — Tidak ada tantangan yang terlalu besar jika kita memiliki tekad dan usaha yang kuat.
-- **Tak kenal maka tak sayang** — Kesempatan untuk mencintai atau menghargai seseorang hanya muncul ketika kita mengenal mereka lebih baik.
+- ★ **Tak kenal maka tak sayang** — Kesempatan untuk mencintai atau menghargai seseorang hanya muncul ketika kita mengenal mereka lebih baik.
 - **Takkan ada katak beranak ular** — Seseorang yang berjiwa pengecut selamanya tidak akan menjadi pemberani.
 
 ## U
