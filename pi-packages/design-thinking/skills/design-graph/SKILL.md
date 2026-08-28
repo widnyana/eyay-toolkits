@@ -94,5 +94,5 @@ VERDICT line.
 
 ## Worked example
 
-See the end of the [Graph Protocol](/skill:graph-protocol) skill for a complete, non-TS worked
+See the end of [Graph Protocol](/skill:graph-protocol) for a complete, non-TS worked
 example (a resumable URL-sync CLI in Python) with all sections filled.

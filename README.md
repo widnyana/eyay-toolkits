@@ -2,7 +2,7 @@
 
 [![skills.sh](https://skills.sh/b/widnyana/eyay-toolkits)](https://skills.sh/widnyana/eyay-toolkits)
 
-Claude Code plugins for people who'd rather ship than configure.
+Claude Code plugins and pi packages for people who'd rather ship than configure.
 
 These started as things I kept re-teaching Claude in every session -- review patterns, decimal validation traps, how to write without sounding like a press release. Eventually I packed them into skills so I could stop repeating myself. If any of them save you time, good. Steal them.
 
@@ -26,6 +26,12 @@ These started as things I kept re-teaching Claude in every session -- review pat
 ```bash
 npx skills add widnyana/eyay-toolkits
 ```
+
+## pi packages
+
+| Package | What it does | README |
+|---|---|---|
+| **design-thinking** | [pi](https://pi.dev) extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
 
 ## visual-gen samples
 

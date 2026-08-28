@@ -1,117 +1,82 @@
 # design-thinking — a pi package
 
-**Design Thinking · Design Graph · Graph Protocol** — a stack-agnostic design
-methodology for [pi](https://pi.dev). It turns every plan, review, and refactor
-into an annotated call graph: nodes are functions, edges are data flow.
+AI coding agents ship code before asking what breaks. This extension flips the
+order: with `/dt` active, [pi](https://pi.dev) draws the call graph first —
+nodes are functions, edges are data flow, every failure path is named — then
+writes code that *is* the graph. Plans, reviews, and refactors render in a
+fixed, mechanically checkable notation (Graph Protocol) that looks the same in
+Go, Rust, Python, or TypeScript.
 
-> **Attribution**: the underlying methodology is the work of
-> [r17x](https://github.com/r17x) —
-> [Design Thinking (gist)](https://gist.github.com/r17x/90eb2f7be93932b5693753aedb09c01a),
-> originally formulated for Effect-TS. This package is widnyana's
-> transformation of those concepts into a general, language-neutral pi
-> extension and prompt set. See [LICENSE](LICENSE).
-
-## The three pillars
-
-| Pillar | What it is |
-|---|---|
-| **Design Thinking** | The mindset: problem-first, a §1–§10 pipeline — shapes → happy path (A) → cardinality → break points (E) → requirements (R) → boundaries → behavior layers → scope → test layers → verdict. |
-| **Design Graph** | The artifact: the annotated call graph of a concrete problem. Drawn before code, reconstructed from code, diffed against code. |
-| **Graph Protocol** | The notation: fixed sections and markers (`⟳retry ↯escape ☠die 🔒boundary (1)(N)(T)`) so graphs from any language render identically and are mechanically checkable. |
-
-Language-neutral by design: Go, Rust, Python, TypeScript, SQL — the graph is
-the same, only the vocabulary inside annotations changes.
-
-## Preview
-
-```
-PROBLEM: sync a list of URLs to local files, resumable, with a status line
-
-X → DesignGraph<A, E, R>
-│              │   │  │  │
-│              │   │  │  └─ R: Http, Clock, Logger      (§5)
-│              │   │  └──── E: NetErr, DiskErr          (§4)
-│              │   └─────── A: (url, bytes), Status     (§2)
-│              │
-│              └─ nodes = functions, edges = data flow
-│
-└─ the problem
-
-GRAPH:
-  load_state → plan → fetch → download → write → report
-  │                       │                  │
-  │                       ├─ E: NetErr ⟳retry×3 → ↯escape(skip)
-  │                       └─ 🔒 raw bytes → Downloaded
-  └─ 🔒 state file → trusted
-```
+Method by [r17x](https://github.com/r17x) ([Design Thinking
+gist](https://gist.github.com/r17x/90eb2f7be93932b5693753aedb09c01a),
+originally Effect-TS), generalized into this stack-agnostic pi package.
+Licensed MIT — see [LICENSE](LICENSE).
 
 ## Install
 
 ```bash
-# from npm (listed at https://pi.dev/packages)
-pi install npm:@damarseta/design-thinking
+# from npm
+pi install npm:@widnyana/design-thinking
 
 # pinned version
-pi install npm:@damarseta/design-thinking@1.0.0
+pi install npm:@widnyana/design-thinking@0.0.1
 
 # from a local checkout of this repo
 pi install /absolute/path/to/pi-packages/design-thinking
 
 # try without installing
-pi -e npm:@damarseta/design-thinking
+pi -e npm:@widnyana/design-thinking
 pi -e ./pi-packages/design-thinking
 ```
 
-> The `npm:` prefix is required — a bare name is parsed by pi as a local
-> path, not an npm package.
-
-## Publishing
-
-The package is published to npm from its own directory in this monorepo
-(`repository.directory` is set for npm/`pi.dev` linking):
-
-```bash
-cd pi-packages/design-thinking
-npm login                 # token lands in ~/.npmrc, never in the repo
-npm publish --dry-run     # verify tarball contents first (verify_pack)
-pi -e .                   # verify /dt + prompts load (verify_load)
-npm publish --access public   # scoped packages default to private; public is free
-```
-
-Publishing requires the `@damarseta` scope to exist — create the free npm
-org at https://www.npmjs.com/org/create (or own the `damarseta` username);
-npm rejects publishes to a scope you don't control with 403 Forbidden.
-Bump `version` in `package.json` for every publish — npm rejects duplicate
-versions.
+> The `npm:` prefix is required — a bare name is parsed by pi as a local path.
 
 ## Usage
 
 | Command | What it does |
 |---|---|
-| `/dt` | Toggle Design Thinking mode. While on, plans and reviews render as Design Graphs in Graph Protocol form. Persists across restarts. `/dt on\|off\|status` also work. |
+| `/dt` | Toggle Design Thinking mode. While on, plans and reviews render as Design Graphs. Persists across restarts. |
+| `/dt on\|off\|status` | Set or query the mode explicitly. |
+| `/dt <prompt>` | Turn the mode **on** (never off), then run `<prompt>` under it — graph and clarifying questions first, implementation after your go-ahead. |
 | `/cg <module \| task>` | Generate a call graph: extract the graph existing code implements, or sketch one for a task. |
 | `/cg-plan <task>` | Design before code — full Design Graph, then implement to match it. |
-| `/cg-review [file\|module\|diff]` | Reconstruct the implemented graph and diff it against the method's checklist; findings grouped by § number, ends with a VERDICT. |
-| `/cg-map <language\|framework>` | Map the Protocol vocabulary onto a stack's idioms (Result vs exceptions, RAII vs defer, DI patterns). |
+| `/cg-review [file\|module\|diff]` | Reconstruct the implemented graph, diff it against the method's checklist, end with a VERDICT. |
+| `/cg-map <language\|framework>` | Map the Protocol vocabulary onto a stack's idioms (Result vs exceptions, RAII vs defer). |
 
-## Structure
+## A real-world walkthrough
+
+Task: *add rate limiting to an Express API.* One design pass, end to end:
 
 ```
-design-thinking/
-├── extensions/design-thinking.ts   # /dt toggle + system-prompt injection
-├── prompts/                        # /cg, /cg-plan, /cg-review, /cg-map
-├── skills/                         # loaded on demand (progressive disclosure)
-│   ├── graph-protocol/   # = references/protocol.md, as a skill
-│   ├── design-method/    # = references/method.md, as a skill
-│   └── design-graph/     # = references/design-graph.md, as a skill
-└── references/
-    ├── protocol.md      # source of the graph-protocol skill
-    ├── method.md        # source of the design-method skill
-    ├── design-graph.md  # source of the design-graph skill
-    └── effect-ts.md     # r17x's original gist, verbatim (archival, NOT a skill)
+> /dt                                        # mode on — graph-first rules injected
+
+> /cg-plan add per-user rate limiting to the API
+    → agent sketches a DesignGraph first (SHAPES, GRAPH, E, boundaries),
+      then implements code that matches it
+
+> /cg-map nodejs                             # optional: before planning, when the
+    → maps ⟳↯☠🔒 onto express idioms         #   stack's vocabulary is unclear
+      (middleware = boundary, AbortError = ↯escape)
+
+> git diff → review it with:
+> /cg-review src/middleware/ratelimit.ts
+    → extracts the graph the code ACTUALLY implements, diffs it against
+      the planned one, findings grouped by § number, ends with VERDICT
+
+> /dt off                                    # done — back to normal mode
 ```
 
-## License
+The cycle:
 
-MIT — original concepts © r17x, pi adaptation © Widnyana Putra. See
-[LICENSE](LICENSE).
+```mermaid
+flowchart LR
+    A["/dt on"] --> B{"stack idioms<br/>clear?"}
+    B -- no --> M["/cg-map nodejs"]
+    B -- yes --> P
+    M --> P["/cg-plan <task>"]
+    P --> C[implement] --> R["/cg-review <file>"] --> O["/dt off"]
+```
+
+Skills (`graph-protocol`, `design-method`, `design-graph`) are loaded by the
+agent on demand mid-turn — you never invoke them directly; the `/cg*` prompts
+and `/dt` mode tell the model when to reach for them.

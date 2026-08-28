@@ -15,6 +15,8 @@
  *   /dt            toggle Design Thinking mode
  *   /dt on|off     set explicitly
  *   /dt status     show current state
+ *   /dt <prompt>   turn mode ON (never off), then run <prompt> as a user
+ *                  message — graph + clarifying questions before implementation
  *
  * Stack-agnostic: no language detection, no auto-enable. Adapt the vocabulary
  * to whatever stack the project uses; never the discipline.
@@ -31,7 +33,7 @@ const STATE_TYPE = "design-thinking-state";
  * Absolute path to the shipped references/ directory, resolved from this
  * file's own location (§6 boundary: import.meta.url → fs path). Works from
  * a repo checkout and from an npm install — e.g.
- * ~/.pi/agent/npm/node_modules/@damarseta/design-thinking/references — so
+ * ~/.pi/agent/npm/node_modules/@widnyana/design-thinking/references — so
  * the model can actually read the full specs in /dt mode.
  */
 const REF_DIR = path.resolve(
@@ -40,7 +42,7 @@ const REF_DIR = path.resolve(
 	"references",
 );
 
-/** Compact distilled prompt block injected while active (~25 lines). */
+/** Compact distilled prompt block injected while active (~33 lines). */
 const DISTILLED = `
 DESIGN THINKING MODE — active.
 Read the problem. Draw the data flow as a call graph. Write code that IS the graph.
@@ -65,6 +67,8 @@ Rules:
 - The happy path (A) stays readable; failure handling lives at defined join points.
 - Each layer scopes its own E; inner errors never leak through.
 - If the code doesn't match the call graph, the implementation is wrong.
+- For build/fix/refactor tasks: present the Design Graph and any clarifying
+  questions FIRST; implement only after the user approves the design.
 - Adapt vocabulary to the current language/stack; never the discipline.
 
 Full specs — read these when a section needs detail:
@@ -119,16 +123,20 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// /dt — the Design Thinking tool. Toggles mode, or /dt on|off|status.
 	pi.registerCommand("dt", {
-		description: "Toggle Design Thinking mode (injects call-graph-first rules)",
+		description: "Design Thinking mode: /dt toggles, on|off|status set/query, anything else runs as a prompt with mode on",
 		handler: async (args, ctx) => {
-			const arg = (args ?? "").trim().toLowerCase();
+			const arg = (args ?? "").trim();
+			const lower = arg.toLowerCase();
 
-			if (arg === "status") {
+			if (lower === "status") {
 				ctx.ui.notify(`Design Thinking mode: ${enabled ? "on" : "off"}`, "info");
 				return;
 			}
 
-			enabled = arg === "on" ? true : arg === "off" ? false : !enabled;
+			// "on"/"off" set explicitly; anything else is a prompt to run in this
+			// mode and always turns the mode ON (never toggles it off); bare /dt toggles.
+			const prompt = /^(on|off|status)$/.test(lower) ? "" : arg;
+			enabled = lower === "on" || prompt ? true : lower === "off" ? false : !enabled;
 			persist();
 			applyStatus(ctx);
 			ctx.ui.notify(
@@ -137,6 +145,14 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 					: "Design Thinking OFF",
 				"info",
 			);
+
+			if (prompt) {
+				// deliverAs "steer": sends immediately when idle, queues mid-stream.
+				await pi.sendUserMessage(
+					`${prompt}\n\n(Design Thinking is ON: before implementing, present the Design Graph (Graph Protocol) and any clarifying questions, then wait for my go-ahead.)`,
+					{ deliverAs: "steer" },
+				);
+			}
 		},
 	});
 
