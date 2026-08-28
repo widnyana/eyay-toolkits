@@ -1,0 +1,150 @@
+/**
+ * Design Thinking — pi extension
+ *
+ * Adopts the three pillars:
+ *   - Design Thinking : the mindset (§1–§10 pipeline, problem-first)
+ *   - Design Graph    : the artifact (annotated call graph of a concrete problem)
+ *   - Graph Protocol  : the notation spec (fixed sections, fixed markers)
+ *
+ * When /dt mode is active, every turn appends a compact distilled block to the
+ * system prompt so design/plan/review answers render as Design Graphs in
+ * Graph Protocol form. Full specs live in the package's references/ directory,
+ * loaded on demand — not inlined here, to keep the injected prompt small.
+ *
+ * Commands:
+ *   /dt            toggle Design Thinking mode
+ *   /dt on|off     set explicitly
+ *   /dt status     show current state
+ *
+ * Stack-agnostic: no language detection, no auto-enable. Adapt the vocabulary
+ * to whatever stack the project uses; never the discipline.
+ */
+
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+
+const STATE_TYPE = "design-thinking-state";
+
+/**
+ * Absolute path to the shipped references/ directory, resolved from this
+ * file's own location (§6 boundary: import.meta.url → fs path). Works from
+ * a repo checkout and from an npm install — e.g.
+ * ~/.pi/agent/npm/node_modules/@damarseta/design-thinking/references — so
+ * the model can actually read the full specs in /dt mode.
+ */
+const REF_DIR = path.resolve(
+	path.dirname(fileURLToPath(import.meta.url)),
+	"..",
+	"references",
+);
+
+/** Compact distilled prompt block injected while active (~25 lines). */
+const DISTILLED = `
+DESIGN THINKING MODE — active.
+Read the problem. Draw the data flow as a call graph. Write code that IS the graph.
+
+X → DesignGraph<A, E, R>
+│              │   │  │  │
+│              │   │  │  └─ R: what each node needs      (§5)
+│              │   │  └──── E: where the graph breaks    (§4)
+│              │   └─────── A: what flows through nodes  (§2)
+│              │
+│              └─ nodes = functions, edges = data flow
+│
+└─ the problem
+
+Pipeline: shapes → graph(A) → cardinality → E(⟳retry ↯escape ☠die) → R →
+🔒 parse at boundaries → ⛈ orthogonal behavior → scope → test-R → verdict.
+
+Rules:
+- Design, plan, and review answers must render a Design Graph in Graph Protocol
+  form — fixed sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES,
+  BEHAVIOR, SCOPE, TEST LAYERS, VERDICT.
+- The happy path (A) stays readable; failure handling lives at defined join points.
+- Each layer scopes its own E; inner errors never leak through.
+- If the code doesn't match the call graph, the implementation is wrong.
+- Adapt vocabulary to the current language/stack; never the discipline.
+
+Full specs — read these when a section needs detail:
+- ${REF_DIR}/protocol.md      (Graph Protocol: notation spec + worked example)
+- ${REF_DIR}/method.md        (the §1–§10 method, generalized)
+- ${REF_DIR}/design-graph.md  (the artifact spec + completeness checklist)
+`.trim();
+
+interface DtState {
+	enabled: boolean;
+}
+
+export default function designThinkingExtension(pi: ExtensionAPI) {
+	let enabled = false;
+
+	function applyStatus(ctx: ExtensionContext) {
+		ctx.ui.setStatus(
+			"design-thinking",
+			enabled ? "design-thinking: on" : undefined,
+		);
+	}
+
+	function persist() {
+		pi.appendEntry<DtState>(STATE_TYPE, { enabled });
+	}
+
+	function restore(ctx: ExtensionContext) {
+		const branch = ctx.sessionManager.getBranch();
+		let restored: boolean | undefined;
+		for (const entry of branch) {
+			if (entry.type === "custom" && entry.customType === STATE_TYPE) {
+				const data = entry.data as DtState | undefined;
+				if (data && typeof data.enabled === "boolean") {
+					restored = data.enabled;
+				}
+			}
+		}
+		if (restored !== undefined) {
+			enabled = restored;
+		}
+	}
+
+	// Restore toggle state when a session starts, loads, or reloads.
+	pi.on("session_start", async (_event, ctx) => {
+		restore(ctx);
+		applyStatus(ctx);
+	});
+
+	pi.on("session_shutdown", async (_event, ctx) => {
+		ctx.ui.setStatus("design-thinking", undefined);
+	});
+
+	// /dt — the Design Thinking tool. Toggles mode, or /dt on|off|status.
+	pi.registerCommand("dt", {
+		description: "Toggle Design Thinking mode (injects call-graph-first rules)",
+		handler: async (args, ctx) => {
+			const arg = (args ?? "").trim().toLowerCase();
+
+			if (arg === "status") {
+				ctx.ui.notify(`Design Thinking mode: ${enabled ? "on" : "off"}`, "info");
+				return;
+			}
+
+			enabled = arg === "on" ? true : arg === "off" ? false : !enabled;
+			persist();
+			applyStatus(ctx);
+			ctx.ui.notify(
+				enabled
+					? "Design Thinking ON — plans and reviews will render as Design Graphs (Graph Protocol)"
+					: "Design Thinking OFF",
+				"info",
+			);
+		},
+	});
+
+	// While active, append the distilled block to the system prompt every turn.
+	pi.on("before_agent_start", async (event) => {
+		if (!enabled) return undefined;
+		return {
+			systemPrompt: event.systemPrompt + "\n\n" + DISTILLED + "\n",
+		};
+	});
+}

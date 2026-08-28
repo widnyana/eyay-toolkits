@@ -1,0 +1,50 @@
+{
+  "name": "@damarseta/design-thinking",
+  "version": "1.0.0",
+  "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for pi. Turns every plan, review, and refactor into an annotated call graph. Method originally by r17x; generalized to a pi package by widnyana.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "contributors": [
+    {
+      "name": "r17x",
+      "url": "https://github.com/r17x",
+      "note": "Original Design Thinking concepts and methodology"
+    }
+  ],
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "prompts",
+    "skills",
+    "references",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/design-thinking"
+  },
+  "keywords": [
+    "pi-package",
+    "design",
+    "architecture",
+    "methodology",
+    "call-graph"
+  ],
+  "pi": {
+    "extensions": ["./extensions"],
+    "prompts": ["./prompts"],
+    "skills": ["./skills"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.84.3",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
