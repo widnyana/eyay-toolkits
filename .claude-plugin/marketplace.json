@@ -7,7 +7,7 @@
     "email": "wid@widnyana.web.id"
   },
   "metadata": {
-    "version": "1.0.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
@@ -119,6 +119,24 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/perihbahasa"
+    },
+    {
+      "name": "design-thinking",
+      "description": "Design Thinking · Design Graph · Graph Protocol — draw the call graph before writing code, review, and refactor against it.",
+      "source": "./plugins/design-thinking",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "contributors": [
+        {
+          "name": "r17x",
+          "url": "https://github.com/r17x",
+          "note": "Original Design Thinking concepts and methodology"
+        }
+      ],
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/design-thinking"
     }
   ]
 }

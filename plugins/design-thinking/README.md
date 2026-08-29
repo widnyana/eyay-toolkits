@@ -1,17 +1,18 @@
+# design-thinking
 
-# design-thinking — a pi package
-
-AI coding agents ship code before asking what breaks. This extension flips the
-order: with `/dt` active, [pi](https://pi.dev) draws the call graph first —
-nodes are functions, edges are data flow, every failure path is named — then
-writes code that *is* the graph. Plans, reviews, and refactors render in a
-fixed, mechanically checkable notation (Graph Protocol) that looks the same in
-Go, Rust, Python, or TypeScript.
+AI coding agents ship code before asking what breaks. This plugin flips the
+order: with `/dt` active, plans and reviews draw the call graph first — nodes
+are functions, edges are data flow, every failure path is named — then code
+follows that *is* the graph. Plans, reviews, and refactors render in a fixed,
+mechanically checkable notation (Graph Protocol) that looks the same in Go,
+Rust, Python, or TypeScript.
 
 Method by [r17x](https://github.com/r17x) ([Design Thinking
 gist](https://gist.github.com/r17x/90eb2f7be93932b5693753aedb09c01a),
-originally Effect-TS), generalized into this stack-agnostic pi package.
-Licensed MIT — see [LICENSE](LICENSE).
+originally Effect-TS), generalized into this stack-agnostic Claude Code
+plugin. Also available as a [pi](https://pi.dev)/OMP package —
+`pi-packages/design-thinking` in this repo. Licensed MIT — see
+[LICENSE](LICENSE).
 
 ## Why
 
@@ -36,24 +37,8 @@ change has a failure path worth agreeing on before it's written.
 ## Install
 
 ```bash
-# from npm
-pi install npm:@widnyana/design-thinking
-
-# via OMP
-omp install npm:@widnyana/design-thinking
-
-# pinned version
-pi install npm:@widnyana/design-thinking@0.0.1
-
-# from a local checkout of this repo
-pi install /absolute/path/to/pi-packages/design-thinking
-
-# try without installing
-pi -e npm:@widnyana/design-thinking
-pi -e ./pi-packages/design-thinking
+/plugin install design-thinking@eyay-toolkits
 ```
-
-> The `npm:` prefix is required — a bare name is parsed by pi as a local path.
 
 ## Usage
 
@@ -102,5 +87,19 @@ flowchart LR
 ```
 
 Skills (`graph-protocol`, `design-method`, `design-graph`) are loaded by the
-agent on demand mid-turn — you never invoke them directly; the `/cg*` prompts
-and `/dt` mode tell the model when to reach for them.
+agent on demand mid-turn — you never invoke them directly; the `/cg*`
+commands and `/dt` mode tell the model when to reach for them.
+
+## How `/dt` persists across restarts
+
+`/dt` writes its on/off state to `.claude/design-thinking.local.md`
+(`enabled: true|false`) in your project. A `SessionStart` hook reads that file
+once per session and, if enabled, re-announces the mode — so it survives a
+Claude Code restart without re-injecting the mode block on every single turn.
+
+Add this to your project's `.gitignore` (it's per-user, per-project state,
+not something to commit):
+
+```gitignore
+.claude/*.local.md
+```

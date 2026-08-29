@@ -1,0 +1,19 @@
+{
+  "name": "design-thinking",
+  "version": "0.1.1",
+  "description": "Design Thinking · Design Graph · Graph Protocol — draw the call graph before writing code. Turns plans, reviews, and refactors into an annotated, stack-agnostic call graph.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "contributors": [
+    {
+      "name": "r17x",
+      "url": "https://github.com/r17x",
+      "note": "Original Design Thinking concepts and methodology"
+    }
+  ],
+  "license": "MIT",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["design", "architecture", "methodology", "call-graph", "planning"]
+}
