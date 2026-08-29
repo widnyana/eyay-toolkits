@@ -2,3 +2,5 @@ plugins/visual-gen/test-output/
 node_modules/
 __pycache__
 .local/
+.codegraph/
+.dual-graph/
