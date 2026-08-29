@@ -38,6 +38,12 @@ pi:
 pi uninstall npm:@widnyana/design-thinking
 ```
 
+Plugins installed on pi by directory path (see [INSTALL.md](INSTALL.md)) are removed the same way, with the path as `pi list` shows it:
+
+```bash
+pi remove /path/to/eyay-toolkits/plugins/prose-engineers
+```
+
 OMP (the `uninstall` target is the same spec you installed with — check exact names with `omp plugin list`):
 
 ```bash

@@ -29,6 +29,8 @@ pi install npm:@widnyana/design-thinking
 omp install npm:@widnyana/design-thinking
 ```
 
+The Claude Code plugins that are skill-only (e.g. **prose-engineers**) also load in the [pi](https://pi.dev) coding agent — see [INSTALL.md](INSTALL.md).
+
 Uninstalling anything: see [UNINSTALL.md](UNINSTALL.md).
 
 ## The plugins

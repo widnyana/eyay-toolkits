@@ -40,6 +40,21 @@ npx skills add widnyana/eyay-toolkits
 
 Uninstall: `npx skills remove` (interactive). See [UNINSTALL.md](UNINSTALL.md).
 
+## pi coding agent (plugins)
+
+Most of these plugins are skill-only, and skills are the same format across Claude Code and [pi](https://pi.dev) — so they load in pi too. Clone the repo and install the plugin directory as a package; pi auto-discovers its `skills/` directory:
+
+```bash
+git clone https://github.com/widnyana/eyay-toolkits
+pi install /path/to/eyay-toolkits/plugins/prose-engineers
+```
+
+Each skill registers as a `/skill:<name>` command (e.g. `/skill:technical-writer`). Verify with `pi list`.
+
+Works for any plugin whose contents are just `skills/`: **bmad-sprint-run**, **career-tools**, **evm-decimal-validation**, **perihbahasa**, **prose-engineers**, **sui-dev-tools**, **ts-backend-dev**, **visual-gen**. Plugins that depend on Claude Code–specific hooks, agents, or commands (**block-forbidden-git-add**, **design-thinking**, **solana-onchain**) are Claude Code-only — though **design-thinking** has a native pi package instead (below).
+
+Update: `git pull` then re-run the `pi install` command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).
+
 ## pi packages
 
 This repo also ships packages for [pi](https://pi.dev) under `pi-packages/`:
