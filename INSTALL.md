@@ -26,3 +26,15 @@ Verify with `/plugin list` or `/skills`. Restart Claude Code or open a new sessi
 Uninstall any time: `/plugin uninstall <plugin-name>`
 
 To update: re-run the install command. Then restart Claude Code.
+
+## pi packages
+
+This repo also ships packages for [pi](https://pi.dev) under `pi-packages/`:
+
+```bash
+pi install npm:@widnyana/design-thinking
+# or via OMP
+omp install npm:@widnyana/design-thinking
+```
+
+See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md) for usage.

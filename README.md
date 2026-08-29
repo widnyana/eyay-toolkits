@@ -33,6 +33,12 @@ npx skills add widnyana/eyay-toolkits
 |---|---|---|
 | **design-thinking** | [pi](https://pi.dev) extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
 
+```bash
+pi install npm:@widnyana/design-thinking
+# or via OMP
+omp install npm:@widnyana/design-thinking
+```
+
 ## visual-gen samples
 
 | Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |

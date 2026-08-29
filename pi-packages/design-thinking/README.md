@@ -18,6 +18,9 @@ Licensed MIT — see [LICENSE](LICENSE).
 # from npm
 pi install npm:@widnyana/design-thinking
 
+# via OMP
+omp install npm:@widnyana/design-thinking
+
 # pinned version
 pi install npm:@widnyana/design-thinking@0.0.1
 
