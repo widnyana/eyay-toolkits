@@ -18,7 +18,14 @@ Produces writing that leads with the problem, uses concrete numbers and real exa
 
 Write technical documentation, articles, reviews, and postmortems.
 
-**When to use**: blog posts, postmortems, code reviews, how-to guides, API docs.
+**When to use**: blog posts, postmortems, code reviews, how-to guides, API docs. Also
+"make this scannable" or "nobody finishes reading this".
+
+**References**:
+- `references/patterns.md` -- structure templates (default, how-to, review, explanation, postmortem)
+- `references/reading-psychology.md` -- research on how humans read technical writing
+  (scanning patterns, the 10-second dwell decision, working-memory limits, and what
+  the attention-span numbers actually say)
 
 ### management-theatre
 
@@ -51,4 +58,6 @@ Satirical writing about organisational life — the gap between how work is desc
 - Problem-first framing (why should anyone read this?)
 - Concrete over abstract (real numbers, real code, real scenarios)
 - Direct with humility ("We found X works, but your mileage may vary")
+- Structured for scanning (headings carry the argument, payload at the anchors)
+- Resumable sections (readers leave and come back every ~47 seconds)
 - No ALL CAPS headers, no marketing language

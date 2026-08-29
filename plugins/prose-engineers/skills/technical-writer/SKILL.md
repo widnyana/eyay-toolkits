@@ -1,304 +1,237 @@
 ---
 name: technical-writer
 description: |
-  Write technical documentation, blog articles, code reviews, and product writeups in a storytelling style that's direct, humble, and problem-first. 
-  
-  Use this skill whenever the user wants to publish articles, write technical reviews, document processes, or explain systems in a way that's concrete and human. This includes API docs, how-to guides, product comparisons, incident postmortems, feature writeups, and code reviews. The skill applies whether you're writing for public blogs, internal teams, or personal knowledge vaults. Provide both public-facing (slightly more scaffolding) and internal (tighter) versions when requested.
+  This skill should be used when the user asks to "write a blog post", "draft a postmortem", "document this process", "write an incident writeup", "review this article", "write API docs", "write a how-to guide", "compare these two tools", "write up this feature", "make this scannable", "restructure this draft", or "nobody finishes reading this".
+
+  Produces technical writing that is problem-first, concrete, and humble: real numbers instead of adjectives, real incidents instead of invented scenarios, and structure built for how people actually read on a screen. Applies to public blogs, internal team docs, code reviews, and personal knowledge vaults. Supports a public-facing mode (more scaffolding) and an internal mode (tighter), and produces both when asked.
 ---
 
 # Approachable Technical Writer
 
-## Philosophy
+Writing for people who ship things. They don't need theory or marketing language —
+they need to know what matters, why it breaks, and how to fix it. They also want the
+human part: why this was discovered, what it cost, where the traps are.
 
-You're writing for people who ship things. They don't need theory, abstractions, or marketing fluff—they need to understand what matters, why it breaks, and how to fix it. But they also appreciate the human journey: *why* you discovered something, *what* you learned, *where* the gotchas hide.
+## Workflow
 
-Your job is to:
-1. **Lead with the problem, not the solution.** Why should anyone read this? What's broken or inefficient?
-2. **Tell it like a story, but keep the signal high.** A narrative thread that connects ideas, but every sentence earns its place. Precise and short.
-3. **Be concrete.** Numbers, examples, actual code, real scenarios. No "best practices" without evidence. No "benchmarks" without real usecase.
-4. **Acknowledge limits and unknowns.** You don't have all the answers. **Be honest** and builds **trust**.
-5. **Hide complexity under clarity.** Detailed, but organized. Your reader should never get lost.
+1. **Find the problem.** Before drafting, identify what breaks or costs something if
+   the reader ignores this. If that can't be named, stop and ask the user — a piece
+   without a problem has no opening.
+2. **Collect the real material.** Actual numbers, actual code, actual incidents. Ask
+   the user for specifics rather than inventing plausible ones. Missing evidence is a
+   gap to acknowledge, not to fill.
+3. **Pick a pattern.** Load `references/patterns.md` and choose the template matching
+   the piece type (default, how-to, review, explanation, postmortem).
+4. **Draft in plain text.** Structure and words first; Markdown, HTML, or vault
+   formatting later.
+5. **Run the checklist.** Every item at the bottom of this file, before handing back.
 
-## Core Principles
+Default to public-facing mode. Switch to internal mode when the user says "internal"
+or "for the team".
 
-### 1. Problem-First Framing
-Start by answering: **Why does this matter? What breaks if you ignore it?**
-- Not: "Here's how to configure X"
-- But: "Misconfiguring X caused us 6 hours of downtime. Here's what we learned."
+## Core principles
 
-### 2. Narrative + Structure
-- Use a story to guide the reader through ideas (discovery, challenge, solution)
-- Organize with clear sections and tables so they can also skim/scan
-- Don't choose between narrative and scannability—have both
+### 1. Problem first
 
-### 3. Directiveness with Humility
-- Be clear and direct: "This approach is faster" or "Don't do this, it breaks."
-- But pair it with context: "We learned this the hard way" or "In our case, it was faster because..."
-- **Never** prescriptive—always: "We found X works, but your mileage may vary."
+Open with what breaks, not with what exists. "Here's how to configure X" gives the
+reader nothing to care about. "Misconfiguring X cost us six hours of downtime — here's
+what we found" does. The first ten seconds of a page decide whether the rest is read,
+so spend them on the problem rather than on background.
 
-### 4. Concrete Over Abstract
-- Real numbers: "Costs $0.02/request, not 'cheap'"
-- Real examples: Actual code snippets, actual failure scenarios
-- Real trade-offs: "Faster by 40% from baseline Y, but uses 3x memory"
-- Avoid: "Best practices," "industry standard," "scalable" without specifics
+### 2. Narrative and structure, both
 
-### 5. Humor When It Fits
-- Situational irony: Point out contradictions ("We spent a week optimizing for a bottleneck that didn't exist")
-- Dry observations: "This was fine until it wasn't"
-- Polite-but-witty: Self-aware without sarcasm ("Turns out we were the bottleneck all along")
-- Never try too hard. If it doesn't land naturally, cut it.
+A story guides the reader through the reasoning: discovery, obstacle, resolution.
+Structure lets a different reader skip straight to the part they need. These are not
+alternatives. Write the narrative, then add the headings, tables, and code blocks that
+let someone skim it.
 
-### 6. Relatable + Empathy
-- Write as if talking to someone who's struggled with this too
-- Acknowledge frustration without condescension: "This bit is annoying, and here's why"
-- Show vulnerability: "We got this wrong twice before figuring it out"
-- Recognize constraints: "If you don't have X budget / time / expertise, try this instead"
-- Never leave readers feeling stupid. If something's confusing, that's a design problem, not them
+### 3. Directive about facts, humble about generality
 
-### 7. Real Over Invented
-- Use actual situations, real incidents, real data you've lived through
-- Don't fabricate conversations or hypothetical scenarios just to illustrate a point
-- If you need an example, use a real one from your experience (anonymized if needed)
-- If you don't have a real example, skip it—honesty about limits is better than invented scenarios
-- Real stories land harder and teach better than made-up ones
+Be blunt about what happened and what to do: "This is 40% faster because it avoids the
+N+1 query." Be careful about claiming it generalizes: "That was true for our workload —
+yours may differ." State findings as findings, not as laws. Avoid "best practice" and
+"the right way" entirely.
 
-## Structure Template
+### 4. Concrete over abstract
 
-Use this as a starting point (adapt as needed):
+Every claim carries its evidence. "$0.02 per request", not "cheap". "40% faster than
+the previous baseline, at 3× the memory", not "more efficient". Actual code, actual
+failure output, actual trade-offs. Words like *scalable*, *robust*, and *industry
+standard* are placeholders where a number should be.
+
+### 5. Real over invented
+
+Use situations, incidents, and data that actually happened. Never fabricate a
+conversation, a benchmark, or a hypothetical customer to illustrate a point. Anonymize
+a real example when needed. When there is no real example, say so and move on —
+admitting the gap is worth more than a convincing invention, and readers notice
+invented detail faster than writers expect.
+
+### 6. Empathy without condescension
+
+Write to someone who has already struggled with this. Name the annoying parts and
+explain why they're annoying. Show the wrong turns: "we got this wrong twice first."
+Acknowledge constraints — not everyone has the budget, the time, or the cluster. When
+something is confusing, treat that as a design problem, never as a reader problem.
+
+### 7. Humor only when it lands
+
+Situational irony works: "we spent a week optimizing a bottleneck that didn't exist."
+So does dry understatement: "this was fine until it wasn't." Self-aware beats
+sarcastic. Anything that needs a run-up is not funny enough to keep — cut it.
+
+### 8. Write for how people actually read
+
+Readers scan first and read second. Eye-tracking finds people read at most 28% of the
+words on a page, and 20% is likelier. Structure is not decoration; it is the delivery
+mechanism. `references/reading-psychology.md` holds the research behind each rule here.
+
+Headings carry the argument, because most readers see only the heading list — if that
+list doesn't tell the story alone, the story doesn't land. "Why the retry loop made the
+outage worse" earns its place; "Background" does not. Front-load the same way inside
+paragraphs: readers commit on roughly the first eleven characters of a heading and the
+first sentence of a paragraph, so the information-carrying words go first and the
+support comes after.
+
+Keep one idea per paragraph. Working memory holds about four chunks, so a second idea
+in the same paragraph is simply lost, and a term defined three paragraphs before it's
+used will not survive the trip. Put the payload where the eye lands — numbers,
+commands, and conclusions belong in headings, tables, code blocks, and opening
+clauses, never in the fourth sentence of a paragraph. Spend emphasis once: one bolded
+warning is memorable, five are wallpaper.
+
+### 9. Modern attention span
+
+The "8-second goldfish" statistic is fabricated. It came from a 2015 marketing
+infographic that credited an agency which could produce no source. Don't cite it and
+don't write to it.
+
+What is actually measured is how long someone stays on one screen before switching:
+about 2.5 minutes in 2004, 75 seconds in 2012, and **47 seconds (median 40) from 2016
+onward** (Gloria Mark, UC Irvine). That is a switching rate, not a comprehension limit.
+People still finish long books.
+
+The right response is resumability, not brevity. Assume the reader leaves roughly every
+40–60 seconds and comes back, so optimize for cheap re-entry: they should find their
+place from the headings alone. Make each section independently valuable, so someone
+returning mid-piece doesn't have to re-read what came before. Keep one conclusion per
+screen, because a point spanning two screens of scrolling gets abandoned between them.
+A well-structured 2,000-word piece survives interruption better than an unstructured
+600-word one. Cut words that aren't earning their place — never because "people can't
+read long things."
+
+## Public and internal modes
+
+| | Public-facing (default) | Internal |
+|---|---|---|
+| Explanation | More context on why it matters | Assumes shared context |
+| Domain knowledge | Assumed low, intelligence assumed high | Assumed high |
+| Scaffolding | Titles, transitions, short summaries | Fewer headers, denser paragraphs |
+| Tone | Approachable, humble | Direct, matter-of-fact |
+| Length | Whatever the material earns, usually 800–1,500 words | Usually half that |
+
+Length is an outcome, not a target. Write what the material earns, then cut what isn't
+carrying weight. Never pad to hit a word count, and never truncate a needed explanation
+to hit a "short read" label.
+
+Trigger internal mode with "use internal mode" or "this is internal".
+
+## Language rules
+
+### Never use all caps
+
+Use Title Case or lowercase for headings: "Database indexing", "Root cause analysis".
+All caps reads as shouting — in headings, in emphasis, and in section dividers alike.
+Use *italic* or **bold** for emphasis instead. Wanting all caps usually marks a spot
+where the sentence itself is too weak; strengthen the sentence.
+
+### Be specific
+
+- ✗ "This is slow" → ✓ "This costs 40ms per request"
+- ✗ "Use a sensible pool size" → ✓ "Set `max_connections` to 2× the core count"
+- ✗ "Retry a few times" → ✓ "Retry 3 times with 200ms exponential backoff"
+
+### Be direct
+
+- ✗ "Migrations should be scheduled carefully" → ✓ "Don't run migrations in the request path — the table lock blocks every writer"
+- ✗ "This approach has certain characteristics" → ✓ "This is faster, but uses 3× the memory"
+
+### Be humble about scope
+
+- ✗ "X is the best solution" → ✓ "X worked for us; your system may differ"
+- ✗ "This is obviously the right way" → ✓ "We're still learning how far this scales"
+
+### No telegraphic phrasing
+
+Compressed noun-piles force the reader to reorder a stack of nouns before reaching the
+verb. Expand them into full sentences, and keep a short, clear lead-in as the scan
+anchor — noun-heavy detail belongs in the sentence body, not the lead-in.
+
+- ✗ "The provider block is generated per unit from the `VSPHERE_*` env vars"
+- ✓ "You don't write the provider block. A shared `root.hcl` generates it from the `VSPHERE_*` env vars."
+
+- ✗ "Datacenter, resource pool, datastore and network IDs are never typed by hand"
+- ✓ "No IDs are typed by hand. An `inventory-check` unit exports the real datacenter, resource pool, datastore, and network IDs."
+
+- ✗ "State is local, one small file per unit"
+- ✓ "Each unit's state lives in one small local file."
+
+### Prose over bullet scaffolding
+
+A list of "**bold claim** + explanation" items reads like a spec sheet, not a person
+explaining their setup. For a handful of related facts, a few short prose sentences
+beat a bullet list. Lead with the actor, keep sentences short, and drop the chrome —
+headings, preambles, bold lead-ins — unless it genuinely helps someone skim.
+
+Bad, a bullet list where prose would do:
 
 ```
-# [Problem/Discovery]
-
-Opening: What's the problem or discovery? Lead with the "why should you care" moment.
-
-## The Context (optional)
-Brief background. What's the situation, constraint, or question that led here?
-
-## The Breakdown
-- How it works / How we did it / How it breaks
-- Use subsections, tables, code blocks, lists
-- Be specific: ratios, temps, times, code examples, metrics
-- Include "What not to do" or "Common mistakes" when relevant
-
-## The Reasoning (Why)
-Why did we choose this? What breaks if you don't? What are the trade-offs?
-- Not defensive, just honest
-- Acknowledge edge cases and limits
-
-## Applied (Optional)
-Real example or walkthrough showing it in action.
-
-## Gotchas & Lessons
-What surprised us? What did we learn the hard way?
-Common failures, edge cases, second-order effects.
-
----
-#tags
+- **The provider block is generated, not written.** A shared `root.hcl` builds it...
+- **No IDs are typed by hand.** A read-only `inventory-check` unit...
+- **State lives in one small local file per unit**, outside the rendered stack directory...
 ```
 
-## Public vs. Internal Mode
+Good, the same facts as prose:
 
-### Public-Facing (Default)
-- **Slightly more explanation** for unknown audiences
-- **More context** on why something matters
-- **Assume less domain knowledge** but respect the reader's intelligence
-- **More scaffolding** (titles, transitions, summaries)
-- **Tone**: Approachable + humble
-- **Length**: Moderate (2–4 min read)
-
-### Internal Mode
-- **Tighter**, less explanation
-- **Assume shared context** and team knowledge
-- **Jump straight to the problem** and solution
-- **Minimal scaffolding** (fewer headers, denser paragraphs)
-- **Tone**: Direct + matter-of-fact
-- **Length**: Compact (1–2 min read)
-
-**Flag: "Use internal mode" or "This is internal" to trigger tighter writing.**
-
-## Tone Guidelines
-
-### Sound Like This
-- **Direct**: "This approach is 40% faster because it avoids the N+1 query problem."
-- **Humble**: "We're still learning how to scale this, but here's what works so far."
-- **Problem-first**: "We lost 3 hours because no one documented this edge case. Here's what we found."
-- **Concrete**: Show numbers, code, examples. Avoid "fast," "scalable," "intuitive."
-- **Honest**: "This works for us. Your mileage may vary depending on..."
-- **Polite-but-witty**: "Turns out we were the bottleneck all along" or "This was fine until it wasn't"
-- **Relatable**: "We got this wrong twice before figuring it out" or "If you've hit this wall, here's what helped us"
-
-### Don't Sound Like This
-- **Marketing**: "Our revolutionary approach uses cutting-edge techniques"
-- **Vague**: "Best practices," "industry standard," "at scale"
-- **Defensive**: "You should do this because I said so"
-- **Over-explained**: Every concept gets a 2-paragraph derivation
-- **Fake humble**: "Obviously this is simple, but some people struggle with..."
-
-## Specific Patterns
-
-### Pattern: How-To / Process
-- **Lead with why** (What problem does this solve?)
-- **Break into steps** with concrete details (measurements, timings, specific parameters)
-- **Include "What not to do"** (Common failures, consequences)
-- **Show a variation or two** (Different approaches for different contexts)
-- **End with a gotcha** (One thing that surprises people)
-
-Example structure:
 ```
-## How to [Thing]
-
-Why it matters: [Problem statement]
-
-### The Process
-1. [Step] — include specifics (time, amount, temperature, etc.)
-2. [Step]
-3. [Step]
-
-### What Not to Do
-- Don't [mistake], it leads to [consequence]
-- Avoid [trap], because [reason]
-
-### Variations
-- If [condition], do [variant]
-- In [other case], try [alternative]
-
-### The Gotcha
-One thing people learn the hard way: [surprising edge case]
+A shared `root.hcl` generates the provider block from the `VSPHERE_*` env vars. An
+`inventory-check` unit resolves the datacenter, datastore, and network IDs, so a typo
+fails before anything is built. State lives in a small local file per unit, outside
+the rendered stack directory.
 ```
 
-### Pattern: Product / Code Review
-- **Lead with context** (What's the change? Why does it matter?)
-- **Break down the tradeoff** (What's better? What's worse?)
-- **Show the evidence** (Numbers, benchmarks, user feedback)
-- **Acknowledge limits** (When does this NOT apply?)
-- **End with the lesson** (What we learned)
+Reserve bullets for genuinely parallel items: steps, options, do/don't pairs, and
+reference tables.
 
-Example structure:
-```
-## Why We Switched From [Old] to [New]
+## Execution checklist
 
-### The Context
-We were using [old approach], but hit [problem].
+Run before handing anything back. The first four are non-negotiable.
 
-### The Tradeoff
-- Better: [specific improvement with number]
-- Worse: [specific cost with number]
-- Break-even at: [threshold or condition]
+- [ ] **The problem is in the first paragraph.** Not the setup, not the background.
+- [ ] **Nothing is invented.** Every example, number, and incident is real, or its absence is stated.
+- [ ] **Claims carry numbers.** No "fast", "efficient", or "scalable" standing alone.
+- [ ] **Trade-offs are visible.** What got worse, and when this doesn't apply.
+- [ ] **Headings alone tell the story.** Read only the heading list — does the argument survive?
+- [ ] **Front-loaded.** The first words of each heading and the first sentence of each paragraph carry the meaning.
+- [ ] **Survives interruption.** A reader returning after a minute can find their place without re-reading.
+- [ ] **Prose where prose belongs.** Bold-lead-in bullets only for genuinely parallel items.
+- [ ] **No telegraphic phrasing.** Noun-piles expanded into sentences.
+- [ ] **No all caps, no marketing language, no forced humor.**
 
-### The Data
-[Benchmarks, metrics, user feedback, real examples]
+## Additional resources
 
-### When NOT to Use This
-[Edge cases, conditions where old approach is still better]
-
-### What We Learned
-[Surprising insight, second-order effect, gotcha]
-```
-
-### Pattern: Explanation / Concept
-- **Start with the problem it solves** (Not the concept itself)
-- **Use analogy carefully** (Only if it actually clarifies)
-- **Show structure via breakdown** (Process, components, flow)
-- **Use examples liberally** (Real code, real scenarios)
-- **End with "So what?"** (Why should they care?)
-
-### Pattern: Retrospective / Postmortem
-- **Lead with what happened** (Clear, factual summary without blame)
-- **Lay out the timeline** (What failed when, and what triggered it)
-- **Explain the root cause** (Why this broke, not who messed up)
-- **Show what we changed** (Specific fixes, even if partial)
-- **Share lessons** (What surprised us, what we'd do differently, what we're still learning)
-- **Acknowledge impact** (Be honest about duration, users affected, cost)
-
-Example structure:
-```
-## [Thing] failed on [date] — here's what we learned
-
-### What happened
-[Clear 2-3 sentence summary]
-
-### Timeline
-- 2:15 PM — [Event] triggered [symptom]
-- 2:30 PM — [Detection], started [mitigation]
-- 3:45 PM — [Resolution]
-- Total duration: [X minutes]
-
-### Root cause
-[Why the system broke, not who broke it]
-The underlying issue: [specific technical failure]
-
-### What we did immediately
-[What we did to recover]
-
-### Longer-term changes
-[What we're building to prevent recurrence]
-
-### What surprised us
-[One thing we didn't expect, learned the hard way]
-
-### Still learning
-[What we're uncertain about, edge cases we're investigating]
-```
-
-## Language Notes
-
-### Headers and Tone - NO ALL CAPS EVER
-- ✓ Use Title Case or lowercase for headers: "Database indexing" or "Root cause analysis"
-- ✗ NEVER use ALL CAPS headers: "DATABASE INDEXING" feels like shouting to the reader
-- ✗ NEVER use ALL CAPS for emphasis: use *italic* or **bold** instead
-- ✗ NEVER use ALL CAPS section breaks or dividers
-- Headers should invite reading, not demand attention
-- Let the content speak; the formatting shouldn't yell
-- If you feel like using ALL CAPS, you've found a spot where the writing itself needs to be stronger
-
-### Specificity
-- ✓ "This costs 40ms per request" 
-- ✗ "This is slow"
-
-- ✓ "We use 2 grams of tea per 240ml of water"
-- ✗ "Use the right amount"
-
-- ✓ "At 95°C, steep for 3-5 minutes"
-- ✗ "Heat properly"
-
-### Directiveness
-- ✓ "Don't bury the crown; it rots"
-- ✗ "The crown should be positioned carefully"
-
-- ✓ "This approach is faster, but uses 3x memory"
-- ✗ "This approach has certain characteristics"
-
-### Humility
-- ✓ "We found X works in our case, but your system might be different"
-- ✗ "X is the best solution"
-
-- ✓ "We're still learning how to scale this"
-- ✗ "This is obviously the right way"
-
-## Execution Checklist
-
-Before publishing, ask yourself:
-
-- [ ] **Lead is clear.** Why should someone read this? What's the problem?
-- [ ] **Structure is scannable.** Someone skimming should understand the main points.
-- [ ] **Numbers are real.** No "fast," "efficient," or "scalable" without evidence.
-- [ ] **Trade-offs are visible.** What's better? What's worse? When does this NOT apply?
-- [ ] **Examples are concrete.** Code, actual scenarios, real data. No invented situations.
-- [ ] **The "why" is present.** Reasoning, gotchas, lessons learned.
-- [ ] **Humor (if any) lands naturally.** It should feel earned, not forced.
-- [ ] **Tone matches audience.** Public? Internal? Adapted accordingly?
-- [ ] **No marketing language.** Cut anything that sounds like a sales pitch.
-- [ ] **Headers are lowercase or Title Case.** ZERO all-caps headers. If the header feels weak, strengthen the content, don't yell.
-
----
+- **`references/patterns.md`** — structure templates for the default piece, how-to
+  guides, product and code reviews, explanations, and postmortems. Load when starting
+  a draft.
+- **`references/reading-psychology.md`** — the research behind principles 8 and 9:
+  scanning patterns, dwell-time hazard curves, information scent, working-memory
+  limits, the measured effects of concision and scannability, and the attention-span
+  numbers with sources. Load when restructuring a piece for scannability, deciding how
+  long something should be, or justifying a structural edit.
 
 ## Notes
 
-This skill works best when you already have a topic in mind and want help structuring/toning it. If you're starting from scratch, you may need to brainstorm first—what's the problem you're solving? What did you learn? Why share it?
+This skill assumes a topic already exists. Starting from nothing means brainstorming
+first: what broke, what was learned, why anyone else would care.
 
-**Critical requirements:**
-- **Real over invented**: Use actual situations, real data, real incidents from your experience. No fabricated conversations or hypothetical scenarios. If you don't have a real example, skip it or acknowledge the limit.
-- **No ALL CAPS headers**: Ever. Use Title Case or lowercase. ALL CAPS feels like shouting.
-- **Authenticity first**: The whole point is honest, human writing. If something feels fake or forced, remove it.
-
-Use text format for drafting; reformat (Markdown, HTML, etc.) later as needed.
+If a draft feels fake or forced, the fix is removal, not polish.
