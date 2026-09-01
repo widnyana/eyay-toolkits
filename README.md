@@ -68,6 +68,23 @@ Install commands are in the [Install](#install) section above.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the plugin structure and how to add your own.
 
+## Updating shared files
+
+Some files ship to both Claude Code (`plugins/`) and pi/omp (`pi-packages/`).
+The canonical copy lives in `pi-packages/<name>/`. After editing one of them:
+
+```sh
+bun scripts/check-drift.ts          # sync pi-packages copies into plugins/
+bun scripts/check-drift.ts --check  # verify only (also runs on git commit)
+```
+
+Two classes are maintained automatically: **verbatim sync** (the
+`block-forbidden-git-add` hook script, `design-thinking/references/*.md`) and
+**transform** (`design-thinking/skills/*/SKILL.md`, where "package" becomes
+"plugin" on the Claude side). READMEs, LICENSEs, and the platform adapters
+(`hooks/hooks.json` vs `extensions/*.ts`) are per-platform — edit each side
+independently.
+
 ## License
 
 [MIT](LICENSE) -- see individual plugin directories for specifics.
