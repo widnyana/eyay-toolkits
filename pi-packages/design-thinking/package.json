@@ -35,6 +35,9 @@
     "methodology",
     "call-graph"
   ],
+  "omp": {
+    "extensions": ["./extensions/design-thinking.ts"]
+  },
   "pi": {
     "extensions": ["./extensions/design-thinking.ts"],
     "prompts": ["./prompts"],
