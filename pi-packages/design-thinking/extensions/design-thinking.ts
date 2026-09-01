@@ -81,6 +81,7 @@ Full specs — read these when a section needs detail:
 Skills load BY NAME into the agent (/skill:<name>); the files above are named
 by stem, NOT by skill name. Exact mapping:
   /skill:graph-protocol → protocol.md   /skill:design-method → method.md
+  /skill:design-graph → design-graph.md
   Zero file edits are possible until the user runs /dt approve for the turn —
   the extension blocks write/edit tools mechanically. Present the graph first.
 NEVER read references/<skill-name>.md — no such files exist.
