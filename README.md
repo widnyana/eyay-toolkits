@@ -33,6 +33,23 @@ The Claude Code plugins that are skill-only (e.g. **prose-engineers**) also load
 
 Uninstalling anything: see [UNINSTALL.md](UNINSTALL.md).
 
+## Update
+
+**Claude Code (plugins)** — re-run the install command, then restart Claude Code:
+
+```bash
+/plugin install <plugin-name>@eyay-toolkits
+```
+
+**Other agents / skills.sh** — re-run the same command; it refreshes in place:
+
+```bash
+npx skills add widnyana/eyay-toolkits
+```
+
+**pi / OMP (packages)** — re-run the install command, or for the git-clone
+method: `git pull` then re-run `pi install`.
+
 ## The plugins
 
 | Plugin | What it does | Details |
