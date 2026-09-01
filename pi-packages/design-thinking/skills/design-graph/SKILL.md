@@ -11,8 +11,8 @@ description: >
 # Design Graph — The Artifact
 
 A **Design Graph** is the annotated call graph of a concrete problem. It is
-what you produce when you apply [Design Thinking](/skill:design-method) to
-something, and it is written in [Graph Protocol](/skill:graph-protocol) notation.
+what you produce when you apply Design Thinking (see the `design-method` skill) to
+something, and it is written in Graph Protocol notation (see the `graph-protocol` skill).
 
 Nodes are functions. Edges are data flow. The annotations answer, for every
 node: what flows through it (A), how many times it runs (cardinality), where
@@ -97,5 +97,5 @@ VERDICT line.
 
 ## Worked example
 
-See the end of [Graph Protocol](/skill:graph-protocol) for a complete, non-TS worked
+See the end of the `graph-protocol` skill for a complete, non-TS worked
 example (a resumable URL-sync CLI in Python) with all sections filled.

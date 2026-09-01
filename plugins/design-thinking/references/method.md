@@ -8,7 +8,6 @@ The method is language-neutral. Where it says "Effect", "gen", or "pipe" in the
 Effect-TS appendix (`effect-ts.md`), substitute your stack's equivalent: Result
 types, exceptions at layer joins, middleware, RAII, constructor injection —
 whatever your language provides. The discipline never changes, only the vocabulary.
-
 **Hard gate — applies in every harness (pi, omp, Claude Code, any agent):**
 When the user asks for a feature, change, fix, or refactor — or when any turn
 will end in proposed code or file edits — you MUST render the Design Graph

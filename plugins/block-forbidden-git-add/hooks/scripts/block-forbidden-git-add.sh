@@ -27,6 +27,18 @@ deny() {
   exit 0
 }
 
+# ── Wrapper-resistant pass ──────────────────────────────────────────────────
+# Tokenizing fails when the git call is wrapped (sh -c, eval, $(…), backticks).
+# This pass regexes the FULL command string, so quoted/subshelled git calls
+# are still caught. Deny-only, no false-negative-driven allowlist.
+if printf '%s' "$cmd" | grep -qE \
+  -e 'git[[:space:]]+[^;&|]*\b(revert|rebase|reset|filter-branch|filter-repo)\b' \
+  -e 'git[[:space:]]+commit[^;&|]*[[:space:]]--amend' \
+  -e 'git[[:space:]]+push[^;&|]*[[:space:]](--force|-f|--force-with-lease)' \
+  -e 'git[[:space:]]+add[^;&|]*[[:space:]](-A|-u|--all|--update|["'"'"']\.["'"'"']|\*)'; then
+  deny "Blocked: this command appears to invoke a restricted git operation (possibly wrapped in a subshell/eval). The omp git guard forbids history-rewriting and whole-tree staging."
+fi
+
 is_monitored() {
   local t="$1" m
   for m in "${MONITORED[@]}"; do [ "$t" = "$m" ] && return 0; done

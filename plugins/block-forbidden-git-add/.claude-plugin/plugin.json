@@ -1,6 +1,6 @@
 {
   "name": "block-forbidden-git-add",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Denies git commands that stage protected paths, whole-tree adds, or rewrite history.",
   "author": {
     "name": "widnyana",
