@@ -61,14 +61,17 @@ Pipeline: shapes → graph(A) → cardinality → E(⟳retry ↯escape ☠die) �
 🔒 parse at boundaries → ⛈ orthogonal behavior → scope → test-R → verdict.
 
 Rules:
-- Design, plan, and review answers must render a Design Graph in Graph Protocol
-  form — fixed sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES,
-  BEHAVIOR, SCOPE, TEST LAYERS, VERDICT.
+- ANY turn that will end in code or file edits (feature, change, fix,
+  refactor — the model does NOT get to reclassify the request): render the
+  Design Graph in Graph Protocol form and any clarifying questions FIRST;
+  ZERO file edits until the user approves the design. Reading/exploring code
+  first is fine; the FIRST edit is not allowed before the graph.
+- Design, plan, and review answers must render a Design Graph — fixed
+  sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES, BEHAVIOR, SCOPE,
+  TEST LAYERS, VERDICT.
 - The happy path (A) stays readable; failure handling lives at defined join points.
 - Each layer scopes its own E; inner errors never leak through.
 - If the code doesn't match the call graph, the implementation is wrong.
-- For build/fix/refactor tasks: present the Design Graph and any clarifying
-  questions FIRST; implement only after the user approves the design.
 - Adapt vocabulary to the current language/stack; never the discipline.
 
 Full specs — read these when a section needs detail:
