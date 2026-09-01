@@ -75,6 +75,11 @@ Full specs — read these when a section needs detail:
 - ${REF_DIR}/protocol.md      (Graph Protocol: notation spec + worked example)
 - ${REF_DIR}/method.md        (the §1–§10 method, generalized)
 - ${REF_DIR}/design-graph.md  (the artifact spec + completeness checklist)
+Skills load BY NAME into the agent (/skill:<name>); the files above are named
+by stem, NOT by skill name. Exact mapping:
+  /skill:graph-protocol → protocol.md   /skill:design-method → method.md
+  /skill:design-graph → design-graph.md
+NEVER read references/<skill-name>.md — no such files exist.
 `.trim();
 
 interface DtState {

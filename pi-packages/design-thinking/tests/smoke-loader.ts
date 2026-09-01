@@ -136,6 +136,17 @@ for (const [skillDir, srcFile] of PAIRS) {
 }
 
 // effect-ts must NOT be exposed as a skill (stack-agnostic guarantee)
+// ------------------------------------------------ skill-name mapping ------
+// Regression guard: the extension's distilled block must declare the
+// skill→file mapping so agents never guess references/<skill-name>.md.
+const extSrc = fs.readFileSync(path.join(PKG, "extensions", "design-thinking.ts"), "utf8");
+for (const [skill, file] of PAIRS) {
+	ok(
+		extSrc.includes(`/skill:${skill} → ${file}`),
+		`distilled block maps /skill:${skill} → ${file}`,
+	);
+}
+
 ok(!skillNames.includes("effect-ts"), "references/effect-ts.md is NOT registered as a skill");
 
 fs.rmSync(tmp, { recursive: true, force: true });
