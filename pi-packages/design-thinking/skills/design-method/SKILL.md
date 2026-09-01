@@ -25,7 +25,7 @@ implement only after the user approves the design. Reading and exploring code
 first is fine; the FIRST edit is not allowed before the graph. This rule is
 not optional and not stack-dependent.
 
-Render every result in [Graph Protocol](/skill:graph-protocol) format.
+Render every result in Graph Protocol format (see the `graph-protocol` skill).
 
 ```
 X → DesignGraph<A, E, R>

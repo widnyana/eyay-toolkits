@@ -81,16 +81,29 @@ Full specs — read these when a section needs detail:
 Skills load BY NAME into the agent (/skill:<name>); the files above are named
 by stem, NOT by skill name. Exact mapping:
   /skill:graph-protocol → protocol.md   /skill:design-method → method.md
-  /skill:design-graph → design-graph.md
+  Zero file edits are possible until the user runs /dt approve for the turn —
+  the extension blocks write/edit tools mechanically. Present the graph first.
 NEVER read references/<skill-name>.md — no such files exist.
 `.trim();
+
+const MUTATING_TOOLS: Record<string, true> = {
+	write: true,
+	edit: true,
+	apply_patch: true,
+	multiedit: true,
+};
 
 interface DtState {
 	enabled: boolean;
 }
 
+const GATE_REASON =
+	"Design Thinking mode is ON: present the Design Graph (Graph Protocol) and wait for user approval before file edits. The user can unlock this turn with /dt approve.";
+
 export default function designThinkingExtension(pi: ExtensionAPI) {
 	let enabled = false;
+	// Per-turn approval flag: set by /dt approve, reset on every user turn.
+	let approvedForTurn = false;
 
 	function applyStatus(ctx: ExtensionContext) {
 		ctx.ui.setStatus(
@@ -131,13 +144,27 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// /dt — the Design Thinking tool. Toggles mode, or /dt on|off|status.
 	pi.registerCommand("dt", {
-		description: "Design Thinking mode: /dt toggles, on|off|status set/query, anything else runs as a prompt with mode on",
+		description: "Design Thinking mode: /dt toggles, on|off|status set/query, approve|deny unlock/lock file edits for this turn, anything else runs as a prompt with mode on",
 		handler: async (args, ctx) => {
 			const arg = (args ?? "").trim();
 			const lower = arg.toLowerCase();
 
 			if (lower === "status") {
-				ctx.ui.notify(`Design Thinking mode: ${enabled ? "on" : "off"}`, "info");
+				ctx.ui.notify(`Design Thinking mode: ${enabled ? "on" : "off"}${approvedForTurn ? " (edits approved for this turn)" : ""}`, "info");
+				return;
+			}
+
+			// /dt approve|deny — explicit user unlock/lock for the CURRENT turn.
+			if (lower === "approve") {
+				approvedForTurn = enabled;
+				ctx.ui.notify(
+					enabled ? "Design Thinking: file edits approved for this turn" : "Design Thinking is OFF — nothing to approve",
+					"info",
+				);
+			}
+			if (lower === "deny") {
+				approvedForTurn = false;
+				ctx.ui.notify("Design Thinking: file edits blocked again", "info");
 				return;
 			}
 
@@ -145,6 +172,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			// mode and always turns the mode ON (never toggles it off); bare /dt toggles.
 			const prompt = /^(on|off|status)$/.test(lower) ? "" : arg;
 			enabled = lower === "on" || prompt ? true : lower === "off" ? false : !enabled;
+			if (!enabled) approvedForTurn = false;
 			persist();
 			applyStatus(ctx);
 			ctx.ui.notify(
@@ -166,9 +194,21 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// While active, append the distilled block to the system prompt every turn.
 	pi.on("before_agent_start", async (event) => {
+		// A new user turn starts a fresh agent run: the approval from the
+		// previous turn does not carry over.
+		approvedForTurn = false;
 		if (!enabled) return undefined;
 		return {
 			systemPrompt: event.systemPrompt + "\n\n" + DISTILLED + "\n",
 		};
+	});
+
+	// Hard gate: while enabled, mutating tools are blocked until the user
+	// approves the design for this turn (/dt approve). Prompt-level rules
+	// alone proved insufficient — this is the mechanical backstop.
+	pi.on("tool_call", async (event) => {
+		if (!enabled || approvedForTurn) return undefined;
+		if (!MUTATING_TOOLS[event.toolName]) return undefined;
+		return { block: true, reason: GATE_REASON };
 	});
 }
