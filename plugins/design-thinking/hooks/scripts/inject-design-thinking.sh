@@ -40,8 +40,11 @@ Rules:
 - The happy path (A) stays readable; failure handling lives at defined join points.
 - Each layer scopes its own E; inner errors never leak through.
 - If the code doesn't match the call graph, the implementation is wrong.
-- For build/fix/refactor tasks: present the Design Graph and any clarifying
-  questions FIRST; implement only after the user approves the design.
+- ANY turn that will end in code or file edits (feature, change, fix,
+  refactor — you do NOT get to reclassify the request): render the Design
+  Graph in Graph Protocol form and any clarifying questions FIRST; ZERO file
+  edits until the user approves the design. Reading/exploring code first is
+  fine; the FIRST edit is not allowed before the graph.
 - Adapt vocabulary to the current language/stack; never the discipline.
 - Stay in this mode for the rest of the session, across every turn, until the
   user runs /dt off — this reminder fires once per session, not per turn.

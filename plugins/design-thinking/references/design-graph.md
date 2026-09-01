@@ -13,6 +13,9 @@ A Design Graph is not documentation written after the fact. It is drawn
 **before** implementation (planning), **reconstructed** from implementation
 (review), and **compared** against implementation (verdict). The graph is the
 contract; the code is one instantiation of it.
+**Hard gate:** when a turn will produce code or file edits, the graph comes
+first — render it (and any clarifying questions), get the user's approval,
+and only then write code that matches it.
 
 ---
 
