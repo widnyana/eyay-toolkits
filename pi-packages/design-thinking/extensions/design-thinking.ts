@@ -14,10 +14,11 @@
  * Commands:
  *   /dt            toggle Design Thinking mode
  *   /dt on|off     set explicitly
- *   /dt status     show current state
- *   /dt approve|deny  arm/revoke file edits for the next agent run
- *   /dt <prompt>   turn mode ON (never off), then run <prompt> as a user
- *                  message — graph + clarifying questions before implementation
+ *   /dt approve|deny  manual arm/revoke fallback (headless / no-UI sessions)
+ *   After a gated run presents a Design Graph, a review dialog opens
+ *   automatically: Approve (arm + implement), Refine (send feedback), or
+ *   Deny (keep file edits blocked). /dt <prompt> turns the mode ON (never
+ *   off) and runs the prompt — graph + clarifying questions before code.
  *
  * Stack-agnostic: no language detection, no auto-enable. Adapt the vocabulary
  * to whatever stack the project uses; never the discipline.
@@ -66,9 +67,10 @@ Rules:
   refactor — the model does NOT get to reclassify the request): render the
   Design Graph in Graph Protocol form and any clarifying questions FIRST;
   ZERO file edits until the user approves the design. Reading/exploring code
-  first is fine; the FIRST edit is not allowed before the graph. Once the
-  user runs /dt approve, edits are armed for the NEXT run: implement the
-  approved design without re-presenting the graph.
+  first is fine; the FIRST edit is not allowed before the graph. When the run
+  ends, a review dialog opens: approve (implement the presented design
+  without re-presenting the graph), refine (present an updated graph), or
+  deny (stay blocked).
 - Design, plan, and review answers must render a Design Graph — fixed
   sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES, BEHAVIOR, SCOPE,
   TEST LAYERS, VERDICT.
@@ -85,9 +87,10 @@ Skills load BY NAME into the agent (/skill:<name>); the files above are named
 by stem, NOT by skill name. Exact mapping:
   /skill:graph-protocol → protocol.md   /skill:design-method → method.md
   /skill:design-graph → design-graph.md
-  The extension blocks write/edit tools mechanically until the user runs
-  /dt approve — it arms the NEXT run, cleared when that run ends. Re-approve
-  per implementation round. Present the graph first.
+  The extension blocks write/edit tools mechanically until the user approves
+  — a review dialog opens when a graph-presenting run ends. Approval arms
+  one run, cleared when that run ends. Re-approve per implementation round.
+  Present the graph first.
 NEVER read references/<skill-name>.md — no such files exist.
 `.trim();
 
@@ -104,13 +107,17 @@ interface DtState {
 }
 
 const GATE_REASON =
-	"Design Thinking mode is ON: present the Design Graph (Graph Protocol) and wait for user approval before file edits. The user arms the NEXT run with /dt approve; the approval clears when that run ends.";
+	"Design Thinking mode is ON: present the Design Graph (Graph Protocol) and wait for user approval before file edits. A review dialog opens when the run ends (or the user arms the NEXT run with /dt approve); the approval clears when that run ends.";
 
 export default function designThinkingExtension(pi: ExtensionAPI) {
 	let enabled = false;
-	// Armed by /dt approve for the NEXT agent run. Cleared when that run ends
-	// (agent_end), by /dt deny, or when the mode turns off. Not persisted.
+	// Armed by the review dialog (or manual /dt approve) for the NEXT agent
+	// run. Cleared when that run ends (agent_end), by /dt deny, or when the
+	// mode turns off. Not persisted.
 	let editsApproved = false;
+	// True while a run ended with a presented, unapproved Design Graph and the
+	// review dialog should appear. Prevents re-prompting after a Deny.
+	let reviewPending = false;
 
 	function applyStatus(ctx: ExtensionContext) {
 		ctx.ui.setStatus(
@@ -150,9 +157,10 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	});
 
 	// /dt — the Design Thinking tool. Toggles mode; on|off|status set/query;
-	// approve|deny arm/revoke file edits; anything else runs as a prompt with mode on.
+	// approve opens an approve/deny dialog (arrow keys + Enter) and starts the
+	// approved run; deny re-locks edits; anything else runs as a prompt with mode on.
 	pi.registerCommand("dt", {
-		description: "Design Thinking mode: /dt toggles, on|off|status set/query, approve arms the next run for file edits, deny revokes; anything else runs as a prompt with mode on",
+		description: "Design Thinking mode: /dt toggles, on|off|status set/query, approve asks then implements, deny re-locks; anything else runs as a prompt with mode on",
 		handler: async (args, ctx) => {
 			const arg = (args ?? "").trim();
 			const lower = arg.toLowerCase();
@@ -167,8 +175,30 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 					ctx.ui.notify("Design Thinking is OFF — nothing to approve. Run /dt on first.", "info");
 					return;
 				}
+				if (ctx.hasUI) {
+					// Manual fallback (headless/no-UI or user preference): explicit
+					// approve/deny dialog instead of a silent arm.
+					const choice = await ctx.ui.select("Approve the presented design?", [
+						"Approve — implement now",
+						"Deny — keep file edits blocked",
+					]);
+					if (!choice || choice.startsWith("Deny")) {
+						editsApproved = false;
+						reviewPending = false;
+						ctx.ui.notify("Design Thinking: file edits blocked — nothing approved", "info");
+						return;
+					}
+				}
 				editsApproved = true;
-				ctx.ui.notify("Design Thinking: file edits armed (current or next run) — it may implement the approved design without re-presenting the graph", "info");
+				reviewPending = false;
+				ctx.ui.notify("Design Thinking: file edits armed (this run) — implementing the approved design without re-presenting the graph", "info");
+				// Arming alone leaves the session idle: the agent never learns approval
+				// happened and the user sees "nothing happened". Send the go-ahead so
+				// the armed run starts now (steer if mid-run).
+				await pi.sendUserMessage(
+					"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)",
+					{ deliverAs: "steer" },
+				);
 				return;
 			}
 			if (lower === "deny") {
@@ -177,10 +207,14 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 					return;
 				}
 				editsApproved = false;
+				reviewPending = false;
 				ctx.ui.notify("Design Thinking: file edits blocked again", "info");
 				return;
 			}
-
+			if (!enabled) {
+				editsApproved = false;
+				reviewPending = false;
+			}
 			// "on"/"off" set explicitly; anything else is a prompt to run in this
 			// mode and always turns the mode ON (never toggles it off); bare /dt toggles.
 			const prompt = /^(on|off|status)$/.test(lower) ? "" : arg;
@@ -213,10 +247,59 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 		};
 	});
 
-	// An approved run consumes the approval: clear it when the run ends so
-	// later runs are gated again until the user re-approves with /dt approve.
-	pi.on("agent_end", async () => {
-		editsApproved = false;
+	// A gated run that ended with a presented Design Graph opens the review
+	// dialog automatically — the user never has to type /dt approve. An
+	// approved run consumes its approval and prompts nothing.
+	pi.on("agent_end", async (event, ctx) => {
+		if (!enabled) return;
+		if (editsApproved) {
+			editsApproved = false;
+			reviewPending = false;
+			return;
+		}
+		// Detect a presented graph: the protocol's VERDICT section is mandatory,
+		// so it only appears when a Design Graph was actually rendered.
+		const lastAssistant = [...event.messages].reverse().find((m) => m.role === "assistant");
+		const text = JSON.stringify(lastAssistant?.content ?? "");
+		if (!/\bVERDICT\b/.test(text)) return;
+		if (reviewPending) return; // already decided (deny) — wait for the user
+		reviewPending = true;
+		if (!ctx.hasUI) {
+			ctx.ui.notify("Design Thinking: review the presented design, then run /dt approve or /dt deny", "info");
+			return;
+		}
+		for (;;) {
+			const choice = await ctx.ui.select("Review the presented design", [
+				"Approve — implement now",
+				"Refine — ask the agent for changes",
+				"Deny — keep file edits blocked",
+			]);
+			if (choice === undefined || choice.startsWith("Deny")) {
+				reviewPending = false;
+				ctx.ui.notify("Design Thinking: file edits blocked — nothing approved", "info");
+				return;
+			}
+			if (choice.startsWith("Approve")) {
+				editsApproved = true;
+				reviewPending = false;
+				ctx.ui.notify("Design Thinking: file edits armed (this run) — implementing the approved design", "info");
+				await pi.sendUserMessage(
+					"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)",
+					{ deliverAs: "steer" },
+				);
+				return;
+			}
+			// Refine: collect feedback and send it back; the dialog re-opens
+			// after the refined plan is presented.
+			const feedback = await ctx.ui.input("What should change in the design?", "e.g. too complex — drop the cache layer");
+			if (feedback === undefined || !feedback.trim()) continue;
+			reviewPending = false;
+			await pi.sendUserMessage(
+				`Refine the presented design (do not implement yet): ${feedback.trim()}\n\n(Design Thinking: update the Design Graph (Graph Protocol) per this feedback and present it again. File edits stay blocked.)`,
+				{ deliverAs: "steer" },
+			);
+			return;
+		}
 	});
 
 	// Hard gate: while enabled, file-edit tools are blocked until the user

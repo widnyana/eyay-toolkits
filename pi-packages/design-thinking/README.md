@@ -65,7 +65,7 @@ pi -e ./pi-packages/design-thinking
 |---|---|
 | `/dt` | Toggle Design Thinking mode. While on, plans and reviews render as Design Graphs. Persists across restarts. |
 | `/dt on\|off\|status` | Set or query the mode explicitly. |
-| `/dt approve\|deny` | Arm/revoke file edits for the next agent run — run `approve` after a presented graph to let the implementation run edit, `deny` to re-lock. |
+| Review dialog | When a run ends with a presented Design Graph, a dialog opens automatically (arrow keys + Enter or mouse): **Approve** arms file edits **and** sends the go-ahead so implementation starts immediately, **Refine** asks for feedback and sends it back to the agent (the dialog re-opens after the updated graph), **Deny** keeps edits blocked. Headless/no-UI sessions fall back to manual `/dt approve\|deny`. |
 | `/dt <prompt>` | Turn the mode **on** (never off), then run `<prompt>` under it — graph and clarifying questions first, implementation after your go-ahead. |
 | `/cg <module \| task>` | Generate a call graph: extract the graph existing code implements, or sketch one for a task. |
 | `/cg-plan <task>` | Design before code — full Design Graph, then implement to match it. |
