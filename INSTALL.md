@@ -56,9 +56,22 @@ Works for any plugin whose contents are just `skills/`: **bmad-sprint-run**, **c
 
 Update: `git pull` then re-run the `pi install` command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).
 
+## OMP marketplace
+
+The same repository is an [omp](https://omp.sh) plugin marketplace. The pi packages under `pi-packages/` install as omp plugins (extensions, prompts, and skills):
+
+```bash
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install design-thinking@eyay-toolkits
+omp plugin install block-forbidden-git-add@eyay-toolkits
+omp plugin install iac-check-guard@eyay-toolkits
+```
+
+Update: `omp plugin marketplace update eyay-toolkits` then `omp plugin upgrade design-thinking@eyay-toolkits`. Uninstall: `omp plugin uninstall <name>@eyay-toolkits`.
+
 ## pi packages
 
-This repo also ships packages for [pi](https://pi.dev) under `pi-packages/`:
+This repo also ships packages for [pi](https://pi.dev) under `pi-packages/` — these are the same packages the OMP marketplace serves above:
 
 ```bash
 pi install npm:@widnyana/design-thinking
@@ -69,6 +82,11 @@ omp install npm:@widnyana/design-thinking
 pi install /path/to/eyay-toolkits/pi-packages/iac-check-guard
 # or via OMP
 omp install /path/to/eyay-toolkits/pi-packages/iac-check-guard
+```
+```bash
+pi install /path/to/eyay-toolkits/pi-packages/block-forbidden-git-add
+# or via OMP
+omp install /path/to/eyay-toolkits/pi-packages/block-forbidden-git-add
 ```
 
 To update: re-run the install command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).

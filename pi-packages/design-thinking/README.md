@@ -48,6 +48,10 @@ pi install npm:@widnyana/design-thinking@0.0.1
 # from a local checkout of this repo
 pi install /absolute/path/to/pi-packages/design-thinking
 
+# via the omp marketplace
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install design-thinking@eyay-toolkits
+
 # try without installing
 pi -e npm:@widnyana/design-thinking
 pi -e ./pi-packages/design-thinking

@@ -1,6 +1,6 @@
 {
   "name": "@widnyana/block-forbidden-git-add",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "description": "pi extension that denies whole-tree `git add`, protected-path staging, and history-rewriting git commands before the Bash tool runs. Shares its check script with the Claude Code plugin plugins/block-forbidden-git-add.",
   "author": {
@@ -24,6 +24,9 @@
     "safety",
     "hooks"
   ],
+  "omp": {
+    "extensions": ["./extensions/block-forbidden-git-add.ts"]
+  },
   "pi": {
     "extensions": [
       "./extensions"

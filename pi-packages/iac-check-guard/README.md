@@ -70,6 +70,10 @@ segment is analyzed independently.
 pi install /absolute/path/to/pi-packages/iac-check-guard
 # or
 omp install /absolute/path/to/pi-packages/iac-check-guard
+
+# via the omp marketplace
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install iac-check-guard@eyay-toolkits
 ```
 
 Note: `pi install git:...` installs the repo root, not this subdirectory — use

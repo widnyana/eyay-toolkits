@@ -29,6 +29,14 @@ pi install npm:@widnyana/design-thinking
 omp install npm:@widnyana/design-thinking
 ```
 
+**OMP (marketplace):**
+
+```bash
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install design-thinking@eyay-toolkits
+omp plugin install block-forbidden-git-add@eyay-toolkits
+omp plugin install iac-check-guard@eyay-toolkits
+```
 The Claude Code plugins that are skill-only (e.g. **prose-engineers**) also load in the [pi](https://pi.dev) coding agent — see [INSTALL.md](INSTALL.md).
 
 Uninstalling anything: see [UNINSTALL.md](UNINSTALL.md).
@@ -71,12 +79,10 @@ method: `git pull` then re-run `pi install`.
 
 | Package | What it does | README |
 |---|---|---|
-| **design-thinking** | [pi](https://pi.dev) extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
-| **iac-check-guard** | pi extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs, in both pi and omp. | [README](pi-packages/iac-check-guard/README.md) |
 
-Install commands are in the [Install](#install) section above.
-
-## visual-gen samples
+| **block-forbidden-git-add** | pi/omp extension that denies whole-tree `git add`, protected-path staging (`CLAUDE.md`, `AGENTS.md`, `docs/`, `secrets/`), and history-rewriting git commands before the Bash tool runs. | [README](pi-packages/block-forbidden-git-add/README.md) |
+| **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
+| **iac-check-guard** | pi/omp extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs. | [README](pi-packages/iac-check-guard/README.md) |
 
 | Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |
 |---|---|---|
