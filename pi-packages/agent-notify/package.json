@@ -1,6 +1,6 @@
 {
   "name": "@widnyana/agent-notify",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "pi / omp extension that fires OS notifications (macOS, Linux) when the agent finishes, needs an approval, or is retrying — so you can look away from the terminal.",
   "author": {
