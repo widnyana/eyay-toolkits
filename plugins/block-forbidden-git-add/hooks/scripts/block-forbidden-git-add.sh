@@ -31,7 +31,13 @@ deny() {
 # Tokenizing fails when the git call is wrapped (sh -c, eval, $(…), backticks).
 # This pass regexes the FULL command string, so quoted/subshelled git calls
 # are still caught. Deny-only, no false-negative-driven allowlist.
-if printf '%s' "$cmd" | grep -qE \
+#
+# Quoted strings are stripped first: -m "fix the rebase bug" is a commit
+# MESSAGE, not a git reset, and keyword hits inside message text are the
+# guard's main false positive. Stripping is heuristic (no heredocs), but the
+# tokenizing pass below still covers unquoted forms.
+unquoted=$(printf '%s' "$cmd" | sed -E "s/'[^']*'//g; s/\"[^\"]*\"//g")
+if printf '%s' "$unquoted" | grep -qE \
   -e 'git[[:space:]]+[^;&|]*\b(revert|rebase|reset|filter-branch|filter-repo)\b' \
   -e 'git[[:space:]]+commit[^;&|]*[[:space:]]--amend' \
   -e 'git[[:space:]]+push[^;&|]*[[:space:]](--force|-f|--force-with-lease)' \
