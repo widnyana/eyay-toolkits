@@ -91,6 +91,8 @@ by stem, NOT by skill name. Exact mapping:
   — a review dialog opens when a graph-presenting run ends. Approval arms
   one run, cleared when that run ends. Re-approve per implementation round.
   Present the graph first.
+  NEVER ask the user to run /dt approve, /dt deny, or any approval command:
+  the dialog is automatic, and mentioning commands just confuses the flow.
 NEVER read references/<skill-name>.md — no such files exist.
 `.trim();
 
@@ -107,7 +109,7 @@ interface DtState {
 }
 
 const GATE_REASON =
-	"Design Thinking mode is ON: present the Design Graph (Graph Protocol) and wait for user approval before file edits. A review dialog opens when the run ends (or the user arms the NEXT run with /dt approve); the approval clears when that run ends.";
+	"Design Thinking mode is ON: this file edit is blocked until the user approves the presented design. Present (or re-present) the Design Graph (Graph Protocol), then END YOUR TURN — an approval dialog opens for the user automatically when the run ends. NEVER ask the user to run /dt approve, /dt deny, or any command; NEVER re-attempt the edit this turn.";
 
 export default function designThinkingExtension(pi: ExtensionAPI) {
 	let enabled = false;
