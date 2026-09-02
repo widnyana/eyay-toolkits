@@ -118,6 +118,8 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// True while a run ended with a presented, unapproved Design Graph and the
 	// review dialog should appear. Prevents re-prompting after a Deny.
 	let reviewPending = false;
+	// omp-only pi.logger surface; absent on pi 0.84.3.
+	const logger = (pi as ExtensionAPI & { logger?: { warn?: (msg: string) => void } }).logger;
 
 	function applyStatus(ctx: ExtensionContext) {
 		ctx.ui.setStatus(
@@ -242,6 +244,11 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// run consumes its approval ONLY when edits actually went through: an arm
 	// set by /dt approve must survive its own (idle) command run and apply to
 	// the next real run.
+	//
+	// The dialog loop is detached from the handler on purpose: omp bounds
+	// event handlers at 30s, and an interactive prompt must wait for a human.
+	// The handler returns at once; the loop keeps running with its own error
+	// containment. reviewPending guards against a second dialog.
 	pi.on("agent_end", async (event, ctx) => {
 		if (!enabled) return;
 		if (editsApproved) {
@@ -257,12 +264,19 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			(m) => m.role === "assistant" && /\bVERDICT\b/.test(JSON.stringify(m.content ?? "")),
 		);
 		if (!presentedGraph) return;
-		if (reviewPending) return; // already decided (deny) — wait for the user
+		if (reviewPending) return; // dialog already open or decided (deny)
 		reviewPending = true;
 		if (!ctx.hasUI) {
 			ctx.ui.notify("Design Thinking: review the presented design, then run /dt approve or /dt deny", "info");
 			return;
 		}
+		void reviewDialog(ctx).catch((err: unknown) => {
+			reviewPending = false;
+			logger?.warn?.(`design-thinking: review dialog failed: ${String(err)}`);
+		});
+	});
+
+	async function reviewDialog(ctx: ExtensionContext): Promise<void> {
 		for (;;) {
 			const choice = await ctx.ui.select("Review the presented design", [
 				"Approve — implement now",
@@ -277,7 +291,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			if (choice.startsWith("Approve")) {
 				editsApproved = true;
 				reviewPending = false;
-				ctx.ui.notify("Design Thinking: file edits armed (this run) — implementing the approved design", "info");
+				ctx.ui.notify("Design Thinking: file edits armed — implementing the approved design", "info");
 				await pi.sendUserMessage(
 					"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)",
 					{ deliverAs: "steer" },
@@ -295,7 +309,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			);
 			return;
 		}
-	});
+	}
 
 	// Hard gate: while enabled, file-edit tools are blocked until the user
 	// arms the next run with /dt approve. Prompt-level rules alone proved
