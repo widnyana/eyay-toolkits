@@ -1,0 +1,44 @@
+{
+  "name": "@widnyana/iac-check-guard",
+  "version": "0.2.2",
+  "type": "module",
+  "description": "pi extension that blocks IaC write/destructive commands before the Bash tool runs: ansible writes (ansible-playbook/ansible-pull without --check, ad-hoc ansible write modules), terragrunt/tofu/terraform apply-family (apply, destroy, import, init, plan -out/-replace/-destroy, state mutations, stack clean/generate), including mise-wrapped forms. Shares its check script with the Claude Code plugin plugins/iac-check-guard.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/iac-check-guard"
+  },
+  "keywords": [
+    "pi-package",
+    "ansible",
+    "terraform",
+    "tofu",
+    "terragrunt",
+    "safety",
+    "guardrail"
+  ],
+  "pi": {
+    "extensions": [
+      "./extensions"
+    ]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.84.3",
+    "@types/bun": "^1.4.0",
+    "@types/node": "^22.20.1",
+    "typescript": "^5.7.0"
+  }
+}

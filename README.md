@@ -55,6 +55,7 @@ method: `git pull` then re-run `pi install`.
 | Plugin | What it does | Details |
 |--------|-------------|---------|
 | **block-forbidden-git-add** | PreToolUse hook that blocks `git add .`/`-A`, staging protected paths (`docs/`, `CLAUDE.md`, ...), and history rewrites (`rebase`, `reset`, `commit --amend`, `push -f`). | [README](plugins/block-forbidden-git-add/README.md) |
+| **iac-check-guard** | PreToolUse hook that blocks IaC write/destructive commands — `ansible-playbook`/`ansible-pull` without `--check`, ad-hoc `ansible` write modules, terragrunt/tofu/terraform apply-family (apply, destroy, import, init, `plan -out/-replace/-destroy`, state mutations), including `mise run tg -- ...` wrappers. | [README](plugins/iac-check-guard/README.md) |
 | **bmad-sprint-run** | Drives Claude Code through an entire BMad sprint autonomously — creates stories, implements them, runs quality gates, handles retries, and commits results. Two modes: skill (`/bmad-sprint-run`) and Python companion (`sprint-runner.py`). | [README](plugins/bmad-sprint-run/README.md) |
 | **career-tools** | Cover letters and CVs from repo contents. Markdown or ATS-friendly LaTeX. | [README](plugins/career-tools/README.md) |
 | **design-thinking** | `/dt` mode + `/cg*` commands: draw the Design Graph (call graph, named failure paths) before writing code, review, or refactor. Claude Code port of the `design-thinking` pi package below. | [README](plugins/design-thinking/README.md) |
@@ -71,6 +72,7 @@ method: `git pull` then re-run `pi install`.
 | Package | What it does | README |
 |---|---|---|
 | **design-thinking** | [pi](https://pi.dev) extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
+| **iac-check-guard** | pi extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs, in both pi and omp. | [README](pi-packages/iac-check-guard/README.md) |
 
 Install commands are in the [Install](#install) section above.
 

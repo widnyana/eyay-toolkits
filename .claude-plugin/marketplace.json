@@ -110,6 +110,17 @@
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/block-forbidden-git-add"
     },
     {
+      "name": "iac-check-guard",
+      "description": "PreToolUse hook that blocks IaC write/destructive commands (ansible-playbook/ansible-pull without --check, ad-hoc ansible write modules, terragrunt/tofu/terraform apply-family including mise-wrapped forms), so agents never apply changes to real infrastructure.",
+      "source": "./plugins/iac-check-guard",
+      "category": "safety",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/iac-check-guard"
+    },
+    {
       "name": "perihbahasa",
       "description": "Generate humorous, absurd, and flirty Indonesian proverb (peribahasa) remixes with precise rhyme and cadence.",
       "source": "./plugins/perihbahasa",

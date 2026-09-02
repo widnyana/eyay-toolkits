@@ -20,6 +20,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin install sui-dev-tools@eyay-toolkits
 /plugin install ts-backend-dev@eyay-toolkits
 /plugin install visual-gen@eyay-toolkits
+/plugin install iac-check-guard@eyay-toolkits
 ```
 
 Verify with `/plugin list` or `/skills`. Restart Claude Code or open a new session if nothing shows up.
@@ -63,6 +64,11 @@ This repo also ships packages for [pi](https://pi.dev) under `pi-packages/`:
 pi install npm:@widnyana/design-thinking
 # or via OMP
 omp install npm:@widnyana/design-thinking
+```
+```bash
+pi install /path/to/eyay-toolkits/pi-packages/iac-check-guard
+# or via OMP
+omp install /path/to/eyay-toolkits/pi-packages/iac-check-guard
 ```
 
 To update: re-run the install command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).

@@ -1,0 +1,13 @@
+{
+  "name": "iac-check-guard",
+  "version": "0.2.2",
+  "description": "PreToolUse/Bash hook that blocks IaC write/destructive commands (ansible-playbook/ansible-pull without --check, ad-hoc ansible write modules, terragrunt/tofu/terraform apply-family including mise-wrapped forms), so agents never apply changes to real infrastructure.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/iac-check-guard",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "license": "MIT",
+  "keywords": ["ansible", "terraform", "tofu", "terragrunt", "hook", "safety", "guardrail"]
+}

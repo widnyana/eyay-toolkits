@@ -23,6 +23,10 @@ const SYNC: Entry[] = [
     pi: "pi-packages/block-forbidden-git-add/extensions/block-forbidden-git-add.sh",
     plugin: "plugins/block-forbidden-git-add/hooks/scripts/block-forbidden-git-add.sh",
   },
+  {
+    pi: "pi-packages/iac-check-guard/extensions/iac-check-guard.sh",
+    plugin: "plugins/iac-check-guard/hooks/scripts/iac-check-guard.sh",
+  },
   { pi: "pi-packages/design-thinking/references/method.md", plugin: "plugins/design-thinking/references/method.md" },
   { pi: "pi-packages/design-thinking/references/design-graph.md", plugin: "plugins/design-thinking/references/design-graph.md" },
   { pi: "pi-packages/design-thinking/references/protocol.md", plugin: "plugins/design-thinking/references/protocol.md" },
