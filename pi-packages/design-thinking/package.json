@@ -1,6 +1,6 @@
 {
   "name": "@widnyana/design-thinking",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "type": "module",
   "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for pi. Turns every plan, review, and refactor into an annotated call graph. Method originally by r17x; generalized to a pi package by widnyana.",
   "author": {

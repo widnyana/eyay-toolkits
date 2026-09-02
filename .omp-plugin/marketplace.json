@@ -13,7 +13,7 @@
     {
       "name": "design-thinking",
       "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for omp. Draws a Design Graph (call graph, named failure paths) before writing code, review, or refactor. Includes the /cg, /cg-plan, /cg-review, /cg-map prompt family.",
-      "version": "0.0.7",
+      "version": "0.0.11",
       "source": "./pi-packages/design-thinking",
       "category": "development",
       "author": {

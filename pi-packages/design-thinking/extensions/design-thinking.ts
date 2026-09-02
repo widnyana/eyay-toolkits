@@ -20,6 +20,23 @@
  *   Deny (keep file edits blocked). /dt <prompt> turns the mode ON (never
  *   off) and runs the prompt — graph + clarifying questions before code.
  *
+ * Approval gate design (one state machine, one owner):
+ *   - The gate is `{ mode: "off" | "on", approval: "none" | "armed" }`. Every
+ *     change goes through a transition function; handlers never touch the
+ *     fields directly.
+ *   - At most one review dialog exists. Each offer carries an epoch; a dialog
+ *     decision is applied only if its epoch is still current AND the gate is
+ *     still on AND still unapproved. Stale decisions are discarded, not
+ *     applied.
+ *   - Dialogs are opened with an extension-owned AbortSignal: omp binds
+ *     handler-opened dialogs to the handler's 30s abort scope, and a floating
+ *     promise does not escape that binding. If the dialog is still dismissed
+ *     (runtime kill, or the agent's own dialog displacing it), the offer is
+ *     retracted and a fresh one opens at the next run end. No reopen loops,
+ *     no timing heuristics.
+ *   - An explicit Deny latches until a NEW graph is presented: deny means
+ *     stop asking.
+ *
  * Stack-agnostic: no language detection, no auto-enable. Adapt the vocabulary
  * to whatever stack the project uses; never the discipline.
  */
@@ -111,27 +128,97 @@ interface DtState {
 const GATE_REASON =
 	"Design Thinking mode is ON: this file edit is blocked until the user approves the presented design. Present (or re-present) the Design Graph (Graph Protocol), then END YOUR TURN — an approval dialog opens for the user automatically when the run ends. NEVER ask the user to run /dt approve, /dt deny, or any command; NEVER re-attempt the edit this turn.";
 
+const REVIEW_OPTIONS = [
+	"Approve — implement now",
+	"Refine — ask the agent for changes",
+	"Deny — keep file edits blocked",
+] as const;
+
+const GO_AHEAD_MESSAGE =
+	"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)";
+
+const VERDICT_PATTERN = /\bVERDICT\b/;
+
+/** Does an assistant message contain a rendered Design Graph? The protocol's
+ *  VERDICT section is mandatory, so it only appears on a real rendering. */
+function presentsGraph(message: { role: string; content?: unknown }): boolean {
+	if (message.role !== "assistant") return false;
+	if (typeof message.content === "string") return VERDICT_PATTERN.test(message.content);
+	return VERDICT_PATTERN.test(JSON.stringify(message.content ?? ""));
+}
+
+interface Offer {
+	epoch: number;
+	abort: AbortController;
+}
+
 export default function designThinkingExtension(pi: ExtensionAPI) {
-	let enabled = false;
-	// Armed by the review dialog (or manual /dt approve) for the NEXT agent
-	// run. Cleared when that run ends (agent_end), by /dt deny, or when the
-	// mode turns off. Not persisted.
-	let editsApproved = false;
-	// True while a run ended with a presented, unapproved Design Graph and the
-	// review dialog should appear. Prevents re-prompting after a Deny.
-	let reviewPending = false;
+	// ── Gate state — the ONLY mutable state; change it via the transitions
+	// below, never inline in a handler. ─────────────────────────────────────
+	let mode: "off" | "on" = "off";
+	// "armed" lets mutating tools through; consumed when an armed run actually
+	// used them. An arm from /dt approve must survive its own (idle) command
+	// run and apply to the next real run — hence consume-on-use at run end,
+	// not clear-at-run-end.
+	let approval: "none" | "armed" = "none";
+	let armedUsedThisRun = false;
+	// A Design Graph was presented at some point (incrementally scanned).
+	let graphSeen = false;
+	// Set by an explicit deny (dialog or /dt deny). Latches until a NEW graph
+	// is presented — deny means stop asking.
+	let graphDenied = false;
+	// Dialog offers. Monotonic epoch; a decision applies only when its epoch
+	// matches the live offer and the gate still allows arming.
+	let nextEpoch = 1;
+	let offer: Offer | undefined;
+	// How many messages of the session have already been scanned for VERDICT.
+	let scannedMessages = 0;
+
 	// omp-only pi.logger surface; absent on pi 0.84.3.
 	const logger = (pi as ExtensionAPI & { logger?: { warn?: (msg: string) => void } }).logger;
 
+	// ── Transitions ─────────────────────────────────────────────────────────
+	function setMode(on: boolean): void {
+		mode = on ? "on" : "off";
+		if (!on) {
+			approval = "none";
+			retractOffer();
+		}
+	}
+
+	/** Arm the gate. Fails when the mode is off or an approval is already in
+	 *  effect — the caller decides how to surface that. */
+	function arm(): boolean {
+		if (mode !== "on" || approval !== "none") return false;
+		approval = "armed";
+		retractOffer();
+		return true;
+	}
+
+	/** Explicit revoke (/dt deny). Latches graph review until a new graph. */
+	function revoke(): void {
+		approval = "none";
+		graphDenied = true;
+		retractOffer();
+	}
+
+	function retractOffer(): void {
+		offer?.abort.abort();
+		offer = undefined;
+	}
+
+	/** May a dialog decision from `epoch` still be applied? */
+	function decisionApplies(epoch: number): boolean {
+		return offer?.epoch === epoch && mode === "on" && approval === "none";
+	}
+
+	// ── Session plumbing ────────────────────────────────────────────────────
 	function applyStatus(ctx: ExtensionContext) {
-		ctx.ui.setStatus(
-			"design-thinking",
-			enabled ? "design-thinking: on" : undefined,
-		);
+		ctx.ui.setStatus("design-thinking", mode === "on" ? "design-thinking: on" : undefined);
 	}
 
 	function persist() {
-		pi.appendEntry<DtState>(STATE_TYPE, { enabled });
+		pi.appendEntry<DtState>(STATE_TYPE, { enabled: mode === "on" });
 	}
 
 	function restore(ctx: ExtensionContext) {
@@ -145,12 +232,9 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 				}
 			}
 		}
-		if (restored !== undefined) {
-			enabled = restored;
-		}
+		if (restored !== undefined) setMode(restored);
 	}
 
-	// Restore toggle state when a session starts, loads, or reloads.
 	pi.on("session_start", async (_event, ctx) => {
 		restore(ctx);
 		applyStatus(ctx);
@@ -160,9 +244,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 		ctx.ui.setStatus("design-thinking", undefined);
 	});
 
-	// /dt — the Design Thinking tool. Toggles mode; on|off|status set/query;
-	// approve opens an approve/deny dialog (arrow keys + Enter) and starts the
-	// approved run; deny re-locks edits; anything else runs as a prompt with mode on.
+	// ── /dt command ─────────────────────────────────────────────────────────
 	pi.registerCommand("dt", {
 		description: "Design Thinking mode: /dt toggles, on|off|status set/query, approve asks then implements, deny re-locks; anything else runs as a prompt with mode on",
 		handler: async (args, ctx) => {
@@ -170,53 +252,47 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			const lower = arg.toLowerCase();
 
 			if (lower === "status") {
-				ctx.ui.notify(`Design Thinking mode: ${enabled ? "on" : "off"}${editsApproved ? " (file edits armed for the next run)" : ""}`, "info");
+				ctx.ui.notify(`Design Thinking mode: ${mode === "on" ? "on" : "off"}${approval === "armed" ? " (file edits armed for the next run)" : ""}`, "info");
 				return;
 			}
 
 			if (lower === "approve") {
-				if (!enabled) {
+				if (mode !== "on") {
 					ctx.ui.notify("Design Thinking is OFF — nothing to approve. Run /dt on first.", "info");
 					return;
 				}
 				// Direct arm: the interactive approve/refine/deny dialog opens
 				// automatically after a gated run ends; this command is the
 				// headless/scripting path, so no nested dialog here.
-				editsApproved = true;
-				reviewPending = false;
+				if (!arm()) {
+					ctx.ui.notify("Design Thinking: file edits are already armed", "info");
+					return;
+				}
 				ctx.ui.notify("Design Thinking: file edits armed (this run) — implementing the approved design without re-presenting the graph", "info");
 				// Arming alone leaves the session idle: the agent never learns approval
 				// happened and the user sees "nothing happened". Send the go-ahead so
 				// the armed run starts now (steer if mid-run).
-				await pi.sendUserMessage(
-					"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)",
-					{ deliverAs: "steer" },
-				);
+				await pi.sendUserMessage(GO_AHEAD_MESSAGE, { deliverAs: "steer" });
 				return;
 			}
 			if (lower === "deny") {
-				if (!editsApproved) {
+				if (approval !== "armed") {
 					ctx.ui.notify("Design Thinking: no approval in effect — file edits are already blocked", "info");
 					return;
 				}
-				editsApproved = false;
-				reviewPending = false;
+				revoke();
 				ctx.ui.notify("Design Thinking: file edits blocked again", "info");
 				return;
-			}
-			if (!enabled) {
-				editsApproved = false;
-				reviewPending = false;
 			}
 			// "on"/"off" set explicitly; anything else is a prompt to run in this
 			// mode and always turns the mode ON (never toggles it off); bare /dt toggles.
 			const prompt = /^(on|off|status)$/.test(lower) ? "" : arg;
-			enabled = lower === "on" || prompt ? true : lower === "off" ? false : !enabled;
-			if (!enabled) editsApproved = false;
+			const on = lower === "on" || prompt ? true : lower === "off" ? false : mode === "off";
+			setMode(on);
 			persist();
 			applyStatus(ctx);
 			ctx.ui.notify(
-				enabled
+				on
 					? "Design Thinking ON — plans and reviews will render as Design Graphs (Graph Protocol)"
 					: "Design Thinking OFF",
 				"info",
@@ -232,110 +308,98 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 		},
 	});
 
+	// ── Run hooks ───────────────────────────────────────────────────────────
 	// While active, append the distilled block to the system prompt every run.
 	pi.on("before_agent_start", async (event) => {
-		editsUsedThisRun = false;
-		if (!enabled) return undefined;
+		armedUsedThisRun = false;
+		if (mode !== "on") return undefined;
 		return {
 			systemPrompt: event.systemPrompt + "\n\n" + DISTILLED + "\n",
 		};
 	});
 
-	// A gated run that ended with a presented Design Graph opens the review
-	// dialog automatically — the user never has to type /dt approve. An armed
-	// run consumes its approval ONLY when edits actually went through: an arm
-	// set by /dt approve must survive its own (idle) command run and apply to
-	// the next real run.
-	//
-	// The dialog loop is detached from the handler, but detachment alone does
-	// NOT keep the dialog alive: omp binds dialogs opened inside an event
-	// handler to that handler's 30s abort scope, so a human slower than 30s
-	// gets the dialog dismissed under them and the select resolves undefined.
-	// Each dialog is therefore opened with an extension-owned AbortSignal
-	// (opts.signal), which replaces the implicit handler-scoped binding.
-	// A dismissed dialog (timeout kill, or the agent's own ask dialog popping
-	// over it) reopens instead of counting as Deny. If the runtime keeps
-	// dismissing instantly, fall back to the manual /dt approve path rather
-	// than spin.
+	// Mechanical backstop: while armed, mutating tools pass (and mark the arm
+	// as used); otherwise they are blocked with instructions to present the
+	// graph and end the turn.
+	pi.on("tool_call", async (event) => {
+		if (mode !== "on") return undefined;
+		if (!MUTATING_TOOLS[event.toolName]) return undefined;
+		if (approval === "armed") {
+			armedUsedThisRun = true;
+			return undefined;
+		}
+		return { block: true, reason: GATE_REASON };
+	});
+
+	// Run-end housekeeping: consume a used arm; offer the review dialog when a
+	// graph is on the table and the user has not denied it.
 	pi.on("agent_end", async (event, ctx) => {
-		if (!enabled) return;
-		if (editsApproved) {
-			if (editsUsedThisRun) editsApproved = false;
-			reviewPending = false;
+		// Keep the scan cursor in sync even while off, so re-enabling does not
+		// rescan or mis-slice history.
+		const messages = event.messages;
+		if (mode !== "on") {
+			scannedMessages = messages.length;
 			return;
 		}
-		// Detect a presented graph: the protocol's VERDICT section is mandatory,
-		// so it only appears when a Design Graph was actually rendered. Scan the
-		// whole run — the run may end on a tool call (question, ask, ...) after
-		// the graph text.
-		const presentedGraph = event.messages.some(
-			(m) => m.role === "assistant" && /\bVERDICT\b/.test(JSON.stringify(m.content ?? "")),
-		);
-		if (!presentedGraph) return;
-		if (reviewPending) return; // dialog already open or decided (deny)
-		reviewPending = true;
+
+		// Incremental VERDICT scan — only messages since the last run end.
+		// A long session never re-scans old history.
+		const fresh = messages.slice(Math.min(scannedMessages, messages.length));
+		scannedMessages = messages.length;
+		if (fresh.some(presentsGraph)) {
+			graphSeen = true;
+			graphDenied = false;
+		}
+
+		if (approval === "armed") {
+			if (armedUsedThisRun) approval = "none"; // consumed
+			retractOffer();
+			return;
+		}
+
+		if (!graphSeen || graphDenied) return;
+		if (offer) return; // a dialog is already live
 		if (!ctx.hasUI) {
 			ctx.ui.notify("Design Thinking: review the presented design, then run /dt approve or /dt deny", "info");
 			return;
 		}
-		void reviewDialog(ctx).catch((err: unknown) => {
-			reviewPending = false;
-			logger?.warn?.(`design-thinking: review dialog failed: ${String(err)}`);
-		});
+		offerReview(ctx);
 	});
 
-	async function reviewDialog(ctx: ExtensionContext): Promise<void> {
-		// Extension-owned abort scope. omp dismisses dialogs opened inside an
-		// event handler when that handler's 30s budget expires; passing our own
-		// signal replaces that implicit binding, so the dialog waits for the
-		// human instead of dying with the run that opened it.
-		let dialogAbort = new AbortController();
-		// A dialog that returns undefined within ~1.5s of opening was killed,
-		// not dismissed by a human. Two in a row means this runtime refuses to
-		// keep our dialogs open — stop and hand the user the manual path.
-		let quickDismissals = 0;
-		for (;;) {
-			dialogAbort = new AbortController();
-			const openedAt = Date.now();
-			const choice = await ctx.ui.select(
-				"Review the presented design",
-				[
-					"Approve — implement now",
-					"Refine — ask the agent for changes",
-					"Deny — keep file edits blocked",
-				],
-				{ signal: dialogAbort.signal },
-			);
+	// ── Review dialog ───────────────────────────────────────────────────────
+	// One dialog per offer. Extension-owned AbortSignal: omp dismisses
+	// handler-opened dialogs when the handler's 30s budget expires, and a
+	// detached promise does not escape that binding — the signal replaces it.
+	// If the dialog is dismissed anyway (runtime kill, or the agent's own
+	// dialog displacing it), the offer is retracted; the next run end makes a
+	// fresh offer. A dismissed dialog is NOT a deny.
+	function offerReview(ctx: ExtensionContext): void {
+		const epoch = nextEpoch++;
+		const abort = new AbortController();
+		offer = { epoch, abort };
+
+		void (async () => {
+			const choice = await ctx.ui.select("Review the presented design", [...REVIEW_OPTIONS], {
+				signal: abort.signal,
+			});
+			if (!decisionApplies(epoch)) return; // superseded; discard silently
+
 			if (choice === undefined) {
-				if (Date.now() - openedAt < 1500) quickDismissals++;
-				else quickDismissals = 0;
-				if (quickDismissals >= 2) {
-					reviewPending = false;
-					ctx.ui.notify(
-						"Design Thinking: the review dialog cannot stay open in this session — run /dt approve or /dt deny",
-						"info",
-					);
-					return;
-				}
-				// Dismissed (timeout kill, or the agent's own dialog popped over
-				// it): reopen. This is not a decision; file edits stay blocked.
-				continue;
+				// Dismissed, not decided. File edits stay blocked; a fresh offer
+				// opens at the next run end.
+				retractOffer();
+				return;
 			}
 			if (choice.startsWith("Deny")) {
-				dialogAbort.abort();
-				reviewPending = false;
+				graphDenied = true;
+				retractOffer();
 				ctx.ui.notify("Design Thinking: file edits blocked — nothing approved", "info");
 				return;
 			}
 			if (choice.startsWith("Approve")) {
-				dialogAbort.abort();
-				editsApproved = true;
-				reviewPending = false;
+				if (!arm()) return; // gate changed while the human was deciding
 				ctx.ui.notify("Design Thinking: file edits armed — implementing the approved design", "info");
-				await pi.sendUserMessage(
-					"Approved — implement the presented design now. (Design Thinking file-edit gate is armed for this run; go straight to implementation, no graph re-presentation.)",
-					{ deliverAs: "steer" },
-				);
+				await pi.sendUserMessage(GO_AHEAD_MESSAGE, { deliverAs: "steer" });
 				return;
 			}
 			// Refine: collect feedback and send it back; the dialog re-opens
@@ -343,30 +407,21 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			const feedback = await ctx.ui.input(
 				"What should change in the design?",
 				"e.g. too complex — drop the cache layer",
-				{ signal: dialogAbort.signal },
+				{ signal: abort.signal },
 			);
-			if (feedback === undefined || !feedback.trim()) continue;
-			dialogAbort.abort();
-			reviewPending = false;
+			if (!decisionApplies(epoch)) return;
+			if (feedback === undefined || !feedback.trim()) {
+				retractOffer();
+				return;
+			}
+			retractOffer();
 			await pi.sendUserMessage(
 				`Refine the presented design (do not implement yet): ${feedback.trim()}\n\n(Design Thinking: update the Design Graph (Graph Protocol) per this feedback and present it again. File edits stay blocked.)`,
 				{ deliverAs: "steer" },
 			);
-			return;
-		}
+		})().catch((err: unknown) => {
+			if (offer?.epoch === epoch) retractOffer();
+			logger?.warn?.(`design-thinking: review dialog failed: ${String(err)}`);
+		});
 	}
-
-	// Hard gate: while enabled, file-edit tools are blocked until the user
-	// arms the next run with /dt approve. Prompt-level rules alone proved
-	// insufficient — this is the mechanical backstop.
-	let editsUsedThisRun = false;
-	pi.on("tool_call", async (event) => {
-		if (!enabled) return undefined;
-		if (!MUTATING_TOOLS[event.toolName]) return undefined;
-		if (editsApproved) {
-			editsUsedThisRun = true;
-			return undefined;
-		}
-		return { block: true, reason: GATE_REASON };
-	});
 }
