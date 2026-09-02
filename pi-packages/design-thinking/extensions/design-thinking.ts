@@ -247,10 +247,16 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// set by /dt approve must survive its own (idle) command run and apply to
 	// the next real run.
 	//
-	// The dialog loop is detached from the handler on purpose: omp bounds
-	// event handlers at 30s, and an interactive prompt must wait for a human.
-	// The handler returns at once; the loop keeps running with its own error
-	// containment. reviewPending guards against a second dialog.
+	// The dialog loop is detached from the handler, but detachment alone does
+	// NOT keep the dialog alive: omp binds dialogs opened inside an event
+	// handler to that handler's 30s abort scope, so a human slower than 30s
+	// gets the dialog dismissed under them and the select resolves undefined.
+	// Each dialog is therefore opened with an extension-owned AbortSignal
+	// (opts.signal), which replaces the implicit handler-scoped binding.
+	// A dismissed dialog (timeout kill, or the agent's own ask dialog popping
+	// over it) reopens instead of counting as Deny. If the runtime keeps
+	// dismissing instantly, fall back to the manual /dt approve path rather
+	// than spin.
 	pi.on("agent_end", async (event, ctx) => {
 		if (!enabled) return;
 		if (editsApproved) {
@@ -279,18 +285,50 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	});
 
 	async function reviewDialog(ctx: ExtensionContext): Promise<void> {
+		// Extension-owned abort scope. omp dismisses dialogs opened inside an
+		// event handler when that handler's 30s budget expires; passing our own
+		// signal replaces that implicit binding, so the dialog waits for the
+		// human instead of dying with the run that opened it.
+		let dialogAbort = new AbortController();
+		// A dialog that returns undefined within ~1.5s of opening was killed,
+		// not dismissed by a human. Two in a row means this runtime refuses to
+		// keep our dialogs open — stop and hand the user the manual path.
+		let quickDismissals = 0;
 		for (;;) {
-			const choice = await ctx.ui.select("Review the presented design", [
-				"Approve — implement now",
-				"Refine — ask the agent for changes",
-				"Deny — keep file edits blocked",
-			]);
-			if (choice === undefined || choice.startsWith("Deny")) {
+			dialogAbort = new AbortController();
+			const openedAt = Date.now();
+			const choice = await ctx.ui.select(
+				"Review the presented design",
+				[
+					"Approve — implement now",
+					"Refine — ask the agent for changes",
+					"Deny — keep file edits blocked",
+				],
+				{ signal: dialogAbort.signal },
+			);
+			if (choice === undefined) {
+				if (Date.now() - openedAt < 1500) quickDismissals++;
+				else quickDismissals = 0;
+				if (quickDismissals >= 2) {
+					reviewPending = false;
+					ctx.ui.notify(
+						"Design Thinking: the review dialog cannot stay open in this session — run /dt approve or /dt deny",
+						"info",
+					);
+					return;
+				}
+				// Dismissed (timeout kill, or the agent's own dialog popped over
+				// it): reopen. This is not a decision; file edits stay blocked.
+				continue;
+			}
+			if (choice.startsWith("Deny")) {
+				dialogAbort.abort();
 				reviewPending = false;
 				ctx.ui.notify("Design Thinking: file edits blocked — nothing approved", "info");
 				return;
 			}
 			if (choice.startsWith("Approve")) {
+				dialogAbort.abort();
 				editsApproved = true;
 				reviewPending = false;
 				ctx.ui.notify("Design Thinking: file edits armed — implementing the approved design", "info");
@@ -302,8 +340,13 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			}
 			// Refine: collect feedback and send it back; the dialog re-opens
 			// after the refined plan is presented.
-			const feedback = await ctx.ui.input("What should change in the design?", "e.g. too complex — drop the cache layer");
+			const feedback = await ctx.ui.input(
+				"What should change in the design?",
+				"e.g. too complex — drop the cache layer",
+				{ signal: dialogAbort.signal },
+			);
 			if (feedback === undefined || !feedback.trim()) continue;
+			dialogAbort.abort();
 			reviewPending = false;
 			await pi.sendUserMessage(
 				`Refine the presented design (do not implement yet): ${feedback.trim()}\n\n(Design Thinking: update the Design Graph (Graph Protocol) per this feedback and present it again. File edits stay blocked.)`,
