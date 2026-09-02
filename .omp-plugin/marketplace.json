@@ -7,13 +7,13 @@
     "email": "wid@widnyana.web.id"
   },
   "metadata": {
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
       "name": "design-thinking",
       "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for omp. Draws a Design Graph (call graph, named failure paths) before writing code, review, or refactor. Includes the /cg, /cg-plan, /cg-review, /cg-map prompt family.",
-      "version": "0.0.6",
+      "version": "0.0.7",
       "source": "./pi-packages/design-thinking",
       "category": "development",
       "author": {
@@ -52,6 +52,18 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/iac-check-guard"
+    },
+    {
+      "name": "agent-notify",
+      "description": "Extension that fires OS notifications (macOS, Linux) when the agent finishes, needs an approval, or is retrying — so you can leave the terminal.",
+      "version": "0.0.2",
+      "source": "./pi-packages/agent-notify",
+      "category": "productivity",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/agent-notify"
     }
   ]
 }

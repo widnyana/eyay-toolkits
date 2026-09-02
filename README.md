@@ -83,6 +83,7 @@ method: `git pull` then re-run `pi install`.
 | **block-forbidden-git-add** | pi/omp extension that denies whole-tree `git add`, protected-path staging (`CLAUDE.md`, `AGENTS.md`, `docs/`, `secrets/`), and history-rewriting git commands before the Bash tool runs. | [README](pi-packages/block-forbidden-git-add/README.md) |
 | **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
 | **iac-check-guard** | pi/omp extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs. | [README](pi-packages/iac-check-guard/README.md) |
+| **agent-notify** | pi/omp extension that fires OS notifications (macOS `osascript`, Linux `notify-send`) when the agent finishes, needs an approval, or is retrying — so you can leave the terminal. | [README](pi-packages/agent-notify/README.md) |
 
 | Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |
 |---|---|---|

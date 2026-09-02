@@ -88,7 +88,11 @@ pi install /path/to/eyay-toolkits/pi-packages/block-forbidden-git-add
 # or via OMP
 omp install /path/to/eyay-toolkits/pi-packages/block-forbidden-git-add
 ```
+```bash
+pi install /path/to/eyay-toolkits/pi-packages/agent-notify
+# or via OMP
+omp install /path/to/eyay-toolkits/pi-packages/agent-notify
+```
 
-To update: re-run the install command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).
+See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md) and [pi-packages/agent-notify/README.md](pi-packages/agent-notify/README.md) for usage.
 
-See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md) for usage.

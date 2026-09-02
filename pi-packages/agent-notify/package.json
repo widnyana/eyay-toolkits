@@ -1,0 +1,44 @@
+{
+  "name": "@widnyana/agent-notify",
+  "version": "0.0.2",
+  "type": "module",
+  "description": "pi / omp extension that fires OS notifications (macOS, Linux) when the agent finishes, needs an approval, or is retrying — so you can look away from the terminal.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "assets",
+    "tests",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/agent-notify"
+  },
+  "keywords": [
+    "pi-package",
+    "omp",
+    "notification",
+    "osascript",
+    "notify-send",
+    "agent"
+  ],
+  "omp": {
+    "extensions": ["./extensions/agent-notify.ts"]
+  },
+  "pi": {
+    "extensions": ["./extensions/agent-notify.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "0.84.3",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
