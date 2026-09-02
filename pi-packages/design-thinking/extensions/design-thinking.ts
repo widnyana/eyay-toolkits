@@ -175,20 +175,9 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 					ctx.ui.notify("Design Thinking is OFF — nothing to approve. Run /dt on first.", "info");
 					return;
 				}
-				if (ctx.hasUI) {
-					// Manual fallback (headless/no-UI or user preference): explicit
-					// approve/deny dialog instead of a silent arm.
-					const choice = await ctx.ui.select("Approve the presented design?", [
-						"Approve — implement now",
-						"Deny — keep file edits blocked",
-					]);
-					if (!choice || choice.startsWith("Deny")) {
-						editsApproved = false;
-						reviewPending = false;
-						ctx.ui.notify("Design Thinking: file edits blocked — nothing approved", "info");
-						return;
-					}
-				}
+				// Direct arm: the interactive approve/refine/deny dialog opens
+				// automatically after a gated run ends; this command is the
+				// headless/scripting path, so no nested dialog here.
 				editsApproved = true;
 				reviewPending = false;
 				ctx.ui.notify("Design Thinking: file edits armed (this run) — implementing the approved design without re-presenting the graph", "info");
@@ -258,10 +247,13 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			return;
 		}
 		// Detect a presented graph: the protocol's VERDICT section is mandatory,
-		// so it only appears when a Design Graph was actually rendered.
-		const lastAssistant = [...event.messages].reverse().find((m) => m.role === "assistant");
-		const text = JSON.stringify(lastAssistant?.content ?? "");
-		if (!/\bVERDICT\b/.test(text)) return;
+		// so it only appears when a Design Graph was actually rendered. Scan the
+		// whole run — the run may end on a tool call (question, ask, ...) after
+		// the graph text.
+		const presentedGraph = event.messages.some(
+			(m) => m.role === "assistant" && /\bVERDICT\b/.test(JSON.stringify(m.content ?? "")),
+		);
+		if (!presentedGraph) return;
 		if (reviewPending) return; // already decided (deny) — wait for the user
 		reviewPending = true;
 		if (!ctx.hasUI) {

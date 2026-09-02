@@ -63,6 +63,31 @@ describe("createNotifier", () => {
 		expect(calls[0].args).not.toContain("-activate");
 	});
 
+	test("darwin falls back to osascript when terminal-notifier exits non-zero", () => {
+		const calls: Call[] = [];
+		const listeners: Array<(code: unknown) => void> = [];
+		const exec: Exec = (file, args) => {
+			calls.push({ file, args });
+			return {
+				on: (_event: string, cb: (code: unknown) => void) => {
+					listeners.push(cb);
+				},
+			};
+		};
+		const n = createNotifier("darwin", exec, {
+			hasIcon: false,
+			hasTerminalNotifier: true,
+		});
+		n!.notify("done", "Agent finished", "body");
+		expect(calls[0].file).toBe("terminal-notifier");
+		expect(listeners).toHaveLength(1);
+		listeners[0](1); // permission denied
+		expect(calls[1].file).toBe("osascript");
+		expect(calls[1].args[1]).toContain("Agent finished");
+		listeners[0](0); // success: no fallback
+		expect(calls).toHaveLength(2);
+	});
+
 	test("darwin terminal-notifier omits -appIcon and -activate when unavailable", () => {
 		const calls: Call[] = [];
 		const n = createNotifier("darwin", fakeExec(calls), {

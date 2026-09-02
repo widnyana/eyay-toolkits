@@ -117,11 +117,29 @@ export function createNotifier(
 		// osascript cannot. The banner ICON cannot be overridden on macOS —
 		// Apple provides no API; it always comes from the sending app bundle.
 		if (deps.hasTerminalNotifier) {
+			const osascript = (t: string, b: string) =>
+				exec("osascript", [
+					"-e",
+					`display notification ${JSON.stringify(b)} with title ${JSON.stringify(t)} sound name "Glass"`,
+				]);
 			return {
 				notify: (_kind, title, body) => {
 					const args = ["-title", title, "-message", body, "-sound", "Glass"];
 					if (deps.activateBundle) args.push("-activate", deps.activateBundle);
-					exec("terminal-notifier", args);
+					const child = exec("terminal-notifier", args);
+					// terminal-notifier exits non-zero when macOS denies it
+					// notification permission — fall back to osascript, which
+					// inherits the terminal's grant.
+					if (
+						child &&
+						typeof child === "object" &&
+						"on" in child &&
+						typeof child.on === "function"
+					) {
+						child.on("close", (code: unknown) => {
+							if (code !== 0) osascript(title, body);
+						});
+					}
 				},
 			};
 		}
