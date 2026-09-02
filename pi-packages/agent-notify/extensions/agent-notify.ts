@@ -209,8 +209,21 @@ export default function agentNotify(pi: ExtensionAPI) {
 		}
 	}
 
-	// Agent run fully settled — no retry, compaction, or continuation pending.
+	// Done signal, both spellings: pi emits agent_settled; omp emits
+	// session_stop (its main-session stop hook) and may not emit agent_settled
+	// at all. Runtimes that fire both are deduped by the 30s throttle.
 	pi.on("agent_settled", () => {
+		fire("done", "Agent finished", "Run complete — awaiting your input");
+	});
+	omp.on?.("session_stop", (event) => {
+		if (
+			event &&
+			typeof event === "object" &&
+			"stop_hook_active" in event &&
+			event.stop_hook_active
+		) {
+			return;
+		}
 		fire("done", "Agent finished", "Run complete — awaiting your input");
 	});
 

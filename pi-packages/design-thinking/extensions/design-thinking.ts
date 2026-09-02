@@ -230,6 +230,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// While active, append the distilled block to the system prompt every run.
 	pi.on("before_agent_start", async (event) => {
+		editsUsedThisRun = false;
 		if (!enabled) return undefined;
 		return {
 			systemPrompt: event.systemPrompt + "\n\n" + DISTILLED + "\n",
@@ -237,12 +238,14 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	});
 
 	// A gated run that ended with a presented Design Graph opens the review
-	// dialog automatically — the user never has to type /dt approve. An
-	// approved run consumes its approval and prompts nothing.
+	// dialog automatically — the user never has to type /dt approve. An armed
+	// run consumes its approval ONLY when edits actually went through: an arm
+	// set by /dt approve must survive its own (idle) command run and apply to
+	// the next real run.
 	pi.on("agent_end", async (event, ctx) => {
 		if (!enabled) return;
 		if (editsApproved) {
-			editsApproved = false;
+			if (editsUsedThisRun) editsApproved = false;
 			reviewPending = false;
 			return;
 		}
@@ -297,9 +300,14 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// Hard gate: while enabled, file-edit tools are blocked until the user
 	// arms the next run with /dt approve. Prompt-level rules alone proved
 	// insufficient — this is the mechanical backstop.
+	let editsUsedThisRun = false;
 	pi.on("tool_call", async (event) => {
-		if (!enabled || editsApproved) return undefined;
+		if (!enabled) return undefined;
 		if (!MUTATING_TOOLS[event.toolName]) return undefined;
+		if (editsApproved) {
+			editsUsedThisRun = true;
+			return undefined;
+		}
 		return { block: true, reason: GATE_REASON };
 	});
 }
