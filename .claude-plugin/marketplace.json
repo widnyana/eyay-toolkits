@@ -7,7 +7,7 @@
     "email": "wid@widnyana.web.id"
   },
   "metadata": {
-    "version": "1.2.0"
+    "version": "1.4.0"
   },
   "plugins": [
     {
@@ -110,6 +110,17 @@
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/block-forbidden-git-add"
     },
     {
+      "name": "iac-check-guard",
+      "description": "PreToolUse hook that blocks IaC write/destructive commands (ansible-playbook/ansible-pull without --check, ad-hoc ansible write modules, terragrunt/tofu/terraform apply-family including mise-wrapped forms), so agents never apply changes to real infrastructure.",
+      "source": "./plugins/iac-check-guard",
+      "category": "safety",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/iac-check-guard"
+    },
+    {
       "name": "perihbahasa",
       "description": "Generate humorous, absurd, and flirty Indonesian proverb (peribahasa) remixes with precise rhyme and cadence.",
       "source": "./plugins/perihbahasa",
@@ -137,6 +148,17 @@
         }
       ],
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/design-thinking"
+    },
+    {
+      "name": "excalidraw-diagrams",
+      "description": "Generate multi-frame Excalidraw diagrams from a design doc with a tested builder: layout checks, SVG/PNG preview, structure validation, and a facts cross-check against the source.",
+      "source": "./plugins/excalidraw-diagrams",
+      "category": "media",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/excalidraw-diagrams"
     }
   ]
 }

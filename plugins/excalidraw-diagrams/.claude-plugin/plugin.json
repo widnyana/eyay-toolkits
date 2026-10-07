@@ -1,0 +1,12 @@
+{
+  "name": "excalidraw-diagrams",
+  "version": "1.0.0",
+  "description": "Generate multi-frame Excalidraw diagrams from a design doc: a tested builder with layout checks, SVG/PNG preview, structure validation, and a facts cross-check against the source.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "WTFPL",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": ["excalidraw", "diagrams", "obsidian", "architecture", "documentation"]
+}

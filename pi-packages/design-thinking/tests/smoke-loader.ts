@@ -83,9 +83,13 @@ for (const f of ["protocol.md", "method.md", "design-graph.md", "effect-ts.md"])
 // strip frontmatter, apply the documented link rewrites, normalize the
 // documented trailing-footer replacement, then compare.
 const LINK_REWRITES: Array<[RegExp, string]> = [
-	[/\]\(protocol\.md\)/g, "](/skill:graph-protocol)"],
-	[/\]\(method\.md\)/g, "](/skill:design-method)"],
-	[/\]\(design-graph\.md\)/g, "](/skill:design-graph)"],
+	// references point at sibling files; skills reference each other by name
+	// in prose (committed style, a12e021)
+	[/\[Graph Protocol\]\(protocol\.md\) format/g, "Graph Protocol format (see the `graph-protocol` skill)"],
+	[/\[Graph Protocol\]\(protocol\.md\) notation/g, "Graph Protocol notation (see the `graph-protocol` skill)"],
+	[/\[Design Thinking\]\(method\.md\)/g, "Design Thinking (see the `design-method` skill)"],
+	[/\[Graph Protocol\]\(protocol\.md\)/g, "the `graph-protocol` skill"],
+	[/\[protocol\.md\]\(protocol\.md\)/g, "the `graph-protocol` skill"],
 ];
 const PAIRS: Array<[string, string]> = [
 	["graph-protocol", "protocol.md"],

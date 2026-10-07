@@ -48,6 +48,10 @@ pi install npm:@widnyana/design-thinking@0.0.1
 # from a local checkout of this repo
 pi install /absolute/path/to/pi-packages/design-thinking
 
+# via the omp marketplace
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install design-thinking@eyay-toolkits
+
 # try without installing
 pi -e npm:@widnyana/design-thinking
 pi -e ./pi-packages/design-thinking
@@ -61,6 +65,8 @@ pi -e ./pi-packages/design-thinking
 |---|---|
 | `/dt` | Toggle Design Thinking mode. While on, plans and reviews render as Design Graphs. Persists across restarts. |
 | `/dt on\|off\|status` | Set or query the mode explicitly. |
+| Review dialog | When a run ends with a presented Design Graph — or the agent asks for approval in prose — a dialog opens automatically (arrow keys + Enter or mouse), **never mid-run**: **Approve** arms the gate (file edits, shells, code execution) **and** sends the go-ahead so implementation starts immediately, **Refine** asks for feedback and sends it back to the agent (the dialog re-opens after the updated graph), **Deny** keeps everything blocked. Headless/no-UI sessions fall back to manual `/dt approve\|deny`. While unapproved, `write`, `edit`, `bash`, and code-execution tools are blocked outright — read-only exploration keeps `read`/`grep`/`glob`. |
+| Approval scope | Approval covers **one instruction**: it stays armed across the many runs it takes to implement the approved design, and re-locks the moment you send a new instruction. The agent folds that instruction into the existing Design Graph, re-presents it, and the dialog opens again — the loop runs until the goal is met. |
 | `/dt <prompt>` | Turn the mode **on** (never off), then run `<prompt>` under it — graph and clarifying questions first, implementation after your go-ahead. |
 | `/cg <module \| task>` | Generate a call graph: extract the graph existing code implements, or sketch one for a task. |
 | `/cg-plan <task>` | Design before code — full Design Graph, then implement to match it. |

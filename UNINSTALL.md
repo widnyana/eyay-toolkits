@@ -48,6 +48,9 @@ OMP (the `uninstall` target is the same spec you installed with — check exact 
 
 ```bash
 omp plugin uninstall npm:@widnyana/design-thinking
+
+# omp marketplace installs:
+omp plugin uninstall <name>@eyay-toolkits
 ```
 
 ---

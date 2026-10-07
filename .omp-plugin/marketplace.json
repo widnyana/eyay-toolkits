@@ -1,0 +1,93 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "eyay-toolkits",
+  "description": "Personal omp plugins and pi packages. Built for shipping systems, not essays. If it helps you, steal it.",
+  "owner": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "metadata": {
+    "version": "1.4.0"
+  },
+  "plugins": [
+    {
+      "name": "design-thinking",
+      "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for omp. Draws a Design Graph (call graph, named failure paths) before writing code, review, or refactor. Includes the /cg, /cg-plan, /cg-review, /cg-map prompt family.",
+      "version": "0.0.19",
+      "source": "./pi-packages/design-thinking",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "contributors": [
+        {
+          "name": "r17x",
+          "url": "https://github.com/r17x",
+          "note": "Original Design Thinking concepts and methodology"
+        }
+      ],
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/design-thinking"
+    },
+    {
+      "name": "block-forbidden-git-add",
+      "description": "Extension that denies whole-tree git add, protected-path staging (CLAUDE.md, AGENTS.md, docs/, secrets/), and history-rewriting git commands before the Bash tool runs.",
+      "version": "0.2.2",
+      "source": "./pi-packages/block-forbidden-git-add",
+      "category": "safety",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/block-forbidden-git-add"
+    },
+    {
+      "name": "iac-check-guard",
+      "description": "Extension that blocks IaC write/destructive commands (ansible-playbook/ansible-pull without --check, ad-hoc ansible write modules, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs.",
+      "version": "0.3.1",
+      "source": "./pi-packages/iac-check-guard",
+      "category": "safety",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/iac-check-guard"
+    },
+    {
+      "name": "agent-notify",
+      "description": "Extension that fires terminal-native banners (OSC 777/9/99, notify-send, Windows toast) when the agent finishes, needs an approval, or is retrying, so you can leave the terminal.",
+      "version": "0.1.2",
+      "source": "./pi-packages/agent-notify",
+      "category": "productivity",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/agent-notify"
+    },
+    {
+      "name": "exit-commands",
+      "description": "Adds vim muscle-memory quit input aliases to the omp/pi REPL: `:q` (plus `:q!`, `:wq`, `:wq!`, `:x`, `:xq`) and a `/exit` command, all via graceful shutdown. `/quit` is built-in; `/exit` is not.",
+      "version": "0.2.1",
+      "source": "./pi-packages/exit-commands",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/exit-commands"
+    },
+    {
+      "name": "general-reminder",
+      "description": "Configurable standing reminders: reads <project>/.omp/reminders.json (or .pi/ on pi) and injects its contents into every run — always-on entries plus optional one-shot notes per session.",
+      "version": "0.1.1",
+      "source": "./pi-packages/general-reminder",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/general-reminder"
+    }
+  ]
+}

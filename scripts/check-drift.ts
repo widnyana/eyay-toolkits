@@ -16,54 +16,54 @@
  */
 import { readFileSync, writeFileSync } from "node:fs";
 
-type Entry = { pi: string; plugin: string };
+type Entry = { pi: string; plugin: string; transform?: (s: string) => string };
 
-const SYNC: Entry[] = [
+// Line-wrap-insensitive comparison target.
+const collapse = (s: string) => s.replace(/\s+/g, " ").trim();
+const toPlugin = (s: string) => s.replace(/\bpackage\b/g, "plugin");
+
+// Verbatim class: no transform. Transform class: mechanical substitution per entry.
+const SHARED: Entry[] = [
   {
     pi: "pi-packages/block-forbidden-git-add/extensions/block-forbidden-git-add.sh",
     plugin: "plugins/block-forbidden-git-add/hooks/scripts/block-forbidden-git-add.sh",
+  },
+  {
+    pi: "pi-packages/iac-check-guard/extensions/iac-check-guard.sh",
+    plugin: "plugins/iac-check-guard/hooks/scripts/iac-check-guard.sh",
   },
   { pi: "pi-packages/design-thinking/references/method.md", plugin: "plugins/design-thinking/references/method.md" },
   { pi: "pi-packages/design-thinking/references/design-graph.md", plugin: "plugins/design-thinking/references/design-graph.md" },
   { pi: "pi-packages/design-thinking/references/protocol.md", plugin: "plugins/design-thinking/references/protocol.md" },
   { pi: "pi-packages/design-thinking/references/effect-ts.md", plugin: "plugins/design-thinking/references/effect-ts.md" },
-];
-
-const TRANSFORM: Entry[] = [
-  { pi: "pi-packages/design-thinking/skills/design-graph/SKILL.md", plugin: "plugins/design-thinking/skills/design-graph/SKILL.md" },
-  { pi: "pi-packages/design-thinking/skills/design-method/SKILL.md", plugin: "plugins/design-thinking/skills/design-method/SKILL.md" },
-];
-
-// Line-wrap-insensitive comparison target.
-const collapse = (s: string) => s.replace(/\s+/g, " ").trim();
-const toPlugin = (s: string) => s.replace(/\bpackage\b/g, "plugin");
+  { pi: "pi-packages/design-thinking/skills/design-graph/SKILL.md", plugin: "plugins/design-thinking/skills/design-graph/SKILL.md", transform: toPlugin },
+  { pi: "pi-packages/design-thinking/skills/design-method/SKILL.md", plugin: "plugins/design-thinking/skills/design-method/SKILL.md", transform: toPlugin },
+  // omp reads slash commands from commands/ (Claude convention) and its
+  // legacy pi-package loader never registers prompts/ — so the pi prompts
+  // are mirrored verbatim into pi-packages/design-thinking/commands/ for
+  // the omp marketplace install. "plugin" here means "synced copy", not
+  // the Claude plugins/ tree.
+  { pi: "pi-packages/design-thinking/prompts/cg.md", plugin: "pi-packages/design-thinking/commands/cg.md" },
+  { pi: "pi-packages/design-thinking/prompts/cg-map.md", plugin: "pi-packages/design-thinking/commands/cg-map.md" },
+  { pi: "pi-packages/design-thinking/prompts/cg-plan.md", plugin: "pi-packages/design-thinking/commands/cg-plan.md" },
+  { pi: "pi-packages/design-thinking/prompts/cg-review.md", plugin: "pi-packages/design-thinking/commands/cg-review.md" },
+ ];
 
 
 function main() {
   const checkOnly = process.argv.includes("--check");
   const problems: string[] = [];
 
-  for (const e of SYNC) {
+  for (const e of SHARED) {
     const src = readFileSync(e.pi, "utf8");
     const dst = readFileSync(e.plugin, "utf8");
-    if (src === dst) continue;
+    const equal = e.transform ? collapse(e.transform(src)) === collapse(dst) : src === dst;
+    if (equal) { console.log(`equal   ${e.plugin}  ==  ${e.pi}`); continue; };
     if (checkOnly) {
-      problems.push(`drift: ${e.pi} != ${e.plugin} (run: bun scripts/check-drift.ts)`);
+      problems.push(`drift: ${e.pi} ${e.transform ? "!~" : "!="} ${e.plugin} (run: bun scripts/check-drift.ts${e.transform ? ", then review the diff" : ""})`);
     } else {
-      writeFileSync(e.plugin, src);
-      console.log(`synced  ${e.plugin}  <-  ${e.pi}`);
-    }
-  }
-
-  for (const e of TRANSFORM) {
-    const src = readFileSync(e.pi, "utf8");
-    const dst = readFileSync(e.plugin, "utf8");
-    if (collapse(toPlugin(src)) === collapse(dst)) continue;
-    if (checkOnly) {
-      problems.push(`drift: ${e.pi} !~ ${e.plugin} (run: bun scripts/check-drift.ts, then review the diff)`);
-    } else {
-      writeFileSync(e.plugin, toPlugin(src));
-      console.log(`synced  ${e.plugin}  <-  ${e.pi}  (package→plugin)`);
+      writeFileSync(e.plugin, e.transform ? e.transform(src) : src);
+      console.log(`synced  ${e.plugin}  <-  ${e.pi}${e.transform ? "  (transformed)" : ""}`);
     }
   }
 

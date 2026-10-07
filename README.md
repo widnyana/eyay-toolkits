@@ -29,19 +29,46 @@ pi install npm:@widnyana/design-thinking
 omp install npm:@widnyana/design-thinking
 ```
 
+**OMP (marketplace):**
+
+```bash
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install design-thinking@eyay-toolkits
+omp plugin install block-forbidden-git-add@eyay-toolkits
+omp plugin install iac-check-guard@eyay-toolkits
+```
 The Claude Code plugins that are skill-only (e.g. **prose-engineers**) also load in the [pi](https://pi.dev) coding agent — see [INSTALL.md](INSTALL.md).
 
 Uninstalling anything: see [UNINSTALL.md](UNINSTALL.md).
+
+## Update
+
+**Claude Code (plugins)** — re-run the install command, then restart Claude Code:
+
+```bash
+/plugin install <plugin-name>@eyay-toolkits
+```
+
+**Other agents / skills.sh** — re-run the same command; it refreshes in place:
+
+```bash
+npx skills add widnyana/eyay-toolkits
+```
+
+**pi / OMP (packages)** — re-run the install command, or for the git-clone
+method: `git pull` then re-run `pi install`.
 
 ## The plugins
 
 | Plugin | What it does | Details |
 |--------|-------------|---------|
 | **block-forbidden-git-add** | PreToolUse hook that blocks `git add .`/`-A`, staging protected paths (`docs/`, `CLAUDE.md`, ...), and history rewrites (`rebase`, `reset`, `commit --amend`, `push -f`). | [README](plugins/block-forbidden-git-add/README.md) |
+| **iac-check-guard** | PreToolUse hook that blocks IaC write/destructive commands — `ansible-playbook`/`ansible-pull` without `--check`, ad-hoc `ansible` write modules, terragrunt/tofu/terraform apply-family (apply, destroy, import, init, `plan -out/-replace/-destroy`, state mutations), including `mise run tg -- ...` wrappers. | [README](plugins/iac-check-guard/README.md) |
 | **bmad-sprint-run** | Drives Claude Code through an entire BMad sprint autonomously — creates stories, implements them, runs quality gates, handles retries, and commits results. Two modes: skill (`/bmad-sprint-run`) and Python companion (`sprint-runner.py`). | [README](plugins/bmad-sprint-run/README.md) |
 | **career-tools** | Cover letters and CVs from repo contents. Markdown or ATS-friendly LaTeX. | [README](plugins/career-tools/README.md) |
 | **design-thinking** | `/dt` mode + `/cg*` commands: draw the Design Graph (call graph, named failure paths) before writing code, review, or refactor. Claude Code port of the `design-thinking` pi package below. | [README](plugins/design-thinking/README.md) |
 | **evm-decimal-validation** | Audits hardcoded decimals, queries on-chain values, fixes FromWei/ToWei conversions. Catches the "18 decimals everywhere" mistake before it hits production. | [README](plugins/evm-decimal-validation/README.md) |
+| **excalidraw-diagrams** | Multi-frame Excalidraw diagrams from a design doc. A tested builder with layout checks, SVG/PNG preview, and a facts cross-check against the source. | [README](plugins/excalidraw-diagrams/README.md) |
 | **perihbahasa** | Humorous, absurd, and flirty remixes of Indonesian proverbs (*peribahasa*) with precise rhyme and cadence. | [README](plugins/perihbahasa/README.md) |
 | **prose-engineers** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Structured for how people actually read: scanning, front-loading, resumable sections. Public and internal modes. | [README](plugins/prose-engineers/README.md) |
 | **solana-onchain** | Query accounts, analyze transactions, execute operations on Solana. Defaults to devnet because mainnet mistakes are permanent. | [README](plugins/solana-onchain/README.md) |
@@ -53,11 +80,12 @@ Uninstalling anything: see [UNINSTALL.md](UNINSTALL.md).
 
 | Package | What it does | README |
 |---|---|---|
-| **design-thinking** | [pi](https://pi.dev) extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
 
-Install commands are in the [Install](#install) section above.
-
-## visual-gen samples
+| **block-forbidden-git-add** | pi/omp extension that denies whole-tree `git add`, protected-path staging (`CLAUDE.md`, `AGENTS.md`, `docs/`, `secrets/`), and history-rewriting git commands before the Bash tool runs. | [README](pi-packages/block-forbidden-git-add/README.md) |
+| **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
+| **iac-check-guard** | pi/omp extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs. | [README](pi-packages/iac-check-guard/README.md) |
+| **agent-notify** | pi/omp extension that fires terminal-native banners (OSC 777/9/99, `notify-send`, Windows toast) when the agent finishes, needs an approval, or is retrying, so you can leave the terminal. | [README](pi-packages/agent-notify/README.md) |
+| **exit-commands** | pi/omp extension that adds vim muscle-memory exits to the REPL: `:q` (plus `:q!`, `:wq`, `:x`) and a `/exit` command. `/quit` is already built-in; `/exit` is not. | [README](pi-packages/exit-commands/README.md) |
 
 | Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |
 |---|---|---|
@@ -67,6 +95,23 @@ Install commands are in the [Install](#install) section above.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the plugin structure and how to add your own.
+
+## Updating shared files
+
+Some files ship to both Claude Code (`plugins/`) and pi/omp (`pi-packages/`).
+The canonical copy lives in `pi-packages/<name>/`. After editing one of them:
+
+```sh
+bun scripts/check-drift.ts          # sync pi-packages copies into plugins/
+bun scripts/check-drift.ts --check  # verify only (also runs on git commit)
+```
+
+Two classes are maintained automatically: **verbatim sync** (the
+`block-forbidden-git-add` hook script, `design-thinking/references/*.md`) and
+**transform** (`design-thinking/skills/*/SKILL.md`, where "package" becomes
+"plugin" on the Claude side). READMEs, LICENSEs, and the platform adapters
+(`hooks/hooks.json` vs `extensions/*.ts`) are per-platform — edit each side
+independently.
 
 ## License
 

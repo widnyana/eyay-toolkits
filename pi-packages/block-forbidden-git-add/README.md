@@ -19,6 +19,10 @@ source of truth, two loaders.
 
 ```bash
 pi install /absolute/path/to/pi-packages/block-forbidden-git-add
+
+# via the omp marketplace
+omp plugin marketplace add widnyana/eyay-toolkits
+omp plugin install block-forbidden-git-add@eyay-toolkits
 ```
 
 Note: `pi install git:...` installs the repo root, not this subdirectory — use

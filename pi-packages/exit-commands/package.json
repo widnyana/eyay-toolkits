@@ -1,0 +1,43 @@
+{
+  "name": "@widnyana/exit-commands",
+  "version": "0.2.1",
+  "type": "module",
+  "description": "pi / omp extension adding vim-style :q (and :q!, :wq, :x) input aliases plus a /exit command that gracefully exits the REPL.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/exit-commands"
+  },
+  "keywords": [
+    "pi-package",
+    "omp",
+    "exit",
+    "quit",
+    "vim",
+    "repl"
+  ],
+  "omp": {
+    "extensions": ["./extensions/exit-commands.ts"]
+  },
+  "pi": {
+    "extensions": ["./extensions/exit-commands.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.0.4",
+    "@types/bun": "^1.4.0",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
