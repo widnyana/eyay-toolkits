@@ -297,6 +297,55 @@ describe("design-thinking gate", () => {
 		expect(isBlocked(await h.fire("tool_call", { toolName: "edit" }))).toBe(true);
 	});
 
+	// Codemode (pi >=0.84.4) runs model-written JS in a sandbox that calls
+	// other tools; its nested calls go through the same tool pipeline as
+	// direct calls and carry a parentToolCallId, but keep their real
+	// toolName (@earendil-works/pi-coding-agent's ToolCallEvent union). The
+	// gate keys off toolName alone, so a nested write/bash must be gated
+	// exactly like a direct one — no parentToolCallId carve-out.
+	test("codemode nested tool calls are gated like direct calls", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		expect(
+			isBlocked(
+				await h.fire("tool_call", { toolName: "write", parentToolCallId: "codemode-call-1/0" }),
+			),
+		).toBe(true);
+		expect(
+			isBlocked(
+				await h.fire("tool_call", { toolName: "bash", parentToolCallId: "codemode-call-1/1" }),
+			),
+		).toBe(true);
+
+		await h.fire("agent_end", runEndWithGraph(1));
+		h.answerSelect("Approve — implement now");
+		await flush();
+		expect(
+			await h.fire("tool_call", { toolName: "write", parentToolCallId: "codemode-call-2/0" }),
+		).toBeUndefined();
+	});
+
+	test("read-only MCP devices pass the gate; file writes and execution devices do not", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		const mcpWrite = (path: string, content = "{}") =>
+			h.fire("tool_call", { toolName: "write", input: { path, content } });
+
+		// qmd devices are pure lookups — pass.
+		expect(await mcpWrite("xd://mcp__qmd_get")).toBeUndefined();
+		expect(await mcpWrite("xd://mcp__qmd_query", '{"query":"error handling"}')).toBeUndefined();
+		// codegraph: read-only actions pass (default explore included);
+		// index-mutating actions and unparsable args do not.
+		expect(await mcpWrite("xd://mcp__codegraph_explore", '{"action":"callers"}')).toBeUndefined();
+		expect(await mcpWrite("xd://mcp__codegraph_explore")).toBeUndefined();
+		expect(isBlocked(await mcpWrite("xd://mcp__codegraph_explore", '{"action":"index"}'))).toBe(true);
+		expect(isBlocked(await mcpWrite("xd://mcp__codegraph_explore", "not json"))).toBe(true);
+		// File writes and execution devices stay blocked.
+		expect(isBlocked(await mcpWrite("docs/plans/x.md", "content"))).toBe(true);
+		expect(isBlocked(await mcpWrite("xd://ast_edit", "{}"))).toBe(true);
+		expect(isBlocked(await mcpWrite("xd://mcp__chrome_devtools_click", "{}"))).toBe(true);
+	});
+
 	test("explicit deny latches: no re-offer until a NEW graph is presented", async () => {
 		const h = makeHarness();
 		await startGatedSession(h);

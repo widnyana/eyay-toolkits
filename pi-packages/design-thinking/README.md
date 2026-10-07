@@ -43,7 +43,7 @@ pi install npm:@widnyana/design-thinking
 omp install npm:@widnyana/design-thinking
 
 # pinned version
-pi install npm:@widnyana/design-thinking@0.0.1
+pi install npm:@widnyana/design-thinking@0.0.19
 
 # from a local checkout of this repo
 pi install /absolute/path/to/pi-packages/design-thinking
@@ -65,8 +65,8 @@ pi -e ./pi-packages/design-thinking
 |---|---|
 | `/dt` | Toggle Design Thinking mode. While on, plans and reviews render as Design Graphs. Persists across restarts. |
 | `/dt on\|off\|status` | Set or query the mode explicitly. |
-| Review dialog | When a run ends with a presented Design Graph — or the agent asks for approval in prose — a dialog opens automatically (arrow keys + Enter or mouse), **never mid-run**: **Approve** arms the gate (file edits, shells, code execution) **and** sends the go-ahead so implementation starts immediately, **Refine** asks for feedback and sends it back to the agent (the dialog re-opens after the updated graph), **Deny** keeps everything blocked. Headless/no-UI sessions fall back to manual `/dt approve\|deny`. While unapproved, `write`, `edit`, `bash`, and code-execution tools are blocked outright — read-only exploration keeps `read`/`grep`/`glob`. |
-| Approval scope | Approval covers **one instruction**: it stays armed across the many runs it takes to implement the approved design, and re-locks the moment you send a new instruction. The agent folds that instruction into the existing Design Graph, re-presents it, and the dialog opens again — the loop runs until the goal is met. |
+| Review dialog | When a run ends with a presented Design Graph — or the agent asks for approval in prose — a dialog opens automatically (arrow keys + Enter or mouse), **never mid-run**: **Approve** arms the gate (file edits, shells, code execution) **and** sends the go-ahead so implementation starts immediately, **Refine** asks for feedback and sends it back to the agent (the dialog re-opens after the updated graph), **Deny** keeps everything blocked until a new Design Graph is presented (a Deny latches — it won't re-prompt on every run end). Headless/no-UI sessions fall back to manual `/dt approve\|deny`. While unapproved, `write`, `edit`, `bash`, and code-execution tools are blocked outright — read-only exploration keeps `read`/`grep`/`glob`, plus read-only MCP lookups (qmd, codegraph explore). |
+| LSP reminder | Always-on, independent of `/dt`: while the harness has an `lsp` tool (omp with LSP enabled — default), every run gets a short `LSP FIRST` block — use the language server for definitions/references/renames/diagnostics, never hand-grep or hand-edit renames; if the project has no configured server, the agent tells you once per session how to enable one. Without an `lsp` tool, you get one notification per session **with a UI** (omp: enable it or add a server; pi: pi has no LSP integration) — headless/no-UI sessions get none. |
 | `/dt <prompt>` | Turn the mode **on** (never off), then run `<prompt>` under it — graph and clarifying questions first, implementation after your go-ahead. |
 | `/cg <module \| task>` | Generate a call graph: extract the graph existing code implements, or sketch one for a task. |
 | `/cg-plan <task>` | Design before code — full Design Graph, then implement to match it. |

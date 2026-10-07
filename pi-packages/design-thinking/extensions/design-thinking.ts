@@ -10,6 +10,9 @@
  * system prompt so design/plan/review answers render as Design Graphs in
  * Graph Protocol form. Full specs live in the package's references/ directory,
  * loaded on demand — not inlined here, to keep the injected prompt small.
+ * Separately, an ALWAYS-ON LSP reminder composes into every run's system
+ * prompt while the harness exposes an `lsp` tool (mode-independent); without
+ * one, the user is told once per session how to enable it.
  *
  * Commands:
  *   /dt            toggle Design Thinking mode
@@ -93,7 +96,8 @@ Rules:
   Design Graph in Graph Protocol form and any clarifying questions FIRST;
   ZERO mutations until the user approves the design — no file edits, no
   shell commands, no code execution. Reading/exploring code first is fine,
-  via read-only tools only (read/grep/glob). If any tool call is blocked by
+  via read-only tools only (read/grep/glob; read-only MCP devices such as
+  qmd and codegraph exploration also pass). If any tool call is blocked by
   the gate, STOP: do NOT route the change around it via bash, eval, scripts,
   or subagents — present or update the graph and end the turn. End the turn
   after the graph with NO prose approval request — no "approve and I'll…", no
@@ -138,13 +142,36 @@ NEVER read references/<skill-name>.md — no such files exist.
 // Bash is NOT pattern-gated: a deny-list of shell mutators is porous by
 // construction (redirects, package managers, interpreters — `go mod init` is
 // the proof), and the design turn should execute nothing anyway. Read-only
-// exploration keeps its dedicated tools (read/grep/find/ls/glob).
+// exploration keeps its dedicated tools (read/grep/find/ls/glob); read-only
+// MCP devices routed through write on omp pass too (see READONLY_MCP_PATH).
 const MUTATING_TOOLS: Record<string, true> = {
 	write: true,
 	edit: true,
 	bash: true,
 	powershell: true,
 	eval: true,
+};
+// omp executes MCP tools through the `write` tool as `xd://mcp__<tool>`
+// device paths; the blanket write block would eat them. Pure knowledge
+// lookups are carved out in the tool_call handler: qmd (retrieve/search)
+// and codegraph's read-only actions. Everything else stays blocked — file
+// writes and execution devices (ast_edit, lsp, debug, browser,
+// chrome_devtools, codegraph init/index/sync/unlock); unknown codegraph
+// actions and unparsable device args default to blocked.
+const READONLY_MCP_PATH =
+	/^xd:\/\/mcp__(?:[\w-]+__)?(?:qmd_(?:get|multi_get|query|status|search)|codegraph_explore)$/;
+
+const READONLY_CODEGRAPH_ACTIONS: Record<string, true> = {
+	explore: true,
+	node: true,
+	search: true,
+	files: true,
+	status: true,
+	callers: true,
+	callees: true,
+	impact: true,
+	affected: true,
+	help: true,
 };
 
 interface DtState {
@@ -164,6 +191,28 @@ const REVIEW_OPTIONS = [
 
 const GO_AHEAD_MESSAGE =
 	"Approved — implement the presented design now. (Design Thinking gate is armed; go straight to implementation, no graph re-presentation.)";
+
+/** Always-on LSP discipline block — mode-INDEPENDENT: it composes into every
+ *  run's system prompt while a language server exists, whether or not /dt is
+ *  on. */
+const LSP_REMINDER = `
+LSP FIRST — a language server is available in this session.
+- definition, type_definition, implementation, references, hover, symbols,
+  rename, rename_file, code_actions, diagnostics: use the \`lsp\` tool.
+- NEVER hand-grep for definitions/references or hand-edit cross-file renames
+  when \`lsp\` answers the same question — it follows shadowing and re-exports
+  that text search misses.
+- Imports and quick-fixes: list \`code_actions\`, apply one.
+- If \`lsp\` reports no configured servers for this project, tell the user ONCE
+  this session how to enable one (project lsp.json or server install), then
+  continue without repeating it.
+`.trim();
+
+const LSP_SUGGESTION_OMP =
+	"LSP Reminder: no `lsp` tool in this session — LSP is disabled. Enable it in settings, or add a server for this project (lsp.json; auto-detect needs a root marker plus the server binary on PATH). Until then, code intelligence falls back to text search.";
+
+const LSP_SUGGESTION_PI =
+	"LSP Reminder: pi has no LSP integration — code intelligence falls back to text search. omp provides a built-in `lsp` tool.";
 
 // Graph Protocol section headers. A real Design Graph renders the fixed set;
 // VERDICT is mandatory. Requiring VERDICT + ≥3 others avoids tripping on a bare
@@ -233,6 +282,36 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	let offer: Offer | undefined;
 	// How many messages of the session have already been scanned for VERDICT.
 	let scannedMessages = 0;
+
+	// ── LSP reminder state — always-on, independent of dt mode ───────────────
+	// Probed once per session; the suggestion fires at most once per session
+	// (reset on session_start). Probing uses pi.getAllTools(), present on both
+	// pi 0.84.3 and omp; omp is detected via its pi.logger surface (absent on
+	// pi) only to pick the suggestion text.
+	let lspProbed = false;
+	let lspCapable = false;
+	let lspSuggested = false;
+
+	function isOmp(): boolean {
+		return typeof (pi as ExtensionAPI & { logger?: unknown }).logger === "object";
+	}
+
+	function probeLsp(): void {
+		lspProbed = true;
+		try {
+			const tools: Array<{ name?: string }> =
+				(pi as ExtensionAPI & { getAllTools?: () => unknown[] }).getAllTools?.() ?? [];
+			lspCapable = tools.some((t) => t?.name === "lsp");
+		} catch {
+			lspCapable = false;
+		}
+	}
+
+	function maybeSuggestLsp(ctx: ExtensionContext): void {
+		if (lspSuggested || lspCapable || !ctx.hasUI) return;
+		lspSuggested = true;
+		ctx.ui.notify(isOmp() ? LSP_SUGGESTION_OMP : LSP_SUGGESTION_PI, "info");
+	}
 
 	// omp-only pi.logger surface; absent on pi 0.84.3.
 	const logger = (pi as ExtensionAPI & { logger?: { warn?: (msg: string) => void } }).logger;
@@ -310,6 +389,11 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	}
 
 	pi.on("session_start", async (_event, ctx) => {
+		// A new session gets one fresh LSP probe and suggestion.
+		lspProbed = false;
+		lspSuggested = false;
+		probeLsp();
+		maybeSuggestLsp(ctx);
 		restore(ctx);
 		applyStatus(ctx);
 	});
@@ -396,18 +480,42 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 		return undefined;
 	});
 
-	// While active, append the distilled block to the system prompt every run.
+	// Compose the system prompt: the distilled block is dt-mode-scoped, the
+	// LSP reminder is always-on. Either may be absent.
 	pi.on("before_agent_start", async (event) => {
-		if (mode !== "on") return undefined;
-		return {
-			systemPrompt: event.systemPrompt + "\n\n" + DISTILLED + "\n",
-		};
+		if (!lspProbed) probeLsp();
+		const parts = [event.systemPrompt];
+		if (mode === "on") parts.push(DISTILLED + "\n");
+		if (lspCapable) parts.push(LSP_REMINDER + "\n");
+		if (parts.length === 1) return undefined;
+		return { systemPrompt: parts.join("\n\n") };
 	});
 
 	pi.on("tool_call", async (event) => {
 		if (mode !== "on") return undefined;
 		if (!MUTATING_TOOLS[event.toolName]) return undefined;
 		if (approval === "armed") return undefined;
+		// omp routes MCP calls through `write` (xd://mcp__… device paths); let
+		// read-only devices through. qmd devices are pure reads; codegraph
+		// only for its read-only actions — init/index/sync/unlock and
+		// unparsable args stay blocked.
+		if (event.toolName === "write") {
+			const input = event.input as { path?: unknown; content?: unknown } | undefined;
+			const path = input?.path;
+			if (typeof path === "string" && READONLY_MCP_PATH.test(path)) {
+				const isCodegraph = path.includes("codegraph_explore");
+				let action = "explore"; // codegraph's default action is a read
+				if (isCodegraph) {
+					try {
+						action = (JSON.parse(String(input?.content ?? "{}")) as { action?: string })
+							.action ?? "explore";
+					} catch {
+						action = "init"; // unparsable device args → treat as mutating
+					}
+				}
+				if (!isCodegraph || READONLY_CODEGRAPH_ACTIONS[action]) return undefined;
+			}
+		}
 		// Block only — NEVER open the review dialog here. Mid-run, the agent is
 		// still streaming, and a UI-up-while-the-agent-acts is the failure this
 		// mode exists to prevent. A blocked mutation returns the stop-and-do-not-
