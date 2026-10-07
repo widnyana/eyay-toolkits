@@ -20,7 +20,7 @@ Workflow the skill enforces:
 
 ## Requirements
 
-- Python 3.9 or newer, standard library only
+- Python 3, standard library only (tested on 3.12)
 - macOS for the PNG preview (`qlmanage`). Build, validate, and cross-check run anywhere
 
 ## Install

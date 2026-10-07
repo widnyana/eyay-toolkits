@@ -36,6 +36,7 @@ omp plugin marketplace add widnyana/eyay-toolkits
 omp plugin install design-thinking@eyay-toolkits
 omp plugin install block-forbidden-git-add@eyay-toolkits
 omp plugin install iac-check-guard@eyay-toolkits
+omp plugin install general-reminder@eyay-toolkits
 ```
 The Claude Code plugins that are skill-only (e.g. **prose-engineers**) also load in the [pi](https://pi.dev) coding agent — see [INSTALL.md](INSTALL.md).
 
@@ -81,11 +82,11 @@ method: `git pull` then re-run `pi install`.
 | Package | What it does | README |
 |---|---|---|
 
-| **block-forbidden-git-add** | pi/omp extension that denies whole-tree `git add`, protected-path staging (`CLAUDE.md`, `AGENTS.md`, `docs/`, `secrets/`), and history-rewriting git commands before the Bash tool runs. | [README](pi-packages/block-forbidden-git-add/README.md) |
-| **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. | [README](pi-packages/design-thinking/README.md) |
+| **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. Also carries an always-on LSP reminder: use the language server while one exists; otherwise the user hears once per session (UI sessions only) how to enable it. | [README](pi-packages/design-thinking/README.md) |
 | **iac-check-guard** | pi/omp extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs. | [README](pi-packages/iac-check-guard/README.md) |
 | **agent-notify** | pi/omp extension that fires terminal-native banners (OSC 777/9/99, `notify-send`, Windows toast) when the agent finishes, needs an approval, or is retrying, so you can leave the terminal. | [README](pi-packages/agent-notify/README.md) |
 | **exit-commands** | pi/omp extension that adds vim muscle-memory exits to the REPL: `:q` (plus `:q!`, `:wq`, `:x`) and a `/exit` command. `/quit` is already built-in; `/exit` is not. | [README](pi-packages/exit-commands/README.md) |
+| **general-reminder** | pi/omp extension that injects user-configured standing reminders into every run, read from `<project>/.omp/reminders.json` (or `.pi/` on pi) — always-on entries plus optional one-shot notes per session. | [README](pi-packages/general-reminder/README.md) |
 
 | Standard (1200x630) | Wide (2400x630) | Tall (1200x2400) |
 |---|---|---|

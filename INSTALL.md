@@ -99,6 +99,11 @@ pi install /path/to/eyay-toolkits/pi-packages/exit-commands
 # or via OMP
 omp install /path/to/eyay-toolkits/pi-packages/exit-commands
 ```
+```bash
+pi install /path/to/eyay-toolkits/pi-packages/general-reminder
+# or via OMP
+omp install /path/to/eyay-toolkits/pi-packages/general-reminder
+```
 
-See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md) and [pi-packages/exit-commands/README.md](pi-packages/exit-commands/README.md) for usage.
+See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md), [pi-packages/exit-commands/README.md](pi-packages/exit-commands/README.md), and [pi-packages/general-reminder/README.md](pi-packages/general-reminder/README.md) for usage.
 
