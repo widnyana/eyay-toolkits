@@ -21,6 +21,11 @@ input="$(cat)"
 cmd="$(jq -r '.tool_input.command // ""' <<<"$input")"
 [ -z "$cmd" ] && exit 0
 
+# Join backslash-continued lines into one logical line before segmenting —
+# otherwise "git add \\\n  path1 \\\n  path2" splits the verb from its
+# arguments across segments and the per-path checks below never see them.
+cmd=$(printf '%s\n' "$cmd" | awk '{ while (sub(/\\$/, "")) { if ((getline cont) <= 0) break; $0 = $0 " " cont } print }')
+
 deny() {
   jq -nc --arg r "$1" \
     '{hookSpecificOutput:{hookEventName:"PreToolUse",permissionDecision:"deny",permissionDecisionReason:$r}}'
