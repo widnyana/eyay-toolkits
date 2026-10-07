@@ -140,14 +140,17 @@ for (const [skillDir, srcFile] of PAIRS) {
 }
 
 // effect-ts must NOT be exposed as a skill (stack-agnostic guarantee)
-// ------------------------------------------------ skill-name mapping ------
-// Regression guard: the extension's distilled block must declare the
-// skill→file mapping so agents never guess references/<skill-name>.md.
+// ------------------------------------------------- REF_DIR pointers -------
+// Regression guard: the extension's distilled block must still point the
+// model at the real absolute path for each reference file. (It does NOT
+// tell the model to invoke `/skill:<name>` — that command only expands on
+// human/extension-authored input before the model ever sees it, so it was
+// dead text; the real, working mechanism is this absolute-path pointer.)
 const extSrc = fs.readFileSync(path.join(PKG, "extensions", "design-thinking.ts"), "utf8");
-for (const [skill, file] of PAIRS) {
+for (const [, file] of PAIRS) {
 	ok(
-		extSrc.includes(`/skill:${skill} → ${file}`),
-		`distilled block maps /skill:${skill} → ${file}`,
+		extSrc.includes("${REF_DIR}/" + file),
+		`distilled block points at \${REF_DIR}/${file}`,
 	);
 }
 

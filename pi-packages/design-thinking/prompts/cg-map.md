@@ -36,6 +36,5 @@ mapping table followed by a small worked mini-graph in Graph Protocol format.
 - This mapping is a companion artifact: once produced, refer to it in later
   `/cg-plan` and `/cg-review` runs in the same stack.
 
-Full specs load as skills in the `design-thinking` pi package:
-`/skill:graph-protocol` (notation), `/skill:design-method` (the method),
-`/skill:design-graph` (artifact).
+Full specs live in this package's `references/` directory: `protocol.md`
+(notation), `method.md` (the method), `design-graph.md` (artifact).

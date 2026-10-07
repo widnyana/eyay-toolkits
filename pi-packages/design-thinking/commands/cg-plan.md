@@ -60,6 +60,5 @@ VERDICT:     the target structure the implementation must satisfy
 - The VERDICT section states the structural invariants the code must satisfy so
   the graph can later be re-checked in review (`/cg-review`).
 
-Full specs load as skills in the `design-thinking` pi package:
-`/skill:graph-protocol` (notation), `/skill:design-method` (the method),
-`/skill:design-graph` (artifact).
+Full specs live in this package's `references/` directory: `protocol.md`
+(notation), `method.md` (the method), `design-graph.md` (artifact).

@@ -6,6 +6,7 @@ description: >
   cardinality, E, R. Use when drawing a graph before writing code or
   reconstructing and diffing one against existing code. Includes the
   completeness checklist.
+disable-model-invocation: true
 ---
 
 # Design Graph — The Artifact

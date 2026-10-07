@@ -64,6 +64,5 @@ VERDICT:     <matches | mismatches listed by § number>
   otherwise review against the checklist alone.
 - Severity: mark findings that will cause runtime failures vs structural debt.
 
-Full specs load as skills in the `design-thinking` pi package:
-`/skill:graph-protocol` (notation), `/skill:design-method` (the method),
-`/skill:design-graph` (artifact).
+Full specs live in this package's `references/` directory: `protocol.md`
+(notation), `method.md` (the method), `design-graph.md` (artifact).

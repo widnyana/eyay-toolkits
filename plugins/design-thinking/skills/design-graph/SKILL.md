@@ -6,14 +6,14 @@ description: >
   cardinality, E, R. Use when drawing a graph before writing code or
   reconstructing and diffing one against existing code. Includes the
   completeness checklist.
+disable-model-invocation: true
 ---
 
 # Design Graph — The Artifact
 
 A **Design Graph** is the annotated call graph of a concrete problem. It is
-what you produce when you apply Design Thinking (see the `design-method`
-skill) to something, and it is written in Graph Protocol notation (see the
-`graph-protocol` skill).
+what you produce when you apply Design Thinking (see the `design-method` skill) to
+something, and it is written in Graph Protocol notation (see the `graph-protocol` skill).
 
 Nodes are functions. Edges are data flow. The annotations answer, for every
 node: what flows through it (A), how many times it runs (cardinality), where

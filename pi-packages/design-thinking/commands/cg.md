@@ -45,6 +45,5 @@ VERDICT:     code matches graph? happy path free of error handling? E fully enum
 - If you find nodes that violate the method (tangled happy path, unscoped
   resources, hidden dependencies), list them under VERDICT, grouped by § number.
 
-If the full spec is needed, load the skills shipped in the `design-thinking`
-pi package: `/skill:graph-protocol` (notation) and `/skill:design-method`
-(the method).
+If the full spec is needed, read it from this package's `references/`
+directory: `protocol.md` (notation) and `method.md` (the method).

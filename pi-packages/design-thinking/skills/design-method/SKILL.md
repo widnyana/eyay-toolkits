@@ -5,6 +5,7 @@ description: >
   cardinality → break points (E: ⟳ ↯ ☠) → requirements (R) → boundaries →
   behavior layers → scope → test layers → verdict. Stack-agnostic. Use when
   planning, designing, or refactoring any feature or system.
+disable-model-invocation: true
 ---
 
 # Design Thinking — The Method

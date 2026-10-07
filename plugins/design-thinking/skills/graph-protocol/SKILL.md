@@ -6,6 +6,7 @@ description: >
   VERDICT) and fixed markers (⟳retry ↯escape ☠die 🔒boundary (1)(N)(T) ⛈layer
   @scope). Use when writing, reviewing, or checking any Design Graph so
   notation is mechanically checkable and identical across languages.
+disable-model-invocation: true
 ---
 
 # Graph Protocol
