@@ -63,7 +63,7 @@ method: `git pull` then re-run `pi install`.
 
 | Plugin | What it does | Details |
 |--------|-------------|---------|
-| **block-forbidden-git-add** | PreToolUse hook that blocks `git add .`/`-A`, staging protected paths (`docs/`, `CLAUDE.md`, ...), and history rewrites (`rebase`, `reset`, `commit --amend`, `push -f`). | [README](plugins/block-forbidden-git-add/README.md) |
+| **block-forbidden-git-add** | PreToolUse hook that blocks `git add .`/`-A`, staging protected paths (`docs/`, `CLAUDE.md`, ...), and history rewrites (`rebase`, `reset`, `commit --amend`, `push -f`). Per-project override via `.claude/` or `.pi/block-forbidden-git-add.json`. | [README](plugins/block-forbidden-git-add/README.md) |
 | **iac-check-guard** | PreToolUse hook that blocks IaC write/destructive commands — `ansible-playbook`/`ansible-pull` without `--check`, ad-hoc `ansible` write modules, terragrunt/tofu/terraform apply-family (apply, destroy, import, init, `plan -out/-replace/-destroy`, state mutations), including `mise run tg -- ...` wrappers. | [README](plugins/iac-check-guard/README.md) |
 | **bmad-sprint-run** | Drives Claude Code through an entire BMad sprint autonomously — creates stories, implements them, runs quality gates, handles retries, and commits results. Two modes: skill (`/bmad-sprint-run`) and Python companion (`sprint-runner.py`). | [README](plugins/bmad-sprint-run/README.md) |
 | **career-tools** | Cover letters and CVs from repo contents. Markdown or ATS-friendly LaTeX. | [README](plugins/career-tools/README.md) |

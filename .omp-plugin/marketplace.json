@@ -32,7 +32,7 @@
     {
       "name": "block-forbidden-git-add",
       "description": "Extension that denies whole-tree git add, protected-path staging (CLAUDE.md, AGENTS.md, docs/, secrets/), and history-rewriting git commands before the Bash tool runs.",
-      "version": "0.2.2",
+      "version": "0.3.1",
       "source": "./pi-packages/block-forbidden-git-add",
       "category": "safety",
       "author": {

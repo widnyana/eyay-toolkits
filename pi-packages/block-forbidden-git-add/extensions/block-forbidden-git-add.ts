@@ -17,7 +17,7 @@ export default function (pi: ExtensionAPI) {
     if (!command) return;
 
     const proc = Bun.spawn(["bash", SCRIPT], {
-      stdin: new Response(JSON.stringify({ tool_input: { command } })).body,
+      stdin: new Response(JSON.stringify({ tool_input: { command }, cwd: process.cwd() })).body,
       stdout: "pipe",
       stderr: "pipe",
     });
