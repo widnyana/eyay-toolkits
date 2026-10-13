@@ -159,6 +159,17 @@
         "email": "wid@widnyana.web.id"
       },
       "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/excalidraw-diagrams"
+    },
+    {
+      "name": "pi-coordinator",
+      "description": "Coordinate cheap pi workers over RPC: plan tasks, run each in its own worktree with a tool cap, loop nudge and a driver-owned verify gate, then squash-land passing work on local main.",
+      "source": "./plugins/pi-coordinator",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/plugins/pi-coordinator"
     }
   ]
 }

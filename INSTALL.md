@@ -16,6 +16,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin install evm-decimal-validation@eyay-toolkits
 /plugin install excalidraw-diagrams@eyay-toolkits
 /plugin install perihbahasa@eyay-toolkits
+/plugin install pi-coordinator@eyay-toolkits
 /plugin install prose-engineers@eyay-toolkits
 /plugin install solana-onchain@eyay-toolkits
 /plugin install sui-dev-tools@eyay-toolkits
