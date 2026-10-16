@@ -1,0 +1,60 @@
+[tools]
+node = "26"
+
+# Launch pi with a pi-package loaded ephemerally (try-out, no settings changes).
+# Usage: mise run pi-package:try <name> [extra pi args...]
+#   e.g. mise run pi-package:try design-thinking
+#        mise run pi-package:try design-thinking -p "/dt status"
+[tasks."pi-package:try"]
+description = "pi -e <pi-package> (arg: package name, extra args passed to pi)"
+dir = "{{ config_root }}"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+pkg="${1:?usage: mise run pi-package:try <package-name> (dir under pi-packages/) [extra pi args...]}"
+shift
+
+if [[ ! -f "pi-packages/${pkg}/package.json" ]]; then
+  echo "error: pi-packages/${pkg}/package.json not found" >&2
+  echo "available packages:" >&2
+  ls pi-packages >&2
+  exit 1
+fi
+
+exec pi -e "pi-packages/${pkg}" "$@"
+'''
+
+# Verify one pi-package: runs its loader smoke test (if present) + npm pack --dry-run.
+# Usage: mise run pi-package:verify <name>   (name = dir under pi-packages/)
+[tasks."pi-package:verify"]
+description = "Test + npm pack --dry-run for a pi-package (arg: package name)"
+dir = "{{ config_root }}"
+run = '''
+#!/usr/bin/env bash
+set -euo pipefail
+
+pkg="${1:?usage: mise run pi-package:verify <package-name> (dir under pi-packages/)}"
+pkg_dir="pi-packages/${pkg}"
+
+if [[ ! -f "${pkg_dir}/package.json" ]]; then
+  echo "error: ${pkg_dir}/package.json not found" >&2
+  echo "available packages:" >&2
+  ls pi-packages >&2
+  exit 1
+fi
+
+cd "${pkg_dir}"
+
+if [[ -d tests ]]; then
+  echo "==> tests"
+  node --experimental-strip-types tests/*.ts
+else
+  echo "==> tests (skipped: no tests/ directory)"
+fi
+
+echo "==> npm pack --dry-run"
+npm pack --dry-run
+
+echo "==> OK: ${pkg} verified"
+'''
