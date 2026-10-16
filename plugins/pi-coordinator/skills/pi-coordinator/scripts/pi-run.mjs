@@ -8,7 +8,7 @@
 // (max PI_VERIFY_ROUNDS, default 2). Pass = <out-dir>/verify.ok holds the verified HEAD sha.
 // Exit 0 settled (and verified if gated), 1 error, 2 timeout, 3 stalled, 4 verify failed.
 import { spawn, execSync } from 'node:child_process';
-import { readFileSync, mkdirSync, writeFileSync, createWriteStream } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync, createWriteStream, existsSync } from 'node:fs';
 
 const [cwd, promptFile, outDir, model = '', tmin = '45'] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
@@ -96,5 +96,8 @@ pi.stdout.on('data', (chunk) => {
     }
   }
 });
-pi.on('exit', (c) => { clearTimeout(timer); events.end(); });
+pi.on('exit', (c) => { clearTimeout(timer); events.end();
+  // a crashed worker must end the monitor's wait, not leave it polling forever
+  if (!existsSync(`${outDir}/result.txt`)) { try { writeFileSync(`${outDir}/result.txt`, `WORKER EXITED ${c}`); } catch {} }
+});
 send({ id: 'p1', type: 'prompt', message: readFileSync(promptFile, 'utf8') });

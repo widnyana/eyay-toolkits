@@ -24,7 +24,7 @@ Why this shape: a cheap model (as configured in `~/.pi/agent/settings.json` unde
    Follow-ups and multi-part features: `nohup scripts/continue.sh <unit> <prompt-name> [prefix] &` runs another worker in the existing worktree (same `out-<unit>`, so the same Monitor command works). A feature that must land atomically (schema change plus every writer plus tests) is one worktree with several worker runs, landed once with `SUBJ=... BODY=...` on `land.sh`.
    Parallelize disjoint parts of one feature: branch a second worktree from the feature branch (`git worktree add .worktrees/<prefix>/pi-<unit>-fe -b <prefix>/pi-<unit>-fe <prefix>/pi-<unit>`), run the frontend part there while the Rust part runs in the first, then cherry-pick its commits onto the feature branch. Cargo builds share `CARGO_TARGET_DIR` (one target dir for all workers saves full rebuilds; builds take turns on its lock, which shows as idle time).
 5. **Start the Monitor in the same turn as the launch.** Never launch workers without it; the user wants to see progress.
-   Monitor command: `<skill-dir>/scripts/monitor.sh <unit> <unit>...` with `timeout_ms: 1800000`; re-arm on expiry while workers still run. It polls every 10 s, prints `DONE` with the head of the result as soon as a worker ends, and tool count and idle seconds per worker every 90 s. `events.jsonl` lines carry `"t"` (ms): use them to see where a slow run spent its time. Long idle is normal while `cargo` compiles; check `ps` before calling it a hang.
+   Monitor command: `<skill-dir>/scripts/monitor.sh <unit> <unit>...` with `timeout_ms: 1800000`; re-arm on expiry while workers still run. It polls every 10 s, prints `DONE` with the head of the result as soon as a worker ends, and tool count and idle seconds per worker every 90 s. For human eyes only (quality check, not for agents), `<skill-dir>/scripts/tail.sh <unit>...` follows the worker's raw stream live: streaming assistant text, tool calls, errors, and the final result. `events.jsonl` lines carry `"t"` (ms): use them to see where a slow run spent its time. Long idle is normal while `cargo` compiles; check `ps` before calling it a hang.
 6. **Gate each result yourself** (do not rely on the worker's last message):
    - `git status --short` in the worktree: nothing uncommitted. Verify the commit, not the dirty tree.
    - `git --no-pager diff main...<branch>`: only expected files, no generated or forbidden paths.
@@ -57,6 +57,7 @@ Why this shape: a cheap model (as configured in `~/.pi/agent/settings.json` unde
 
 - `scripts/pi-run.mjs`: one RPC worker run (tool cap, loop nudge, idle watchdog, driver gate). Exit 0 settled (and verified when gated), 1 error, 2 timeout, 3 stalled, 4 verify failed.
 - `scripts/launch.sh`, `scripts/monitor.sh`, `scripts/land.sh`: launch, watch, land.
+- `scripts/tail.sh`: human-only live output (`tail -f` of events.jsonl, pretty printed); agents keep using monitor.sh.
 - `scripts/continue.sh`: another worker run in an existing worktree (follow-ups, multi-part features).
 - `scripts/slim-args.sh`: default slim worker flags (sourced by launch/continue; override with `PI_EXTRA_ARGS`, `PI_THINKING`, `PI_GUARD_EXT`).
 - `references/prompt-template.md`: worker prompt skeleton and sizing rules.
