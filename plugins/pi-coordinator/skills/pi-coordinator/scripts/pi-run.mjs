@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // usage: pi-run.mjs <worktree> <prompt-file> <out-dir> [model] [timeout-min]
+// [model] empty/omitted = let pi use its own configured default (no --model flag passed).
 // Runs one pi in RPC mode in <worktree>, sends the prompt, waits for agent_settled,
 // writes <out-dir>/events.jsonl (each line carries "t": ms), <out-dir>/result.txt.
 // With PI_VERIFY_CMD set, the driver gates every settle itself: tree clean, commits on PI_BASE..HEAD,
@@ -9,11 +10,12 @@
 import { spawn, execSync } from 'node:child_process';
 import { readFileSync, mkdirSync, writeFileSync, createWriteStream } from 'node:fs';
 
-const [cwd, promptFile, outDir, model = 'openrouter/z-ai/glm-5.3-flash', tmin = '45'] = process.argv.slice(2);
+const [cwd, promptFile, outDir, model = '', tmin = '45'] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
 const events = createWriteStream(`${outDir}/events.jsonl`);
 const extra = (process.env.PI_EXTRA_ARGS || '').split(' ').filter(Boolean); // e.g. slim worker flags
-const pi = spawn('pi', ['--mode', 'rpc', '--no-session', '--model', model, ...extra], { cwd, stdio: ['pipe', 'pipe', 'pipe'] });
+const modelArgs = model ? ['--model', model] : [];
+const pi = spawn('pi', ['--mode', 'rpc', '--no-session', ...modelArgs, ...extra], { cwd, stdio: ['pipe', 'pipe', 'pipe'] });
 pi.stderr.pipe(createWriteStream(`${outDir}/stderr.log`));
 
 const send = (o) => pi.stdin.write(JSON.stringify(o) + '\n');

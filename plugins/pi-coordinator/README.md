@@ -1,6 +1,6 @@
 # pi-coordinator
 
-Claude Code acts as coordinator: it plans a job, hands each small coding task to a separate [`pi`](https://github.com/badlogic/pi-mono) worker over its RPC mode, watches the workers, and lands passing work on local `main` as one squash commit per task. Built for cheap, slow models (default `openrouter/z-ai/glm-5.3-flash`).
+Claude Code acts as coordinator: it plans a job, hands each small coding task to a separate [`pi`](https://github.com/badlogic/pi-mono) worker over its RPC mode, watches the workers, and lands passing work on local `main` as one squash commit per task. Built for cheap, slow models; uses `pi`'s own configured default model unless `PI_MODEL` is set.
 
 ## Install
 

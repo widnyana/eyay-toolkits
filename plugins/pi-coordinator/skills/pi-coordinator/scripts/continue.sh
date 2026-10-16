@@ -15,5 +15,5 @@ W="$R/.worktrees/$prefix/pi-$unit"
 rm -rf "$S/out-$unit"
 export MAXTOOLS=${MAXTOOLS:-40}
 . "$HERE/slim-args.sh"
-node "$HERE/pi-run.mjs" "$W" "$S/$prompt.txt" "$S/out-$unit" "${PI_MODEL:-openrouter/z-ai/glm-5.3-flash}" "${PI_TIMEOUT_MIN:-40}"
+node "$HERE/pi-run.mjs" "$W" "$S/$prompt.txt" "$S/out-$unit" "${PI_MODEL:-}" "${PI_TIMEOUT_MIN:-40}"
 echo "exit=$?"
