@@ -36,7 +36,7 @@ that copy first, then run `bun scripts/check-drift.ts` before committing. See
 |`evm-decimal-validation`|blockchain|Audits hardcoded EVM decimals and FromWei/ToWei conversions.|
 |`excalidraw-diagrams`|media|Skill + Python tooling that generates multi-frame `.excalidraw` scenes from a design doc: `scripts/xl.py` (builder + layout checks), `build.py`, `render.py`/`preview.sh`, `validate.py`, `crosscheck.py`. `references/` and an `examples/` frame module. Standard library only.|
 |`perihbahasa`|humor|Indonesian proverb remix skill; corpus in `references/proverbs.md`, curated examples in `references/exemplars.md`, dedup tool at `scripts/merge_proverbs.py`.|
-|`pi-coordinator`|development|Skill + `scripts/` (bash + `pi-run.mjs`, a Node RPC driver for `pi` workers with tool cap, loop nudge, idle watchdog and verify gate; human-only `tail.sh` for live QA). Claude Code only (uses Monitor).|
+|`pi-coordinator`|development|Skill + `scripts/` (bash + `pi-run.mjs`, a Node RPC driver for `pi` workers with tool cap, loop nudge, idle watchdog and a baseline-aware verify gate — fails only on failures new vs the base ref; human-only `tail.sh` for live QA). Claude Code only (uses Monitor). Has `test.sh` (script syntax + baseline-diff unit tests).|
 |`prose-engineers`|writing|Technical writing / satire skills (`technical-writer`, `management-theatre`). `technical-writer` carries `references/patterns.md` (structure templates) and `references/reading-psychology.md` (scanning patterns, attention-span research).|
 |`solana-onchain`|blockchain|Skills + 2 subagents (`agents/`) + a SessionStart hook checking for the `solana-onchain-mcp` binary. Defaults to devnet.|
 |`sui-dev-tools`|blockchain|9 Sui/Move skills (contracts, TS SDK, dApp Kit, Seal, Walrus).|
@@ -45,11 +45,14 @@ that copy first, then run `bun scripts/check-drift.ts` before committing. See
 
 ## Testing
 
-Only two plugins have runnable tests:
+Three plugins have runnable tests:
 
 - **`bmad-sprint-run`**: `pytest plugins/bmad-sprint-run/tests` — `tests/conftest.py`
   inserts the plugin root onto `sys.path` so `import lib.*` works regardless of cwd.
   No `pyproject.toml`/`pytest.ini` — invoke pytest directly.
+- **`pi-coordinator`**: `bash plugins/pi-coordinator/skills/pi-coordinator/test.sh` —
+  bash syntax-checks every script and unit-tests the baseline-diff logic in
+  `scripts/lib/baseline.mjs` (no network, no pi needed).
 - **`visual-gen`**: `bash plugins/visual-gen/test.sh --check` for a free structure-only
   check; `bash plugins/visual-gen/test.sh` runs the full E2E generation via the Claude
   CLI (costs real API spend, ~$1.50/run) — don't run the full mode without asking.
