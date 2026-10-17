@@ -1,0 +1,42 @@
+{
+  "name": "@widnyana/general-reminder",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "Configurable standing reminders for pi/omp: reads a reminders.json from the project (.omp/ on omp, .pi/ on pi) and injects its contents into every run — always-on entries plus optional one-shot notes per session.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "license": "MIT",
+  "files": [
+    "extensions",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/general-reminder"
+  },
+  "keywords": [
+    "pi-package",
+    "omp",
+    "reminder",
+    "system-prompt",
+    "config"
+  ],
+  "omp": {
+    "extensions": ["./extensions/reminder.ts"]
+  },
+  "pi": {
+    "extensions": ["./extensions/reminder.ts"]
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.0.4",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}
