@@ -50,9 +50,15 @@ Say "use pi", "delegate to pi" or "be the coordinator". The skill then:
 
 ## What makes it fast
 
-- Driver gate: with `PI_VERIFY_CMD` set, the worker only edits and commits. The driver (`scripts/pi-run.mjs`) checks a clean tree and a commit, runs the checks, and sends failures back to the same pi session (`PI_VERIFY_ROUNDS`, default 2). `land.sh` skips its own re-run when `verify.ok` matches HEAD.
+- Driver gate, baseline-aware: with `PI_VERIFY_CMD` set, the worker only edits and commits. The driver (`scripts/pi-run.mjs`) checks a clean tree and a commit, runs the checks, and sends failures back to the same pi session (`PI_VERIFY_ROUNDS`, default 2). Before the first turn it runs the verify command once on `PI_BASE` (throwaway worktree, cached per base+cmd in `$PI_WORK`, shared by all workers) and fails a worker only on failures *new* vs that baseline — a dirty repo no longer masks results. Set `PI_BASELINE_PREP` if the baseline worktree needs installed deps. `land.sh` skips its own re-run when `verify.ok` matches HEAD (true for baseline passes too).
 - Tool cap (`MAXTOOLS`), a nudge when any tool call repeats a third time, and a 6 minute idle watchdog.
-- Slim workers (`scripts/slim-args.sh`): no pi packages, skills or context files, thinking off; only the `block-forbidden-git-add` guard extension (set `PI_GUARD_EXT` when it is not in this repo checkout).
+- Slim workers (`scripts/slim-args.sh`): no pi packages, skills or context files, thinking off; only the `block-forbidden-git-add` guard extension. The guard is structural: launch refuses without it (explicit opt-out `PI_GUARD_EXT=off`).
 - `events.jsonl` lines carry a `t` timestamp, so slow runs can be measured.
+- Explicit outcomes: `result.txt`'s first line is `OUTCOME: <verdict>` (VERIFIED, SETTLED-UNVERIFIED, CAPPED, VERIFY-FAILED, TIMEOUT, STALLED, ERROR, EXITED) on every exit path, and `state.txt` records phase transitions the monitor prints as they happen — a run that ended settled-but-unverified never masquerades as verified.
+- Pre-flight in `launch.sh`: aborts on missing `node` or bad `PI_BASE`, warns on unset `MAXTOOLS` / `PI_VERIFY_CMD` / `PI_BASELINE_PREP`.
 
-Exit codes of `pi-run.mjs`: 0 settled (and verified when gated), 1 error, 2 timeout, 3 stalled, 4 verify failed. If the `pi` process itself crashes, `result.txt` is written with `WORKER EXITED <code>` so the monitor ends instead of polling a dead worker.
+Exit codes of `pi-run.mjs`: 0 settled (and verified when gated), 1 error, 2 timeout, 3 stalled, 4 verify failed. If the `pi` process itself crashes, `result.txt` is written with `OUTCOME: EXITED(<code>)` so the monitor ends instead of polling a dead worker.
+
+## Tests
+
+`bash test.sh` (from the skill directory): syntax-checks every script and unit-tests the baseline-diff logic in `scripts/lib/baseline.mjs` (no network, no pi needed).

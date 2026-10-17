@@ -1,6 +1,6 @@
 {
   "name": "pi-coordinator",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Coordinate cheap pi workers over RPC: plan tasks, run each in its own worktree with a tool cap, loop nudge and a driver-owned verify gate, then squash-land passing work on local main.",
   "author": {
     "name": "widnyana",
