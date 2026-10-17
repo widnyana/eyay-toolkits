@@ -71,7 +71,7 @@ method: `git pull` then re-run `pi install`.
 | **evm-decimal-validation** | Audits hardcoded decimals, queries on-chain values, fixes FromWei/ToWei conversions. Catches the "18 decimals everywhere" mistake before it hits production. | [README](plugins/evm-decimal-validation/README.md) |
 | **excalidraw-diagrams** | Multi-frame Excalidraw diagrams from a design doc. A tested builder with layout checks, SVG/PNG preview, and a facts cross-check against the source. | [README](plugins/excalidraw-diagrams/README.md) |
 | **perihbahasa** | Humorous, absurd, and flirty remixes of Indonesian proverbs (*peribahasa*) with precise rhyme and cadence. | [README](plugins/perihbahasa/README.md) |
-| **pi-coordinator** | Claude Code coordinates cheap `pi` workers over RPC: one worktree per task, tool cap, loop nudge, a driver-owned verify gate that sends failures back to the same session, then a squash land on local main. | [README](plugins/pi-coordinator/README.md) |
+| **pi-coordinator** | Claude Code coordinates cheap `pi` workers over RPC: one worktree per task, tool cap, loop nudge, a baseline-aware driver-owned verify gate (fails only on failures new vs the base ref) that sends failures back to the same session, then a squash land on local main. | [README](plugins/pi-coordinator/README.md) |
 | **prose-engineers** | Docs and articles that read like a colleague explaining something over coffee. Problem-first, concrete, no filler. Structured for how people actually read: scanning, front-loading, resumable sections. Public and internal modes. | [README](plugins/prose-engineers/README.md) |
 | **solana-onchain** | Query accounts, analyze transactions, execute operations on Solana. Defaults to devnet because mainnet mistakes are permanent. | [README](plugins/solana-onchain/README.md) |
 | **sui-dev-tools** | Move smart contracts, TypeScript SDK, dApp Kit, Seal secrets, Walrus storage. All the Sui things in one plugin. | [README](plugins/sui-dev-tools/README.md) |
@@ -83,6 +83,7 @@ method: `git pull` then re-run `pi install`.
 | Package | What it does | README |
 |---|---|---|
 
+| **pi-coordinator** | pi / omp skill: a coordinator that plans a job, hands each coding task to a sub-agent worker (pi Agent tool / omp task agent), verifies every result itself, and lands passing work on local main as one squash commit per task. | [README](pi-packages/pi-coordinator/README.md) |
 | **design-thinking** | [pi](https://pi.dev) / omp extension that flips the order: with `/dt` active, the agent draws a Design Graph (call graph, named failure paths) before writing code. Includes the `/cg`, `/cg-plan`, `/cg-review`, `/cg-map` prompt family. Also carries an always-on LSP reminder: use the language server while one exists; otherwise the user hears once per session (UI sessions only) how to enable it. | [README](pi-packages/design-thinking/README.md) |
 | **iac-check-guard** | pi/omp extension that blocks IaC write/destructive commands (ansible, terragrunt/tofu/terraform apply-family including mise-wrapped forms) before the Bash tool runs. | [README](pi-packages/iac-check-guard/README.md) |
 | **agent-notify** | pi/omp extension that fires terminal-native banners (OSC 777/9/99, `notify-send`, Windows toast) when the agent finishes, needs an approval, or is retrying, so you can leave the terminal. | [README](pi-packages/agent-notify/README.md) |

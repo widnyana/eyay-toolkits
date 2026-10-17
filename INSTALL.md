@@ -65,6 +65,7 @@ The same repository is an [omp](https://omp.sh) plugin marketplace. The pi packa
 ```bash
 omp plugin marketplace add widnyana/eyay-toolkits
 omp plugin install design-thinking@eyay-toolkits
+omp plugin install pi-coordinator@eyay-toolkits
 omp plugin install block-forbidden-git-add@eyay-toolkits
 omp plugin install iac-check-guard@eyay-toolkits
 ```
@@ -96,6 +97,11 @@ pi install /path/to/eyay-toolkits/pi-packages/agent-notify
 omp install /path/to/eyay-toolkits/pi-packages/agent-notify
 ```
 ```bash
+pi install /path/to/eyay-toolkits/pi-packages/pi-coordinator
+# or via OMP
+omp install /path/to/eyay-toolkits/pi-packages/pi-coordinator
+```
+```bash
 pi install /path/to/eyay-toolkits/pi-packages/exit-commands
 # or via OMP
 omp install /path/to/eyay-toolkits/pi-packages/exit-commands
@@ -106,5 +112,5 @@ pi install /path/to/eyay-toolkits/pi-packages/general-reminder
 omp install /path/to/eyay-toolkits/pi-packages/general-reminder
 ```
 
-See [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md), [pi-packages/exit-commands/README.md](pi-packages/exit-commands/README.md), and [pi-packages/general-reminder/README.md](pi-packages/general-reminder/README.md) for usage.
+See [pi-packages/pi-coordinator/README.md](pi-packages/pi-coordinator/README.md) (workers need `pi install npm:@tintinweb/pi-subagents`; omp has sub-agents built in), [pi-packages/design-thinking/README.md](pi-packages/design-thinking/README.md), [pi-packages/exit-commands/README.md](pi-packages/exit-commands/README.md), and [pi-packages/general-reminder/README.md](pi-packages/general-reminder/README.md) for usage.
 
