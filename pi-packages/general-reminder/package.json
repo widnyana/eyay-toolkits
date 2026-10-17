@@ -1,6 +1,6 @@
 {
   "name": "@widnyana/general-reminder",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "description": "Configurable standing reminders for pi/omp: reads a reminders.json from the project (.omp/ on omp, .pi/ on pi) and injects its contents into every run — always-on entries plus optional one-shot notes per session.",
   "author": {

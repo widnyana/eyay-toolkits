@@ -48,7 +48,17 @@ cd "${pkg_dir}"
 
 if [[ -d tests ]]; then
   echo "==> tests"
-  node --experimental-strip-types tests/*.ts
+  # smoke-loader.ts (and friends) run on node; anything importing bun:test
+  # falls back to bun. Same graph, two runners — the task runs whatever the
+  # package's tests actually need.
+  bun_ok=0
+  node --experimental-strip-types tests/*.ts || bun_ok=$?
+  if [[ $bun_ok -ne 0 ]] && grep -rl 'bun:test' tests/*.ts >/dev/null 2>&1 && command -v bun >/dev/null; then
+    echo "==> node failed; tests import bun:test — retrying with bun test"
+    bun test tests/ || bun_ok=1
+  else
+    [[ $bun_ok -eq 0 ]] || exit $bun_ok
+  fi
 else
   echo "==> tests (skipped: no tests/ directory)"
 fi

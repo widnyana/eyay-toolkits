@@ -59,8 +59,7 @@ omp plugin install general-reminder@eyay-toolkits
 
 ## Scope
 
-- Works on pi ≥ 0.84.3 and omp (both expose `pi.getAllTools()`-era extension
-  APIs; only the config path differs).
+- Config-path selection rides pi's harness detection surface (extension probes `pi.logger`, present on omp, absent on pi); the injection hook is pi's `before_agent_start`. Verified to load via pi's resource loader and to behave per contract under a stubbed extension API (`tests/smoke-loader.ts`, zero API calls). A live end-to-end run on each runtime is still `[INFERENCE]` until exercised on real sessions.
 - The LSP reminder is NOT here — it lives in the
   [design-thinking](../design-thinking/) extension, where it can probe
   harness capability.
