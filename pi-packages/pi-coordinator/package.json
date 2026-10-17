@@ -1,0 +1,48 @@
+{
+  "name": "@widnyana/pi-coordinator",
+  "version": "0.1.1",
+  "type": "module",
+  "description": "pi / omp coordinator skill: plan a job, hand each coding task to a sub-agent worker (pi Agent tool / omp task agent), verify every result yourself, and land passing work on local main as one squash commit per task.",
+  "author": {
+    "name": "Widnyana Putra",
+    "url": "https://github.com/widnyana"
+  },
+  "license": "MIT",
+  "files": [
+    "skills",
+    "agents",
+    "tests",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/widnyana/eyay-toolkits.git",
+    "directory": "pi-packages/pi-coordinator"
+  },
+  "keywords": [
+    "pi-package",
+    "omp",
+    "coordinator",
+    "subagents",
+    "workers"
+  ],
+  "omp": {
+    "skills": ["./skills"]
+  },
+  "pi": {
+    "skills": ["./skills"],
+    "subagents": {
+      "agents": ["./agents"]
+    }
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": ">=1.1.0",
+    "@tintinweb/pi-subagents": "*"
+  },
+  "devDependencies": {
+    "@earendil-works/pi-coding-agent": "1.0.4",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0"
+  }
+}

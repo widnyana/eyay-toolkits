@@ -11,6 +11,18 @@
   },
   "plugins": [
     {
+      "name": "pi-coordinator",
+      "description": "Coordinator skill that plans a job, hands each coding task to a sub-agent worker (pi Agent tool / omp task agent), verifies every result itself, and lands passing work on local main as one squash commit per task.",
+      "version": "0.1.1",
+      "source": "./pi-packages/pi-coordinator",
+      "category": "development",
+      "author": {
+        "name": "widnyana",
+        "email": "wid@widnyana.web.id"
+      },
+      "homepage": "https://github.com/widnyana/eyay-toolkits/tree/main/pi-packages/pi-coordinator"
+    },
+    {
       "name": "design-thinking",
       "description": "Design Thinking · Design Graph · Graph Protocol — a stack-agnostic design methodology for omp. Draws a Design Graph (call graph, named failure paths) before writing code, review, or refactor. Includes the /cg, /cg-plan, /cg-review, /cg-map prompt family.",
       "version": "0.0.20",
