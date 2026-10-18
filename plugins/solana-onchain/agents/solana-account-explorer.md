@@ -14,7 +14,6 @@ examples:
   - "Is this address empty or does it have funds?"
 
 tools: [Read, Write, Bash]
-model: sonnet
 color: emerald
 ---
 

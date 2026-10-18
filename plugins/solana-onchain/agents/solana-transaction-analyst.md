@@ -14,7 +14,6 @@ examples:
   - "What program made this transaction?"
 
 tools: [Read, Write, Bash]
-model: sonnet
 color: indigo
 ---
 
