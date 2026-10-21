@@ -42,7 +42,7 @@ Say "use pi", "delegate to pi" or "be the coordinator". The skill then:
 |---|---|
 | `launch.sh` | Create a worktree from `main` and run one blocking worker. Use `nohup ... &`. |
 | `continue.sh` | Another worker run in the *existing* worktree — follow-ups, multi-part features that land as one squash. |
-| `monitor.sh` | Agent-facing watcher: `DONE` lines + per-worker status. |
+| `monitor.sh` | Agent-facing watcher: `DONE` lines + per-worker status; guards missing driver output (launch failed / `PI_WORK` mismatch) with a remedy line, exits 1 after 5 min of nothing. |
 | `tail.sh` | Human-only live stream (`assistant text`, tool calls, errors, final result). Ctrl-C anytime; never touches workers. |
 | `land.sh` | Gate + squash-merge onto local `main`, remove worktree and branch, never push. |
 | `pi-run.mjs` | The RPC driver: tool cap, loop nudge, idle watchdog, driver-owned verify gate. |

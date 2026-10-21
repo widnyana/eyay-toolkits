@@ -9,7 +9,7 @@ S=${PI_WORK:-${TMPDIR:-/tmp}/pi-work}
 R=${PI_REPO:-$(git rev-parse --path-format=absolute --git-common-dir | sed 's#/\.git$##')}
 unit=$1; prefix=${2:-fix}
 B="$prefix/pi-$unit"; W="$R/.worktrees/$B"
-cd "$W"
+cd "$W" || { echo "NO WORKTREE: $W"; exit 1; }
 if [ -n "$(git status --porcelain)" ]; then echo "WORKTREE HAS UNCOMMITTED CHANGES:"; git status --short; exit 1; fi
 git --no-pager diff main...HEAD --stat | cat
 git --no-pager diff main...HEAD | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | head -60
