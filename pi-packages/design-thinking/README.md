@@ -101,7 +101,7 @@ pi -e ./pi-packages/design-thinking
 | `/cg-plan <task>` | Design before code: full graph, then (when the task needs several workers) a Graph Protocol delegation plan with one AGENT SUBGRAPH per node, then implement and compare. |
 | `/cg-review [file\|module\|diff]` | Reconstruct the implemented graph, diff it against the method's checklist, end with a VERDICT. |
 | `/cg-map <language\|framework>` | Map the Design Thinking vocabulary onto a stack's idioms (Result vs exceptions, RAII vs defer). |
-| `/research-prompt <topic>` | Meta Research Prompt Generator: writes `./research/projects/<NAME>/.<NAME>.research.prompt` and prints the `claude -p` / `pi -p` / `omp -p` command that runs it. Fields: `NAME:`, `REFS:`, `DEPENDS_ON:`, free-text context. |
+| `/research-prompt <topic>` | Meta Research Prompt Generator: writes `./research/projects/<NAME>/.<NAME>.research.prompt` and prints the `claude -p` / `pi --mode json -p` / `omp --mode json -p` command that runs it. Fields: `NAME:`, `REFS:`, `DEPENDS_ON:`, free-text context. |
 
 With `/dt` on, the file `/research-prompt` writes goes through the approval gate like any other edit: approve it in the review dialog, or run `/dt off` first.
 

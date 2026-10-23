@@ -171,8 +171,15 @@ Everything lives under `./research/` in the directory where you run it:
 Tips:
 
 - Run the printed command from the same directory. All paths in the prompt are relative.
-- Claude Code prints a `claude -p ... --allowedTools ...` line. pi prints `pi -p ...`,
-  omp prints `omp -p ...`. pi needs a subagent tool installed for the parallel waves.
+- Claude Code prints a `claude -p ... --allowedTools ...` line. pi prints `pi --mode json -p ...`,
+  omp prints `omp --mode json -p ...`. pi needs a subagent tool installed for the parallel waves.
+- The run streams JSON events so you can see it working. Without the streaming flag
+  (`--output-format stream-json` on Claude Code, `--mode json` on pi/omp), print mode
+  stays silent until the very end. A quieter way to watch progress from a second
+  terminal: `ls -lt research/scratch research/ref`. Scratch files appear when each
+  node finishes, so an empty `scratch/` early in wave 1 is normal.
+- Run it in a scratch or research directory, not inside a code repo you care about:
+  `research/ref/` gets full `git clone` copies, and code indexers will pick them up.
 - No model is pinned. Add `--model <name>` to the printed line if you want a specific one.
 - Interrupted run: run `/research-prompt` again with the same NAME. It lists which
   nodes are COMPLETE or MISSING and prints a resume command. Finished nodes are

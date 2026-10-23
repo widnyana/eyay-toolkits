@@ -78,13 +78,13 @@ Then stop. Write no file.
 claude -p "$(cat ./research/projects/<NAME>/.<NAME>.research.prompt)" --allowedTools "<derived-tools>" --verbose --output-format stream-json
 
 # pi
-pi -p "$(cat ./research/projects/<NAME>/.<NAME>.research.prompt)"
+pi --mode json -p "$(cat ./research/projects/<NAME>/.<NAME>.research.prompt)"
 
 # omp
-omp -p "$(cat ./research/projects/<NAME>/.<NAME>.research.prompt)"
+omp --mode json -p "$(cat ./research/projects/<NAME>/.<NAME>.research.prompt)"
 ```
 
-   No `--model` flag: the harness default model applies. pi and omp enable all tools by default; a subagent tool must be available to spawn agents.
+   No `--model` flag: the harness default model applies. pi and omp enable all tools by default; a subagent tool must be available to spawn agents. `--mode json` streams events while it runs (like Claude Code's `stream-json`); without it, print mode shows nothing until the final answer.
 
 Nothing else. No explanation. No summary. No confirmation prose.
 
@@ -128,7 +128,7 @@ claude -p "$(cat ./research/projects/nix-store/.nix-store.research.prompt)" --al
 or in pi:
 
 ```
-pi -p "$(cat ./research/projects/nix-store/.nix-store.research.prompt)"
+pi --mode json -p "$(cat ./research/projects/nix-store/.nix-store.research.prompt)"
 ```
 
 ---
