@@ -152,6 +152,11 @@ for (const file of ["design-thinking.md", "output-format.md", "design-graph.md",
 
 ok(!skillNames.includes("effect-ts"), "references/effect-ts.md is NOT registered as a skill");
 
+// /research-prompt: the extension sends the generator with the origin harness,
+// and the generator defines the DELEGATE lanes (here | claude | pi | omp | print).
+ok(extSrc.includes('registerCommand("research-prompt"') && extSrc.includes("Origin harness"), "extension registers /research-prompt with the origin harness");
+ok(/DELEGATE: <value>/.test(fs.readFileSync(path.join(PKG, "references", "meta-research.md"), "utf8")), "meta-research.md defines DELEGATE");
+
 fs.rmSync(tmp, { recursive: true, force: true });
 
 if (fail) {

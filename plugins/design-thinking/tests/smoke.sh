@@ -55,7 +55,16 @@ out=$(CLAUDE_PROJECT_DIR="$TMP" CLAUDE_PLUGIN_ROOT="$PKG" bash "$HOOK")
 [ -z "$out" ]
 ok $? "missing state file prints nothing"
 
-# 4. manifests parse as JSON
+# 4. /research-prompt can run the research itself (subagents, background shell, Monitor)
+CMD="$PKG/commands/research-prompt.md"
+for tool in Agent Bash Monitor WebFetch; do
+  grep -q "^allowed-tools:.*\b$tool\b" "$CMD"
+  ok $? "research-prompt allows $tool"
+done
+grep -q "DELEGATE" "$PKG/references/meta-research.md"
+ok $? "meta-research defines DELEGATE"
+
+# 5. manifests parse as JSON
 if command -v jq >/dev/null 2>&1; then
   jq . "$PKG/.claude-plugin/plugin.json" >/dev/null
   ok $? "plugin.json is valid JSON"

@@ -46,8 +46,9 @@ From r17x's gist: the same three-channel discipline, applied to three materials.
 | Graph Protocol | `X → Graph → Delegation<A, E, R>` | tasks / data dependencies | splitting work across subagents: AGENT SUBGRAPH in, IMPLEMENTED GRAPH out |
 
 Plus r17x's **Meta Research Prompt Generator** (from the gist comments) as
-`/research-prompt`: one topic line in, one research coordination prompt file
-and the command to run it out. Its waves of research, review, index, and
+`/research-prompt`: one topic line in, a finished `RESEARCH.md` out. It writes the
+research coordination prompt, then runs it in this session or delegates it to a
+background `claude`, `pi`, or `omp` process (`DELEGATE:`), from either harness. Its waves of research, review, index, and
 synthesis agents each get an AGENT SUBGRAPH. All its files live under
 `./research/` in the directory where you run it:
 
@@ -72,7 +73,7 @@ pi install npm:@widnyana/design-thinking
 omp install npm:@widnyana/design-thinking
 
 # pinned version
-pi install npm:@widnyana/design-thinking@0.1.0
+pi install npm:@widnyana/design-thinking@0.2.0
 
 # from a local checkout of this repo
 pi install /absolute/path/to/pi-packages/design-thinking
@@ -101,7 +102,7 @@ pi -e ./pi-packages/design-thinking
 | `/cg-plan <task>` | Design before code: full graph, then (when the task needs several workers) a Graph Protocol delegation plan with one AGENT SUBGRAPH per node, then implement and compare. |
 | `/cg-review [file\|module\|diff]` | Reconstruct the implemented graph, diff it against the method's checklist, end with a VERDICT. |
 | `/cg-map <language\|framework>` | Map the Design Thinking vocabulary onto a stack's idioms (Result vs exceptions, RAII vs defer). |
-| `/research-prompt <topic>` | Meta Research Prompt Generator: writes `./research/projects/<NAME>/.<NAME>.research.prompt` and prints the `claude -p` / `pi --mode json -p` / `omp --mode json -p` command that runs it. Fields: `NAME:`, `REFS:`, `DEPENDS_ON:`, free-text context. |
+| `/research-prompt <topic>` | Meta Research Prompt Generator: writes `./research/projects/<NAME>/.<NAME>.research.prompt` and then runs it. `DELEGATE: here` (default) uses this session's subagents; `claude`, `pi`, or `omp` starts that engine in the background and watches it; `print` only prints the command. Fields: `NAME:`, `REFS:`, `DEPENDS_ON:`, `DELEGATE:`, free-text context. See GUIDE.md. |
 
 With `/dt` on, the file `/research-prompt` writes goes through the approval gate like any other edit: approve it in the review dialog, or run `/dt off` first.
 

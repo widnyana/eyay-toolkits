@@ -1,6 +1,6 @@
 {
   "name": "design-thinking",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Design Thinking · Design Graph · Graph Protocol — draw the call graph before writing code. Turns plans, reviews, and refactors into an annotated, stack-agnostic call graph.",
   "author": {
     "name": "widnyana",

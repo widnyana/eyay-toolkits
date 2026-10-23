@@ -39,7 +39,7 @@ The letters mean the same thing in every method:
 | `/cg-plan <task>` | You are about to build something and want the design agreed first. |
 | `/cg-review [target]` | You finished a change and want to check the code against its graph. No target means the current `git diff`. |
 | `/cg-map <language or framework>` | The stack is new to you, or to the agent, and you want the markers mapped to its idioms first. |
-| `/research-prompt <topic>` | You want a multi-agent research run on a topic. |
+| `/research-prompt <topic>` | You want a multi-agent research run on a topic, run here or delegated to claude, pi, or omp. |
 
 Claude Code: if another plugin has a command with the same name, use the full name,
 for example `/design-thinking:cg-plan`.
@@ -141,13 +141,18 @@ Red flags worth a comment before you approve:
 
 ## `/research-prompt`: research runs
 
-It is a two-step tool, as r17x designed it. Step one writes a prompt file and prints
-one command. Step two is you running that command. The generator never starts the
-research itself, so you can read the prompt before many agents spend tokens on it.
+One command writes the research prompt and then runs it. You choose who does the
+work with `DELEGATE:`, from either harness:
+
+| Start in | `here` (default) | `claude` | `pi` / `omp` | `print` |
+|---|---|---|---|---|
+| Claude Code | this session coordinates, `Agent` subagents in the background, `Monitor` prints a line per finished node | a background `claude -p` process, watched by `Monitor` | a background `pi` / `omp` process, watched by `Monitor` | write the prompt, print the command, stop |
+| pi / omp | this session coordinates, `Agent` (pi-subagents) or `task` (omp) subagents, the subagent widget shows progress | a background `claude -p` process, watched by a watcher subagent | a background `pi` / `omp` process, watched by a watcher subagent | same |
 
 ```
 /research-prompt nix store
 REFS: ./docs/prior-research.md, https://nixos.org/manual
+DELEGATE: pi
 Focus on garbage collection internals and binary cache trust model.
 ```
 
@@ -156,6 +161,7 @@ Input fields, in any order after the first line:
 - `NAME: <kebab-case>`: the project name. Without it, the first plain line becomes the name.
 - `REFS: a, b`: files or URLs the researchers read first. Bare `./`, `/`, `~/`, or `http` tokens count too.
 - `DEPENDS_ON: name1, name2`: earlier research projects to build on.
+- `DELEGATE: here | claude | pi | omp | print`: who runs it. Default `here`.
 - Any other text: context that focuses the topics.
 
 Everything lives under `./research/` in the directory where you run it:
@@ -163,33 +169,45 @@ Everything lives under `./research/` in the directory where you run it:
 ```
 ./research/
   projects/<NAME>/.<NAME>.research.prompt   the coordinator prompt
+  projects/<NAME>/.<NAME>.run.log           engine output (DELEGATE claude, pi, omp)
   projects/<NAME>/RESEARCH.md               the final document
   scratch/                                   per-node working files
   ref/INDEX.md, ref/<repo>/, ref/<file>     cloned repos and downloaded specs
 ```
 
+Picking a lane:
+
+- `here`: simplest, and you see each subagent. Your session is busy until the run ends
+  (about 40 minutes for a five-node topic). Only the RETURN blocks enter your context,
+  not the research files.
+- `pi` from Claude Code: cheap workers do the reading and writing, while Claude watches and
+  reports. Your Claude session stays free while it runs.
+- `claude` from pi: a stronger engine for a hard topic, started from a pi session.
+- `print`: r17x's original two-step flow. Read the prompt first, then run the printed
+  command yourself, for example on another machine or in CI.
+
 Tips:
 
-- Run the printed command from the same directory. All paths in the prompt are relative.
-- Claude Code prints a `claude -p ... --allowedTools ...` line. pi prints `pi --mode json -p ...`,
-  omp prints `omp --mode json -p ...`. pi needs a subagent tool installed for the parallel waves.
-- The run streams JSON events so you can see it working. Without the streaming flag
-  (`--output-format stream-json` on Claude Code, `--mode json` on pi/omp), print mode
-  stays silent until the very end. A quieter way to watch progress from a second
-  terminal: `ls -lt research/scratch research/ref`. Scratch files appear when each
-  node finishes, so an empty `scratch/` early in wave 1 is normal.
+- A delegated engine needs its binary on PATH (`claude`, `pi`, or `omp`). If it is missing,
+  the command stops and prints the line to run yourself.
+- pi needs pi-subagents for parallel waves. Without a subagent tool, nodes run one by one.
+- On pi and omp, the watcher subagent is what tells your session the delegated run ended.
+  If it stops early (turn or tool limit), ask "status of the research run": the agent reads
+  the run log and `scratch/`.
+- Progress by hand from a second terminal: `ls -lt research/scratch research/ref`. Scratch
+  files appear when each node finishes, so an empty `scratch/` early in wave 1 is normal.
 - Run it in a scratch or research directory, not inside a code repo you care about:
   `research/ref/` gets full `git clone` copies, and code indexers will pick them up.
-- No model is pinned. Add `--model <name>` to the printed line if you want a specific one.
-- Interrupted run: run `/research-prompt` again with the same NAME. It lists which
-  nodes are COMPLETE or MISSING and prints a resume command. Finished nodes are
-  skipped.
-- Finished project: the same NAME is refused. Build on it with
-  `DEPENDS_ON: <NAME>` under a new name.
-- Add `research/scratch/` and `research/ref/` to `.gitignore` unless you want cloned
-  repos in your history. `research/projects/*/RESEARCH.md` is the part worth keeping.
-- pi with `/dt` on: the prompt file write goes through the approval gate. Approve it,
-  or `/dt off` first.
+- No model is pinned. Each engine uses its own default. With `DELEGATE: print` you can add
+  `--model <name>` to the printed line.
+- Interrupted run: run `/research-prompt` again with the same NAME and DELEGATE. Finished
+  nodes are skipped. With `print` it lists COMPLETE / MISSING nodes and prints a resume command.
+- Finished project: the same NAME is refused. Build on it with `DEPENDS_ON: <NAME>` under a
+  new name.
+- Add `research/scratch/` and `research/ref/` to `.gitignore` unless you want cloned repos in
+  your history. `research/projects/*/RESEARCH.md` is the part worth keeping.
+- pi with `/dt` on: the prompt file write goes through the approval gate. Approve it, or
+  `/dt off` first.
 
 ## Harness differences
 
@@ -210,6 +228,7 @@ Claude Code: add `.claude/*.local.md` to `.gitignore`. It is per-user state.
 | pi: every edit is blocked | `/dt` is on and nothing is approved. Approve in the dialog, or `/dt off`. |
 | pi: no dialog appears | The run did not end with a graph (it needs VERDICT plus at least three other sections), or the session has no UI. Use `/dt approve`. |
 | pi: `pi -p "/research-prompt ..."` writes nothing | Print mode runs the slash command and exits before the queued message runs. Use an interactive session (or RPC mode). |
+| Delegated run says `ENGINE DIED` | The engine exited without an IMPLEMENTED GRAPH. Read the last lines it shows from `.<NAME>.run.log`, fix the cause, and run the same command again to resume. |
 | Claude Code: mode lost after restart | Check `.claude/design-thinking.local.md` says `enabled: true`. The hook reads it at session start. |
 | Graph uses a header like `DesignGraph<A, E, R>` | Old version. Update: the current header is `X → Graph → Effect<A, E, R>`. |
 | `/research-prompt` says the prompt already exists | A run was started before. Use the printed resume command, or pick a new NAME. |

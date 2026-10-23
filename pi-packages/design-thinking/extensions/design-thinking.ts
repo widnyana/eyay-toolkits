@@ -476,7 +476,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// pi prompts cannot read package files, so the command reads it and sends
 	// it with the user's message (§6 boundary: file → text, read once here).
 	pi.registerCommand("research-prompt", {
-		description: "Meta Research Prompt Generator: writes ./research/projects/<NAME>/.<NAME>.research.prompt and prints the run command",
+		description: "Meta Research Prompt Generator: writes the research prompt, then runs it here or delegates it to claude, pi, or omp (DELEGATE:)",
 		handler: async (args, ctx) => {
 			let generator: string;
 			try {
@@ -487,7 +487,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			}
 			const harness = isOmp() ? "omp" : "pi";
 			await pi.sendUserMessage(
-				`${generator}\n\n---\n\nYou run inside ${harness}: in step 8 print only the ${harness} command.\n\nUser message:\n${(args ?? "").trim()}`,
+				`${generator}\n\n---\n\nYou run inside ${harness}. Origin harness: ${harness}. For step 9, use the ${harness} column of the tools table${harness === "pi" ? " (the Agent tool comes from pi-subagents; without it, run nodes inline)" : ""}.\n\nUser message:\n${(args ?? "").trim()}`,
 				{ deliverAs: "steer" },
 			);
 		},
