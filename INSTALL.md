@@ -22,6 +22,7 @@ You need [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 /plugin install sui-dev-tools@eyay-toolkits
 /plugin install ts-backend-dev@eyay-toolkits
 /plugin install visual-gen@eyay-toolkits
+/plugin install video-gen@eyay-toolkits
 /plugin install iac-check-guard@eyay-toolkits
 ```
 
@@ -54,7 +55,7 @@ pi install /path/to/eyay-toolkits/plugins/prose-engineers
 
 Each skill registers as a `/skill:<name>` command (e.g. `/skill:technical-writer`). Verify with `pi list`.
 
-Works for any plugin whose contents are just `skills/`: **bmad-sprint-run**, **career-tools**, **evm-decimal-validation**, **perihbahasa**, **prose-engineers**, **sui-dev-tools**, **ts-backend-dev**, **visual-gen**. Plugins that depend on Claude Code–specific hooks, agents, or commands (**block-forbidden-git-add**, **design-thinking**, **solana-onchain**) are Claude Code-only — though **design-thinking** has a native pi package instead (below).
+Works for any plugin whose contents are just `skills/`: **bmad-sprint-run**, **career-tools**, **evm-decimal-validation**, **perihbahasa**, **prose-engineers**, **sui-dev-tools**, **ts-backend-dev**, **video-gen**, **visual-gen**. Plugins that depend on Claude Code–specific hooks, agents, or commands (**block-forbidden-git-add**, **design-thinking**, **solana-onchain**) are Claude Code-only — though **design-thinking** has a native pi package instead (below).
 
 Update: `git pull` then re-run the `pi install` command. Uninstall: see [UNINSTALL.md](UNINSTALL.md).
 

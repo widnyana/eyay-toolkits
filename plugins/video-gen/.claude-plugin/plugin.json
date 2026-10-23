@@ -1,0 +1,21 @@
+{
+  "name": "video-gen",
+  "version": "0.1.0",
+  "description": "Make videos from code: Remotion or fframes for motion, p5.js for canvas, Cairo/Skia/Poppler for 2D, Python + Vulkan (wgpu) for shader frames, Python for MIDI and synth audio, ffmpeg to stitch. Renders once and never judges its own output.",
+  "author": {
+    "name": "widnyana",
+    "email": "wid@widnyana.web.id"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/widnyana/eyay-toolkits",
+  "keywords": [
+    "media",
+    "video",
+    "remotion",
+    "fframes",
+    "p5js",
+    "vulkan",
+    "midi",
+    "ffmpeg"
+  ]
+}

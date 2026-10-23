@@ -77,6 +77,7 @@ method: `git pull` then re-run `pi install`.
 | **sui-dev-tools** | Move smart contracts, TypeScript SDK, dApp Kit, Seal secrets, Walrus storage. All the Sui things in one plugin. | [README](plugins/sui-dev-tools/README.md) |
 | **ts-backend-dev** | TypeScript backend skills: kill N+1 queries, review code for architecture and security issues, design Prisma schemas that won't paint you into a corner. | [README](plugins/ts-backend-dev/README.md) |
 | **visual-gen** | Blog cover images, architecture diagrams, and process infographics as PNG via HTML+CSS + Chrome headless. | [README](plugins/visual-gen/README.md) |
+| **video-gen** | Videos from code. Remotion or fframes for motion, p5.js for canvas, Cairo/Skia/Poppler for 2D, Python + Vulkan (wgpu) for shader frames, Python for MIDI and synth audio, ffmpeg to stitch. Renders once and never judges its own output: you review. | [README](plugins/video-gen/README.md) |
 
 ## pi packages
 
