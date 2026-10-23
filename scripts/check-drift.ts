@@ -32,6 +32,7 @@ const SHARED: Entry[] = [
     pi: "pi-packages/iac-check-guard/extensions/iac-check-guard.sh",
     plugin: "plugins/iac-check-guard/hooks/scripts/iac-check-guard.sh",
   },
+  { pi: "pi-packages/design-thinking/GUIDE.md", plugin: "plugins/design-thinking/GUIDE.md" },
   { pi: "pi-packages/design-thinking/references/design-thinking.md", plugin: "plugins/design-thinking/references/design-thinking.md" },
   { pi: "pi-packages/design-thinking/references/output-format.md", plugin: "plugins/design-thinking/references/output-format.md" },
   { pi: "pi-packages/design-thinking/references/design-graph.md", plugin: "plugins/design-thinking/references/design-graph.md" },

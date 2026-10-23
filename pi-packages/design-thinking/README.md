@@ -33,6 +33,8 @@ Go, Rust, Python, or TypeScript, so the check doesn't depend on the stack.
 Skip it for a one-line fix — prose is fine there. Reach for `/dt` when the
 change has a failure path worth agreeing on before it's written.
 
+Guides, tips, and troubleshooting: [GUIDE.md](GUIDE.md).
+
 ## Three methods, one shape
 
 From r17x's gist: the same three-channel discipline, applied to three materials.
