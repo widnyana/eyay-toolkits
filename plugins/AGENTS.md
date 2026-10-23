@@ -32,7 +32,7 @@ that copy first, then run `bun scripts/check-drift.ts` before committing. See
 |`iac-check-guard`|safety|`hooks/hooks.json` — PreToolUse/Bash hook blocking IaC write/destructive commands (`ansible-playbook` without `--check`, terragrunt/tofu/terraform apply-family incl. mise-wrapped forms); shares its check script with `pi-packages/iac-check-guard`.|
 |`bmad-sprint-run`|development|Skill + Python companion (`sprint-runner.py`, `lib/*.py`) that autonomously drives a BMad sprint. Has a real `pytest` suite in `tests/`.|
 |`career-tools`|writing|Cover letter / CV builder skills.|
-|`design-thinking`|development|`/dt` mode + `/cg*` commands: draw the Design Graph before writing code. Claude Code port of `pi-packages/design-thinking` (hooks + commands instead of extension + prompts). Has `tests/smoke.sh`.|
+|`design-thinking`|development|`/dt` mode + `/cg*` commands + `/research-prompt`: draw the call graph before writing code; r17x's Design Thinking, Design Graph, and Graph Protocol methods. Claude Code port of `pi-packages/design-thinking` (hooks + commands instead of extension + prompts). Has `tests/smoke.sh`.|
 |`evm-decimal-validation`|blockchain|Audits hardcoded EVM decimals and FromWei/ToWei conversions.|
 |`excalidraw-diagrams`|media|Skill + Python tooling that generates multi-frame `.excalidraw` scenes from a design doc: `scripts/xl.py` (builder + layout checks), `build.py`, `render.py`/`preview.sh`, `validate.py`, `crosscheck.py`. `references/` and an `examples/` frame module. Standard library only.|
 |`perihbahasa`|humor|Indonesian proverb remix skill; corpus in `references/proverbs.md`, curated examples in `references/exemplars.md`, dedup tool at `scripts/merge_proverbs.py`.|
