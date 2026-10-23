@@ -1,24 +1,25 @@
 /**
  * Design Thinking — pi extension
  *
- * Adopts the three pillars:
- *   - Design Thinking : the mindset (§1–§10 pipeline, problem-first)
- *   - Design Graph    : the artifact (annotated call graph of a concrete problem)
- *   - Graph Protocol  : the notation spec (fixed sections, fixed markers)
+ * Adopts r17x's three methods (one shape, three materials):
+ *   - Design Thinking : code, X → Graph → Effect<A, E, R> (§1-§10 pipeline)
+ *   - Design Graph    : interface, Job → Flow → Surface<C, V, N>
+ *   - Graph Protocol  : delegation, AGENT SUBGRAPH in, IMPLEMENTED GRAPH out
  *
  * When /dt mode is active, every turn appends a compact distilled block to the
- * system prompt so design/plan/review answers render as Design Graphs in
- * Graph Protocol form. Full specs live in the package's references/ directory,
+ * system prompt so design/plan/review answers render as an annotated call
+ * graph in the Design Thinking output format. Full specs live in the package's references/ directory,
  * loaded on demand — not inlined here, to keep the injected prompt small.
  * Separately, an ALWAYS-ON LSP reminder composes into every run's system
  * prompt while the harness exposes an `lsp` tool (mode-independent); without
  * one, the user is told once per session how to enable it.
  *
  * Commands:
+ *   /research-prompt <msg>  Meta Research Prompt Generator (references/meta-research.md)
  *   /dt            toggle Design Thinking mode
  *   /dt on|off     set explicitly
  *   /dt approve|deny  manual arm/revoke fallback (headless / no-UI sessions)
- *   After a gated run presents a Design Graph, a review dialog opens
+ *   After a gated run presents a design graph, a review dialog opens
  *   automatically: Approve (arm + implement), Refine (send feedback), or
  *   Deny (keep file edits blocked). /dt <prompt> turns the mode ON (never
  *   off) and runs the prompt — graph + clarifying questions before code.
@@ -36,7 +37,7 @@
  *     decision is applied only if its epoch is still current AND the gate is
  *     still on AND still unapproved. Stale decisions are discarded, not
  *     applied.
- *   - The dialog opens at run end when the agent presented a Design Graph
+ *   - The dialog opens at run end when the agent presented a design graph
  *     (VERDICT + section headers) OR ended the turn asking for approval in
  *     prose — the human always gets a button, never a prose-only ask.
  *   - Dialogs are opened with an extension-owned AbortSignal: omp binds
@@ -52,6 +53,7 @@
  * to whatever stack the project uses; never the discipline.
  */
 
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -77,7 +79,7 @@ const DISTILLED = `
 DESIGN THINKING MODE — active.
 Read the problem. Draw the data flow as a call graph. Write code that IS the graph.
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -93,7 +95,7 @@ Pipeline: shapes → graph(A) → cardinality → E(⟳retry ↯escape ☠die) �
 Rules:
 - ANY turn that will end in code or file changes (feature, change, fix,
   refactor — the model does NOT get to reclassify the request): render the
-  Design Graph in Graph Protocol form and any clarifying questions FIRST;
+  graph in the Design Thinking output format and any clarifying questions FIRST;
   ZERO mutations until the user approves the design — no file edits, no
   shell commands, no code execution. Reading/exploring code first is fine,
   via read-only tools only (read/grep/glob; read-only MCP devices such as
@@ -105,25 +107,29 @@ Rules:
   when the run ends — never mid-run: approve (implement the presented design
   without re-presenting the graph), refine (present an updated graph), or
   deny (stay blocked).
-- Design, plan, and review answers must render a Design Graph — fixed
+- Design, plan, and review answers must render the graph, fixed
   sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES, BEHAVIOR, SCOPE,
   TEST LAYERS, VERDICT.
 - The happy path (A) stays readable; failure handling lives at defined join points.
 - Each layer scopes its own E; inner errors never leak through.
 - If the code doesn't match the call graph, the implementation is wrong.
 - Adapt vocabulary to the current language/stack; never the discipline.
+- Interface work uses the Design Graph (Surface<C, V, N>) skeleton.
+- Delegating to subagents or workers follows Graph Protocol: AGENT SUBGRAPH
+  in, IMPLEMENTED GRAPH out, compared before the work counts as done.
 
 Full specs — read these when a section needs detail:
-- ${REF_DIR}/protocol.md      (Graph Protocol: notation spec + worked example)
-- ${REF_DIR}/method.md        (the §1–§10 method, generalized)
-- ${REF_DIR}/design-graph.md  (the artifact spec + completeness checklist)
+- ${REF_DIR}/design-thinking.md  (the code method, §1-§10)
+- ${REF_DIR}/output-format.md    (sections, markers, call graph block, checklist)
+- ${REF_DIR}/design-graph.md     (the interface method + skeleton)
+- ${REF_DIR}/graph-protocol.md   (delegation: execution graph, AGENT SUBGRAPH, RETURN)
   The extension blocks file edits, shells (bash/powershell), and code
   execution (eval) mechanically until the user approves — a review dialog
   opens when a graph-presenting run ends. Approval covers
   ONE human turn: it stays armed across the many runs it takes to implement
   the approved design, and drops the moment the user sends a new instruction.
   Treat that next instruction as a refinement of the current design: UPDATE
-  the existing Design Graph to fold it in and re-present it (do not start a
+  the existing design graph to fold it in and re-present it (do not start a
   blank graph unless the goal itself changed), then end the turn and wait for
   the dialog. /dt deny or mode off also re-lock.
   NEVER ask the user to run /dt approve, /dt deny, or any approval command:
@@ -177,7 +183,7 @@ interface DtState {
 
 
 const GATE_REASON =
-	"Design Thinking mode is ON: file edits, shell commands, and code execution are blocked until the user approves the presented design. Do NOT attempt this change through any other channel — no bash or shell commands, no eval/scripts, no subagent delegation. Explore with read-only tools (read/grep/glob), present (or update and re-present) the Design Graph (Graph Protocol), then END YOUR TURN with NO prose approval request — an approval dialog opens for the user automatically when the run ends. NEVER ask the user to run /dt approve, /dt deny, or any command; NEVER re-attempt the blocked action this turn.";
+	"Design Thinking mode is ON: file edits, shell commands, and code execution are blocked until the user approves the presented design. Do NOT attempt this change through any other channel — no bash or shell commands, no eval/scripts, no subagent delegation. Explore with read-only tools (read/grep/glob), present (or update and re-present) the design graph, then END YOUR TURN with NO prose approval request — an approval dialog opens for the user automatically when the run ends. NEVER ask the user to run /dt approve, /dt deny, or any command; NEVER re-attempt the blocked action this turn.";
 
 const REVIEW_OPTIONS = [
 	"Approve — implement now",
@@ -210,12 +216,12 @@ const LSP_SUGGESTION_OMP =
 const LSP_SUGGESTION_PI =
 	"LSP Reminder: pi has no LSP integration — code intelligence falls back to text search. omp provides a built-in `lsp` tool.";
 
-// Graph Protocol section headers. A real Design Graph renders the fixed set;
+// Output-format section headers (code and interface skeletons). A real graph renders the fixed set;
 // VERDICT is mandatory. Requiring VERDICT + ≥3 others avoids tripping on a bare
 // mention of the word "verdict" in prose, and still fires on a graph rendered
 // without that exact literal elsewhere.
 const SECTION_HEADER =
-	/^[ \t]*#{0,4}[ \t>*-]*(PROBLEM|SHAPES|GRAPH|CARDINALITY|BOUNDARIES|BEHAVIOR|SCOPE|TEST LAYERS|VERDICT)\b/gm;
+	/^[ \t]*#{0,4}[ \t>*-]*(PROBLEM|SHAPES|GRAPH|CARDINALITY|BOUNDARIES|BEHAVIOR|SCOPE|TEST LAYERS|JOB|SURFACES|FLOW|VOID|NEEDS|BOUNDARY|ATTENTION|PROOF|VERDICT)\b/gm;
 
 /** The agent is asking the human for a go-ahead in prose — narrow on purpose so
  *  an ordinary closing sentence does not trip it. */
@@ -235,7 +241,7 @@ function messageText(content: unknown): string {
 		.join("\n");
 }
 
-/** Does an assistant message render a Design Graph (Graph Protocol)? */
+/** Does an assistant message render a design graph (code or interface skeleton)? */
 function presentsGraph(message: { role: string; content?: unknown }): boolean {
 	if (message.role !== "assistant") return false;
 	const seen = new Set<string>();
@@ -260,10 +266,10 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	// "armed" lets mutating tools through. Approval is NOT consumed by runs:
 	// implementing an approved design spans many runs, and re-arming per run
 	// only produced approval loops. It is re-locked by relock() when a new user
-	// instruction arrives, when a NEW Design Graph is presented, by /dt deny, or
+	// instruction arrives, when a NEW design graph is presented, by /dt deny, or
 	// when the mode turns off.
 	let approval: "none" | "armed" = "none";
-	// A Design Graph was presented in the CURRENT design cycle. Reset by
+	// A design graph was presented in the CURRENT design cycle. Reset by
 	// relock() — i.e. when a new user instruction arrives. Approval is scoped to
 	// one human turn: it survives the many runs of implementing an approved
 	// design, and drops the moment the user speaks again (a new goal, or a
@@ -447,7 +453,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			applyStatus(ctx);
 			ctx.ui.notify(
 				on
-					? "Design Thinking ON — plans and reviews will render as Design Graphs (Graph Protocol)"
+					? "Design Thinking ON — plans and reviews will render as annotated call graphs"
 					: "Design Thinking OFF",
 				"info",
 			);
@@ -458,10 +464,32 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 				relock();
 				// deliverAs "steer": sends immediately when idle, queues mid-stream.
 				await pi.sendUserMessage(
-					`${prompt}\n\n(Design Thinking is ON: before implementing, present the Design Graph (Graph Protocol) and any clarifying questions, then wait for my go-ahead.)`,
+					`${prompt}\n\n(Design Thinking is ON: before implementing, present the design graph and any clarifying questions, then wait for my go-ahead.)`,
 					{ deliverAs: "steer" },
 				);
 			}
+		},
+	});
+
+	// ── /research-prompt command ────────────────────────────────────────────
+	// r17x's Meta Research Prompt Generator. The template ships in references/;
+	// pi prompts cannot read package files, so the command reads it and sends
+	// it with the user's message (§6 boundary: file → text, read once here).
+	pi.registerCommand("research-prompt", {
+		description: "Meta Research Prompt Generator: writes ./research/projects/<NAME>/.<NAME>.research.prompt and prints the run command",
+		handler: async (args, ctx) => {
+			let generator: string;
+			try {
+				generator = fs.readFileSync(path.join(REF_DIR, "meta-research.md"), "utf8");
+			} catch (err) {
+				ctx.ui.notify(`research-prompt: cannot read ${REF_DIR}/meta-research.md (${(err as Error).message})`, "error");
+				return;
+			}
+			const harness = isOmp() ? "omp" : "pi";
+			await pi.sendUserMessage(
+				`${generator}\n\n---\n\nYou run inside ${harness}: in step 8 print only the ${harness} command.\n\nUser message:\n${(args ?? "").trim()}`,
+				{ deliverAs: "steer" },
+			);
 		},
 	});
 
@@ -606,7 +634,7 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			}
 			retractOffer();
 			await pi.sendUserMessage(
-				`Refine the presented design (do not implement yet): ${feedback.trim()}\n\n(Design Thinking: update the Design Graph (Graph Protocol) per this feedback and present it again. Mutations stay blocked.)`,
+				`Refine the presented design (do not implement yet): ${feedback.trim()}\n\n(Design Thinking: update the design graph per this feedback and present it again. Mutations stay blocked.)`,
 				{ deliverAs: "steer" },
 			);
 		})().catch((err: unknown) => {

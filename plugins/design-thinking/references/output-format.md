@@ -1,15 +1,18 @@
-# Graph Protocol
+# Design Thinking: Output Format
 
-The notation spec for **Design Graphs**. A Design Graph is the annotated call graph
-of a concrete problem: nodes are functions, edges are data flow, and every node
-carries annotations for data (A), cardinality, failure (E), and requirements (R).
+How a [Design Thinking](design-thinking.md) result is written down: the
+annotated call graph of a concrete problem. Nodes are functions, edges are
+data flow, and every node carries annotations for data (A), cardinality,
+failure (E), and requirements (R).
 
-The Protocol is stack-agnostic. A graph written for Go, Rust, Python, TypeScript,
+The format is stack-agnostic. A graph written for Go, Rust, Python, TypeScript,
 SQL, or a spreadsheet renders identically. Only the vocabulary inside the
 annotations changes (e.g. what "retry" means in your language).
 
 Every tool in this package (`/cg`, `/cg-plan`, `/cg-review`, `/cg-map`, and the
-`/dt` active mode) MUST emit output in the format below.
+`/dt` active mode) MUST emit output in the format below. Interface work uses
+the [Design Graph](design-graph.md) skeleton instead; delegation to agents adds
+the [Graph Protocol](graph-protocol.md) blocks.
 
 ---
 
@@ -21,7 +24,7 @@ empty for the problem at hand (say so: `SCOPE: none`), never to skip thinking.
 ```
 PROBLEM: <one-line statement of what you're building or examining>
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -52,7 +55,7 @@ The header names the problem and anchors the three channels. `X` is your problem
 everything after it is the graph you build.
 
 ```
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -194,7 +197,7 @@ produced which error. Mark it clearly; it should be rare.
 ```
 PROBLEM: sync a list of URLs to local files, resumable, with a status line
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: Http, Clock, Logger      (§5)
 │              │   │  └──── E: NetErr, DiskErr          (§4)
@@ -225,4 +228,83 @@ VERDICT:     happy path reads as the pipeline above; all NetErr handling lives a
 ```
 
 Note the stack vocabulary: `context manager` for scope, exceptions caught at
-layer joins for E, plain functions for nodes. Protocol unchanged.
+layer joins for E, plain functions for nodes. Format unchanged.
+
+---
+
+## Call graph block (`/cg`, architecture traces, "how does X work")
+
+When the answer is a trace of existing code, the GRAPH section uses this
+block. Plain text only, no rendered diagrams.
+
+````
+graph: <short title>
+
+Production:
+```ts
+EntryPoint
+  → ComponentA
+    → ComponentA.method
+      → [condition] ComponentB
+        → {queue_or_store}
+```
+
+Tests:
+```ts
+TestEntryPoint
+  → ComponentATestLayer
+    → ComponentA.method
+      → ComponentBTestLayer
+```
+
+src:
+  EntryPoint → path/to/file.ts:LINE
+  ComponentA → path/to/component.ts:LINE
+  ComponentA.method → path/to/component.ts:LINE
+  ComponentB → path/to/other.ts:LINE
+````
+
+Rules:
+
+- `ts` fence for every stack (it renders arrows well), two-space-indented `→`
+  children. The root has no arrow; indentation is the call hierarchy.
+- Use the real functions, methods, services, jobs, queues, and stores.
+- Production always. Tests only when the test graph differs (that difference
+  IS the swapped R from §9). Never invent a test graph.
+- `src:` gives verified `path:line` evidence for every unique node. Never
+  guess paths, symbols, callers, or line numbers.
+- Mark planned nodes `[new]`; never invent future line numbers.
+- Skip the graph for a trivial single-fact question (a port, a version).
+
+---
+
+## Completeness checklist
+
+A result is complete when all of the following hold:
+
+- [ ] Every node has a cardinality marker — `(1)`, `(N)`, or `(T)`.
+- [ ] Every node lists its `R:` — even if `R: none` (that is a feature: the
+      node is runnable standalone).
+- [ ] Every edge crossing a trust boundary is marked `🔒 unknown → trusted`.
+- [ ] Every failure mode has a strategy — `⟳retry`, `↯escape(alt)`, or
+      `☠die`. No unmarked breaks, no silent swallowing.
+- [ ] Every layer scopes its E before handing off (inner errors translated,
+      never leaked).
+- [ ] Every resource has an acquire point and a structural release point.
+- [ ] BEHAVIOR lists only layers that can be removed without touching the
+      happy path.
+- [ ] TEST LAYERS shows a full R substitution — if it can't, the graph has
+      hidden dependencies.
+- [ ] VERDICT explicitly answers whether code and graph match, and names the
+      mismatches.
+
+## The three uses
+
+1. **Plan** (`/cg-plan`) — draw the graph first. Code is written only after
+   the VERDICT has a target to be checked against. If code contradicts the
+   graph, fix the graph or fix the code; never let them drift silently.
+2. **Extract** (`/cg`) — reconstruct the graph the code *actually*
+   implements, not the one the author intended.
+3. **Review** (`/cg-review`) — render the implemented graph, diff it against
+   the intended graph (or this checklist), group findings by § number, end
+   with a VERDICT line.

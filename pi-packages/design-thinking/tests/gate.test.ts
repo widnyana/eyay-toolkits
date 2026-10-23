@@ -79,8 +79,8 @@ function makeHarness(): Harness {
 		on: (event, handler) => {
 			handlers[event] = handler;
 		},
-		registerCommand: (_name, def) => {
-			commandHandler = def.handler;
+		registerCommand: (name, def) => {
+			if (name === "dt") commandHandler = def.handler;
 		},
 		appendEntry: () => {},
 		sendUserMessage: async (msg) => {

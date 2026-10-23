@@ -20,7 +20,7 @@ cat <<EOF
 DESIGN THINKING MODE — active (restored from a previous /dt on).
 Read the problem. Draw the data flow as a call graph. Write code that IS the graph.
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -34,25 +34,29 @@ Pipeline: shapes → graph(A) → cardinality → E(⟳retry ↯escape ☠die) �
 🔒 parse at boundaries → ⛈ orthogonal behavior → scope → test-R → verdict.
 
 Rules:
-- Design, plan, and review answers must render a Design Graph in Graph Protocol
-  form — fixed sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES,
+- Design, plan, and review answers must render the graph in the Design
+  Thinking output format, fixed sections: PROBLEM, SHAPES, GRAPH, CARDINALITY, BOUNDARIES,
   BEHAVIOR, SCOPE, TEST LAYERS, VERDICT.
 - The happy path (A) stays readable; failure handling lives at defined join points.
 - Each layer scopes its own E; inner errors never leak through.
 - If the code doesn't match the call graph, the implementation is wrong.
 - ANY turn that will end in code or file edits (feature, change, fix,
-  refactor — you do NOT get to reclassify the request): render the Design
-  Graph in Graph Protocol form and any clarifying questions FIRST; ZERO file
+  refactor — you do NOT get to reclassify the request): render the graph
+  in the Design Thinking output format and any clarifying questions FIRST; ZERO file
   edits until the user approves the design. Reading/exploring code first is
   fine; the FIRST edit is not allowed before the graph.
 - Adapt vocabulary to the current language/stack; never the discipline.
+- Interface work uses the Design Graph (Surface<C, V, N>) skeleton.
+- Delegating to subagents follows Graph Protocol: AGENT SUBGRAPH in,
+  IMPLEMENTED GRAPH out, compared before the work counts as done.
 - Stay in this mode for the rest of the session, across every turn, until the
   user runs /dt off — this reminder fires once per session, not per turn.
 
 Full specs — read these when a section needs detail:
-- ${REF_DIR}/protocol.md      (Graph Protocol: notation spec + worked example)
-- ${REF_DIR}/method.md        (the §1–§10 method, generalized)
-- ${REF_DIR}/design-graph.md  (the artifact spec + completeness checklist)
+- ${REF_DIR}/design-thinking.md  (the code method, §1-§10)
+- ${REF_DIR}/output-format.md    (sections, markers, call graph block, checklist)
+- ${REF_DIR}/design-graph.md     (the interface method + skeleton)
+- ${REF_DIR}/graph-protocol.md   (delegation: execution graph, AGENT SUBGRAPH, RETURN)
 EOF
 
 exit 0

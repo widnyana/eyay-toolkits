@@ -1,5 +1,5 @@
 ---
-description: Review code against its call graph — reconstruct the implemented Design Graph and diff it
+description: Review code against its call graph - reconstruct the implemented graph and diff it
 argument-hint: "[file | module | diff, default: current diff]"
 allowed-tools: Bash(git diff:*), Bash(git status:*), Read
 ---
@@ -8,18 +8,18 @@ Review target: $ARGUMENTS
 If no target was given above, review the current uncommitted diff instead:
 !`git diff`
 
-Reconstruct the Design Graph the code ACTUALLY implements — not the one the
+Reconstruct the graph the code ACTUALLY implements — not the one the
 author intended. Then diff it against the method's completeness checklist.
 Every mismatch is a finding.
 
-## Graph Protocol — quick reference
+## Output format: quick reference
 
 Emit ALL sections below, in this order, with these markers:
 
 ```
 PROBLEM: <one line — what this code does, as implemented>
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -62,11 +62,17 @@ VERDICT:     <matches | mismatches listed by § number>
 
 ## Output contract
 
-- Implemented graph first (all Protocol sections), then findings, then VERDICT.
+- Implemented graph first (all output sections), then findings, then VERDICT.
 - VERDICT must be explicit: "code matches graph" or the mismatch list.
 - If an intended graph exists (e.g. from a prior `/cg-plan`), diff against it;
   otherwise review against the checklist alone.
 - Severity: mark findings that will cause runtime failures vs structural debt.
+- Interface code: reconstruct the Design Graph skeleton (the `design-graph` skill)
+  and group findings by its § numbers (void states, needs, attention scope).
+- Delegated work: when the target is a DELEGATED GRAPH or AGENT SUBGRAPH plus
+  the workers' RETURN blocks (the `graph-protocol` skill), compare each SUBGRAPH with
+  its IMPLEMENTED GRAPH and the real diff: list OFF-SCRIPT and GAPS, then VERDICT.
 
-Full specs live in this plugin's `graph-protocol` skill (notation),
-`design-method` skill (the method), and `design-graph` skill (artifact).
+Full specs live in this plugin's `design-thinking` (code method), `design-graph`
+(interface method), and `graph-protocol` (delegation to agents) skills; each
+links the plugin's `references/output-format.md` (format + checklist).

@@ -37,12 +37,12 @@ Do the following:
    ---
    ```
 4. Notify the user of the resulting mode:
-   - Turned on: "Design Thinking ON — plans and reviews will render as Design
-     Graphs (Graph Protocol)."
+   - Turned on: "Design Thinking ON — plans and reviews will render as
+     annotated call graphs."
    - Turned off: "Design Thinking OFF."
 5. If step 2 captured a `<prompt>`, continue in this same turn: work on
-   `<prompt>`, but first present the Design Graph (Graph Protocol format —
-   see this plugin's `graph-protocol`, `design-method`, and `design-graph`
+   `<prompt>`, but first present the graph (Design Thinking output format;
+   see this plugin's `design-thinking`, `design-graph`, and `graph-protocol`
    skills) plus any clarifying questions. Implement only after the user's
    go-ahead.
 

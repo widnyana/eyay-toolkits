@@ -1,8 +1,8 @@
 > **Source**: Design Thinking by [r17x](https://github.com/r17x) —
 > https://gist.github.com/r17x/90eb2f7be93932b5693753aedb09c01a
 > Bundled verbatim as the original Effect-TS instantiation of the method.
-> The generalized, stack-agnostic version lives in [method.md](method.md);
-> the notation spec lives in [protocol.md](protocol.md).
+> The generalized, stack-agnostic version lives in [design-thinking.md](design-thinking.md);
+> the output format lives in [output-format.md](output-format.md).
 
 # Design Thinking
 

@@ -1,21 +1,21 @@
 ---
-description: Review code against its call graph — reconstruct the implemented Design Graph and diff it
+description: Review code against its call graph - reconstruct the implemented graph and diff it
 argument-hint: "[file | module | diff, default: current diff]"
 ---
 Review target: ${@:-the current uncommitted diff (git diff)}
 
-Reconstruct the Design Graph the code ACTUALLY implements — not the one the
+Reconstruct the graph the code ACTUALLY implements — not the one the
 author intended. Then diff it against the method's completeness checklist.
 Every mismatch is a finding.
 
-## Graph Protocol — quick reference
+## Output format: quick reference
 
 Emit ALL sections below, in this order, with these markers:
 
 ```
 PROBLEM: <one line — what this code does, as implemented>
 
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ R: what each node needs      (§5)
 │              │   │  └──── E: where the graph breaks    (§4)
@@ -58,11 +58,17 @@ VERDICT:     <matches | mismatches listed by § number>
 
 ## Output contract
 
-- Implemented graph first (all Protocol sections), then findings, then VERDICT.
+- Implemented graph first (all output sections), then findings, then VERDICT.
 - VERDICT must be explicit: "code matches graph" or the mismatch list.
 - If an intended graph exists (e.g. from a prior `/cg-plan`), diff against it;
   otherwise review against the checklist alone.
 - Severity: mark findings that will cause runtime failures vs structural debt.
+- Interface code: reconstruct the Design Graph skeleton (`design-graph.md`)
+  and group findings by its § numbers (void states, needs, attention scope).
+- Delegated work: when the target is a DELEGATED GRAPH or AGENT SUBGRAPH plus
+  the workers' RETURN blocks (`graph-protocol.md`), compare each SUBGRAPH with
+  its IMPLEMENTED GRAPH and the real diff: list OFF-SCRIPT and GAPS, then VERDICT.
 
-Full specs live in this package's `references/` directory: `protocol.md`
-(notation), `method.md` (the method), `design-graph.md` (artifact).
+Full specs live in this package's `references/` directory: `design-thinking.md`
+(the code method), `output-format.md` (format + checklist), `design-graph.md`
+(the interface method), `graph-protocol.md` (delegation to agents).

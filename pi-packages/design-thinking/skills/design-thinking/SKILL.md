@@ -1,25 +1,37 @@
-# Design Thinking — The Method
+---
+name: design-thinking
+description: >
+  Design Thinking: the code method. X → Graph → Effect<A, E, R>, the §1-§10
+  pipeline: shapes, happy path (A), cardinality, break points (E: ⟳ ↯ ☠),
+  requirements (R), boundaries, behavior layers, scope, test layers, code.
+  Stack-agnostic. Use when planning, designing, reviewing, or refactoring code.
+  Output format lives in references/output-format.md.
+disable-model-invocation: true
+---
 
-A stack-agnostic design methodology. Read the problem. Draw the data flow as a
-call graph (the **Design Graph**). Write code that IS the graph. If the code
-doesn't match the graph, something is wrong.
+# Design Thinking
 
-The method is language-neutral. Where it says "Effect", "gen", or "pipe" in the
-Effect-TS appendix (`effect-ts.md`), substitute your stack's equivalent: Result
-types, exceptions at layer joins, middleware, RAII, constructor injection —
-whatever your language provides. The discipline never changes, only the vocabulary.
+The code method. Read the problem. Draw the data flow as a call graph. Write
+code that IS the graph. If the code doesn't match the graph, something is wrong.
+
+One of three methods with the same shape (see [design-graph.md](../../references/design-graph.md)
+for the interface, [graph-protocol.md](../../references/graph-protocol.md) for delegation to
+agents). The original is written in Effect-TS ([effect-ts.md](../../references/effect-ts.md)).
+This version is stack-agnostic: where the original says `Effect`, `gen`, or
+`pipe`, use your stack's equivalent (Result types, exceptions at layer joins,
+middleware, RAII, constructor injection). The discipline never changes, only
+the vocabulary.
+
 **Hard gate — applies in every harness (pi, omp, Claude Code, any agent):**
 When the user asks for a feature, change, fix, or refactor — or when any turn
-will end in proposed code or file edits — you MUST render the Design Graph
-(Graph Protocol) and any clarifying questions BEFORE touching any file, and
-implement only after the user approves the design. Reading and exploring code
-first is fine; the FIRST edit is not allowed before the graph. This rule is
-not optional and not stack-dependent.
-
-Render every result in [Graph Protocol](protocol.md) format.
+will end in proposed code or file edits — you MUST render the graph (in the
+[output format](../../references/output-format.md)) and any clarifying questions BEFORE
+touching any file, and implement only after the user approves the design.
+Reading and exploring code first is fine; the FIRST edit is not allowed
+before the graph. This rule is not optional and not stack-dependent.
 
 ```
-X → DesignGraph<A, E, R>
+X → Graph → Effect<A, E, R>
 │              │   │  │  │
 │              │   │  │  └─ what each node needs     (§5)
 │              │   │  └──── where the graph breaks   (§4)
@@ -38,8 +50,11 @@ X → DesignGraph<A, E, R>
 §7  Behavior     orthogonal layers wrap without changing the graph
 §8  Scope        acquire/release tied to lifecycle
 §9  Test         swap R, same graph shape
-§10 Structure    happy path = A, failure handling = E, never tangled
+§10 Code         happy path body = A, failure join points = E
 ```
+
+`Effect<A, E, R>` names any computation: it succeeds with A, fails with E,
+and needs R to run.
 
 ## 1. Name the shapes
 
@@ -54,7 +69,7 @@ What are the things? Before drawing a graph, define the domain language.
 These are the nouns. The graph is the verbs. You cannot draw the graph until
 you know what flows through it.
 
-→ *Protocol section: SHAPES.*
+→ *Output section: SHAPES.*
 
 ## 2. Think A first
 
@@ -68,7 +83,7 @@ What is the success data flow? What goes in, what comes out, what transforms
 happen in between? This graph IS your program structure. Draw it first. The
 code follows.
 
-→ *Protocol section: GRAPH (edges) + header tree (A).*
+→ *Output section: GRAPH (edges) + header tree (A).*
 
 ## 3. One or many?
 
@@ -83,7 +98,7 @@ Is each node one-shot or a flow?
 Same three channels (A, E, R) in all cases. Different cardinality. Mark it on
 the graph so the code matches.
 
-→ *Protocol section: CARDINALITY.*
+→ *Output section: CARDINALITY.*
 
 ## 4. Think E second
 
@@ -102,7 +117,7 @@ that as Result types, checked exceptions, error returns, or a strict rule that
 exceptions only cross at layer joins. You decide at each node: retry, escape,
 or propagate. Only `die` when the program's assumptions are violated.
 
-→ *Protocol section: GRAPH (E annotations) + VERDICT.*
+→ *Output section: GRAPH (E annotations) + VERDICT.*
 
 ## 5. Think R third
 
@@ -116,7 +131,7 @@ database connection, a config value, an HTTP client. R shrinks as you provide
 layers. When R is empty, the program can run. If R is not empty, the compiler
 or the wiring tells you exactly what's missing.
 
-→ *Protocol section: GRAPH (R annotations) + TEST LAYERS.*
+→ *Output section: GRAPH (R annotations) + TEST LAYERS.*
 
 ## 6. Trust at boundary
 
@@ -130,7 +145,7 @@ transformer. Define it once, use it everywhere.
 Trust nothing at the boundary. Trust everything inside. The boundary is the
 only place you parse. After that, the types guarantee shape.
 
-→ *Protocol section: BOUNDARIES.*
+→ *Output section: BOUNDARIES.*
 
 ## 7. Layer behavior
 
@@ -143,7 +158,7 @@ without wading through retry logic and timeout configuration. Behavior is
 composed orthogonally. The graph says WHAT happens. The layers say HOW it
 behaves under pressure.
 
-→ *Protocol section: BEHAVIOR.*
+→ *Output section: BEHAVIOR.*
 
 ## 8. Scope resources
 
@@ -154,7 +169,7 @@ Acquire/release must be structurally bound: RAII, `defer`, context managers,
 `try/finally` at the owning node — even on error, even on interrupt. Cleanup
 is structural, not a TODO comment you hope someone remembers.
 
-→ *Protocol section: SCOPE.*
+→ *Output section: SCOPE.*
 
 ## 9. Swap R to prove it
 
@@ -168,9 +183,9 @@ doing too much.
 This is the payoff of separating A, E, and R — you prove the graph correct by
 swapping what's behind R.
 
-→ *Protocol section: TEST LAYERS.*
+→ *Output section: TEST LAYERS.*
 
-## 10. Separate A from E structurally
+## 10. Happy path is A, join points are E
 
 The separation of A (§2) and E (§4) maps directly onto code structure, in any
 language:
@@ -197,7 +212,7 @@ storage errors and produces a domain error. Auth catches domain errors and
 produces an access error. The handler catches access errors and produces the
 declared interface error. Each layer's handling is a complete enumeration of
 what IT received — not what originated three layers down. Consumers never see
-implementation errors from deeper layers. *(See protocol.md for the diagram.)*
+implementation errors from deeper layers. *(See [output-format.md](../../references/output-format.md) for the diagram.)*
 
 ### Divergent strategies
 
@@ -233,4 +248,4 @@ PROBLEM
 ---
 
 *For the original Effect-TS instantiation of this method, see
-[effect-ts.md](effect-ts.md).*
+[effect-ts.md](../../references/effect-ts.md).*

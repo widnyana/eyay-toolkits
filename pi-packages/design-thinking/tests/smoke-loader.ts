@@ -57,8 +57,8 @@ ok(extPaths.length === 1 && extPaths[0] === wantExt, `extension exactly ${path.r
 
 const skillNames = skills.skills.map((s: { name: string }) => s.name).sort();
 ok(
-	JSON.stringify(skillNames) === JSON.stringify(["design-graph", "design-method", "graph-protocol"]),
-	`skills exactly [design-graph, design-method, graph-protocol] (got ${skillNames.join(", ") || "none"})`,
+	JSON.stringify(skillNames) === JSON.stringify(["design-graph", "design-thinking", "graph-protocol"]),
+	`skills exactly [design-graph, design-thinking, graph-protocol] (got ${skillNames.join(", ") || "none"})`,
 );
 for (const s of skills.skills as Array<{ name: string; filePath: string }>) {
 	const rel = path.join("skills", s.name, "SKILL.md");
@@ -74,7 +74,7 @@ ok(
 ok(prompts.diagnostics.length === 0, `zero prompt diagnostics${prompts.diagnostics.length ? `: ${JSON.stringify(prompts.diagnostics)}` : ""}`);
 
 // ------------------------------------------------- references on disk ------
-for (const f of ["protocol.md", "method.md", "design-graph.md", "effect-ts.md"]) {
+for (const f of ["design-thinking.md", "output-format.md", "design-graph.md", "graph-protocol.md", "meta-research.md", "effect-ts.md"]) {
 	ok(fs.existsSync(path.join(PKG, "references", f)), `references/${f} exists`);
 }
 
@@ -83,18 +83,14 @@ for (const f of ["protocol.md", "method.md", "design-graph.md", "effect-ts.md"])
 // strip frontmatter, apply the documented link rewrites, normalize the
 // documented trailing-footer replacement, then compare.
 const LINK_REWRITES: Array<[RegExp, string]> = [
-	// references point at sibling files; skills reference each other by name
-	// in prose (committed style, a12e021)
-	[/\[Graph Protocol\]\(protocol\.md\) format/g, "Graph Protocol format (see the `graph-protocol` skill)"],
-	[/\[Graph Protocol\]\(protocol\.md\) notation/g, "Graph Protocol notation (see the `graph-protocol` skill)"],
-	[/\[Design Thinking\]\(method\.md\)/g, "Design Thinking (see the `design-method` skill)"],
-	[/\[Graph Protocol\]\(protocol\.md\)/g, "the `graph-protocol` skill"],
-	[/\[protocol\.md\]\(protocol\.md\)/g, "the `graph-protocol` skill"],
+	// references link sibling files; skills (two dirs deeper) link the same
+	// files through ../../references/
+	[/\]\(([a-z-]+\.md)\)/g, "](../../references/$1)"],
 ];
 const PAIRS: Array<[string, string]> = [
-	["graph-protocol", "protocol.md"],
-	["design-method", "method.md"],
+	["design-thinking", "design-thinking.md"],
 	["design-graph", "design-graph.md"],
+	["graph-protocol", "graph-protocol.md"],
 ];
 
 function stripFrontmatter(text: string): string {
@@ -147,7 +143,7 @@ for (const [skillDir, srcFile] of PAIRS) {
 // human/extension-authored input before the model ever sees it, so it was
 // dead text; the real, working mechanism is this absolute-path pointer.)
 const extSrc = fs.readFileSync(path.join(PKG, "extensions", "design-thinking.ts"), "utf8");
-for (const [, file] of PAIRS) {
+for (const file of ["design-thinking.md", "output-format.md", "design-graph.md", "graph-protocol.md"]) {
 	ok(
 		extSrc.includes("${REF_DIR}/" + file),
 		`distilled block points at \${REF_DIR}/${file}`,

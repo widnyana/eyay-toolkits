@@ -32,6 +32,12 @@ EOF
 out=$(CLAUDE_PROJECT_DIR="$TMP" CLAUDE_PLUGIN_ROOT="$PKG" bash "$HOOK")
 echo "$out" | grep -q "DESIGN THINKING MODE"
 ok $? "enabled:true prints the mode block"
+echo "$out" | grep -q "X → Graph → Effect<A, E, R>"
+ok $? "mode block uses the gist header"
+for f in $(echo "$out" | grep -o "$PKG/references/[a-z-]*\.md"); do
+  [ -f "$f" ]
+  ok $? "mode block points at existing ${f#$PKG/}"
+done
 
 # 2. enabled: false -> silent
 cat > "$TMP/.claude/design-thinking.local.md" <<'EOF'

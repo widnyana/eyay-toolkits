@@ -32,12 +32,15 @@ const SHARED: Entry[] = [
     pi: "pi-packages/iac-check-guard/extensions/iac-check-guard.sh",
     plugin: "plugins/iac-check-guard/hooks/scripts/iac-check-guard.sh",
   },
-  { pi: "pi-packages/design-thinking/references/method.md", plugin: "plugins/design-thinking/references/method.md" },
+  { pi: "pi-packages/design-thinking/references/design-thinking.md", plugin: "plugins/design-thinking/references/design-thinking.md" },
+  { pi: "pi-packages/design-thinking/references/output-format.md", plugin: "plugins/design-thinking/references/output-format.md" },
   { pi: "pi-packages/design-thinking/references/design-graph.md", plugin: "plugins/design-thinking/references/design-graph.md" },
-  { pi: "pi-packages/design-thinking/references/protocol.md", plugin: "plugins/design-thinking/references/protocol.md" },
+  { pi: "pi-packages/design-thinking/references/graph-protocol.md", plugin: "plugins/design-thinking/references/graph-protocol.md" },
+  { pi: "pi-packages/design-thinking/references/meta-research.md", plugin: "plugins/design-thinking/references/meta-research.md" },
   { pi: "pi-packages/design-thinking/references/effect-ts.md", plugin: "plugins/design-thinking/references/effect-ts.md" },
+  { pi: "pi-packages/design-thinking/skills/design-thinking/SKILL.md", plugin: "plugins/design-thinking/skills/design-thinking/SKILL.md", transform: toPlugin },
   { pi: "pi-packages/design-thinking/skills/design-graph/SKILL.md", plugin: "plugins/design-thinking/skills/design-graph/SKILL.md", transform: toPlugin },
-  { pi: "pi-packages/design-thinking/skills/design-method/SKILL.md", plugin: "plugins/design-thinking/skills/design-method/SKILL.md", transform: toPlugin },
+  { pi: "pi-packages/design-thinking/skills/graph-protocol/SKILL.md", plugin: "plugins/design-thinking/skills/graph-protocol/SKILL.md", transform: toPlugin },
   // omp reads slash commands from commands/ (Claude convention) and its
   // legacy pi-package loader never registers prompts/ — so the pi prompts
   // are mirrored verbatim into pi-packages/design-thinking/commands/ for
