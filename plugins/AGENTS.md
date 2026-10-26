@@ -42,6 +42,7 @@ that copy first, then run `bun scripts/check-drift.ts` before committing. See
 |`sui-dev-tools`|blockchain|9 Sui/Move skills (contracts, TS SDK, dApp Kit, Seal, Walrus).|
 |`ts-backend-dev`|development|TypeScript backend skills: N+1 query fixes, code review, Prisma schema design.|
 |`visual-gen`|media|HTML+CSS → PNG via headless Chrome, for cover images / architecture diagrams / infographics. Has `test.sh`.|
+|`video-gen`|media|1 skill (`video-gen`) + 7 `references/` (Remotion, fframes, p5.js, Cairo/Skia/Poppler, Python audio, Python Vulkan via wgpu, ffmpeg) + `scripts/render_wgpu.py` (offscreen shader -> PNG frames). Two pipelines: mixed (A) and all-Python GPU (B). HARD RULE: renders once, never self-reviews output.|
 
 ## Testing
 
