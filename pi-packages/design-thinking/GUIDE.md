@@ -62,11 +62,16 @@ work. When a run ends with a graph, a dialog opens:
 
 - **Approve**: the gate opens and implementation starts at once.
 - **Refine**: you type feedback, the agent updates the graph, and the dialog opens again.
+- **Approve + auto-mode**: same as Approve, and later graphs are approved without a dialog.
 - **Deny**: everything stays blocked until a new graph is shown.
 
 The approval covers one instruction from you. When you send a new message, the gate
 closes again and the agent folds your message into the existing graph. Sessions
 with no UI use `/dt approve` and `/dt deny` instead.
+
+Auto-mode skips the dialog: `/dt auto on` arms the gate whenever the agent shows a
+graph. The agent must still show the graph first. `/dt auto off` turns it off,
+`/dt auto status` shows the state.
 
 **Claude Code** has no mechanical gate. The mode is a rule the agent follows: graph
 and questions first, no edits until you say go. Say "approved" or "go ahead" in

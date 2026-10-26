@@ -51,7 +51,7 @@ async function flush(): Promise<void> {
 	for (let i = 0; i < 25; i++) await Promise.resolve();
 }
 
-function makeHarness(): Harness {
+function makeHarness(branch: unknown[] = []): Harness {
 	const handlers: Record<string, Handler> = {};
 	let commandHandler: Handler | undefined;
 	const sent: string[] = [];
@@ -72,7 +72,7 @@ function makeHarness(): Harness {
 	const ctx = {
 		ui,
 		hasUI: true,
-		sessionManager: { getBranch: (): unknown[] => [] },
+		sessionManager: { getBranch: (): unknown[] => branch },
 	};
 
 	const pi: PiMock = {
@@ -426,5 +426,73 @@ describe("design-thinking gate", () => {
 		await h.command("approve");
 		await h.command("deny");
 		expect(isBlocked(await h.fire("tool_call", { toolName: "write" }))).toBe(true);
+	});
+
+	test("auto-mode: a presented graph arms the gate with no dialog", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		await h.command("auto on");
+		await h.fire("agent_end", runEndWithGraph(1));
+		expect(h.pendingDialogs()).toBe(0);
+		expect(await h.fire("tool_call", { toolName: "write" })).toBeUndefined();
+		expect(h.sent.filter((m) => m.startsWith("Approved — implement")).length).toBe(1);
+		// A new user instruction still re-locks; the next graph re-approves.
+		await h.userInput("also add a per-IP cap");
+		expect(isBlocked(await h.fire("tool_call", { toolName: "write" }))).toBe(true);
+	});
+
+	test("auto-mode: prose-only ask is not auto-approved", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		await h.command("auto on");
+		await h.fire("agent_end", runEndWithProseAsk());
+		expect(h.pendingDialogs()).toBe(1);
+		expect(isBlocked(await h.fire("tool_call", { toolName: "write" }))).toBe(true);
+		expect(h.sent.length).toBe(0);
+	});
+
+	test("auto-mode: /dt deny latches until a new graph", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		await h.command("auto on");
+		await h.fire("agent_end", runEndWithGraph(1));
+		await h.command("deny");
+		await h.fire("agent_end", { messages: [] });
+		expect(isBlocked(await h.fire("tool_call", { toolName: "write" }))).toBe(true);
+		expect(h.pendingDialogs()).toBe(0);
+	});
+
+	test("auto-mode: dialog option turns it on; /dt auto off turns it off", async () => {
+		const h = makeHarness();
+		await startGatedSession(h);
+		await h.fire("agent_end", runEndWithGraph(1));
+		h.answerSelect("Approve + auto-mode — implement now, auto-approve later graphs");
+		await flush();
+		expect(await h.fire("tool_call", { toolName: "write" })).toBeUndefined();
+
+		await h.userInput("next task");
+		await h.fire("agent_end", runEndWithGraph(3));
+		expect(h.pendingDialogs()).toBe(0);
+		expect(await h.fire("tool_call", { toolName: "write" })).toBeUndefined();
+
+		await h.command("auto off");
+		await h.userInput("another task");
+		await h.fire("agent_end", runEndWithGraph(5));
+		expect(h.pendingDialogs()).toBe(1);
+		expect(isBlocked(await h.fire("tool_call", { toolName: "write" }))).toBe(true);
+	});
+
+	test("auto-mode: restored from the session branch", async () => {
+		const h = makeHarness([{ type: "custom", customType: "design-thinking-state", data: { enabled: true, auto: true } }]);
+		await h.fire("session_start", {});
+		await h.fire("agent_end", runEndWithGraph(1));
+		expect(h.pendingDialogs()).toBe(0);
+		expect(await h.fire("tool_call", { toolName: "write" })).toBeUndefined();
+	});
+
+	test("a prompt starting with 'auto' is still a prompt", async () => {
+		const h = makeHarness();
+		await h.command("auto-fix the parser");
+		expect(h.sent.length).toBe(1);
 	});
 });

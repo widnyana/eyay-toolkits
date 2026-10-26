@@ -178,6 +178,7 @@ const READONLY_CODEGRAPH_ACTIONS: Record<string, true> = {
 
 interface DtState {
 	enabled: boolean;
+	auto?: boolean;
 }
 
 
@@ -187,6 +188,7 @@ const GATE_REASON =
 
 const REVIEW_OPTIONS = [
 	"Approve — implement now",
+	"Approve + auto-mode — implement now, auto-approve later graphs",
 	"Refine — ask the agent for changes",
 	"Deny — keep file edits blocked",
 ] as const;
@@ -284,6 +286,9 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 	let offer: Offer | undefined;
 	// How many messages of the session have already been scanned for VERDICT.
 	let scannedMessages = 0;
+	// auto-mode: arm the gate by itself when a design graph is presented. Persisted
+	// with the mode; inert while the mode is off.
+	let auto = false;
 
 	// ── LSP reminder state — always-on, independent of dt mode ───────────────
 	// Probed once per session; the suggestion fires at most once per session
@@ -369,25 +374,30 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// ── Session plumbing ────────────────────────────────────────────────────
 	function applyStatus(ctx: ExtensionContext) {
-		ctx.ui.setStatus("design-thinking", mode === "on" ? "design-thinking: on" : undefined);
+		ctx.ui.setStatus("design-thinking", mode !== "on" ? undefined : auto ? "design-thinking: on (auto)" : "design-thinking: on");
 	}
 
 	function persist() {
-		pi.appendEntry<DtState>(STATE_TYPE, { enabled: mode === "on" });
+		pi.appendEntry<DtState>(STATE_TYPE, { enabled: mode === "on", auto });
 	}
 
 	function restore(ctx: ExtensionContext) {
 		const branch = ctx.sessionManager.getBranch();
 		let restored: boolean | undefined;
+		let restoredAuto = false;
 		for (const entry of branch) {
 			if (entry.type === "custom" && entry.customType === STATE_TYPE) {
 				const data = entry.data as DtState | undefined;
 				if (data && typeof data.enabled === "boolean") {
 					restored = data.enabled;
+					restoredAuto = data.auto === true;
 				}
 			}
 		}
-		if (restored !== undefined) setMode(restored);
+		if (restored !== undefined) {
+			setMode(restored);
+			auto = restoredAuto;
+		}
 	}
 
 	pi.on("session_start", async (_event, ctx) => {
@@ -406,13 +416,13 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 
 	// ── /dt command ─────────────────────────────────────────────────────────
 	pi.registerCommand("dt", {
-		description: "Design Thinking mode: /dt toggles, on|off|status set/query, approve asks then implements, deny re-locks; anything else runs as a prompt with mode on",
+		description: "Design Thinking mode: /dt toggles, on|off|status set/query, auto [on|off|status] auto-approves presented graphs, approve asks then implements, deny re-locks; anything else runs as a prompt with mode on",
 		handler: async (args, ctx) => {
 			const arg = (args ?? "").trim();
 			const lower = arg.toLowerCase();
 
 			if (lower === "status") {
-				ctx.ui.notify(`Design Thinking mode: ${mode === "on" ? "on" : "off"}${approval === "armed" ? " (gate armed)" : ""}`, "info");
+				ctx.ui.notify(`Design Thinking mode: ${mode === "on" ? "on" : "off"}${approval === "armed" ? " (gate armed)" : ""}, auto-mode ${auto ? "on" : "off"}`, "info");
 				return;
 			}
 
@@ -442,6 +452,21 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 				}
 				revoke();
 				ctx.ui.notify("Design Thinking: mutations blocked again", "info");
+				return;
+			}
+			// Checked before the prompt fallthrough; the anchored regex keeps a
+			// prompt like "auto-fix the parser" a prompt.
+			const autoCmd = /^auto(?: (on|off|status))?$/.exec(lower);
+			if (autoCmd) {
+				if (autoCmd[1] !== "status") {
+					auto = autoCmd[1] ? autoCmd[1] === "on" : !auto;
+					persist();
+					applyStatus(ctx);
+				}
+				ctx.ui.notify(
+					`Design Thinking auto-mode ${auto ? "ON: a presented design graph is approved automatically" : "OFF"}${mode === "on" ? "" : " (mode is off, run /dt on)"}`,
+					"info",
+				);
 				return;
 			}
 			// "on"/"off" set explicitly; anything else is a prompt to run in this
@@ -570,6 +595,11 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 			cycleGraphSeen = true;
 			graphDenied = false;
 			approval = "none"; // a presented graph always means: awaiting approval
+			if (auto && arm()) {
+				ctx.ui.notify("Design Thinking: auto-mode armed the gate — implementing the presented design", "info");
+				await pi.sendUserMessage(GO_AHEAD_MESSAGE, { deliverAs: "steer" });
+				return;
+			}
 		}
 
 		if (approval === "armed") return;
@@ -615,6 +645,11 @@ export default function designThinkingExtension(pi: ExtensionAPI) {
 				return;
 			}
 			if (choice.startsWith("Approve")) {
+				if (choice.includes("auto-mode")) {
+					auto = true;
+					persist();
+					applyStatus(ctx);
+				}
 				if (!arm()) return; // gate changed while the human was deciding
 				ctx.ui.notify("Design Thinking: gate armed — implementing the approved design", "info");
 				await pi.sendUserMessage(GO_AHEAD_MESSAGE, { deliverAs: "steer" });
